@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 게임 경로 매핑
     const gameRoutes = {
-        '퍼즐 마스터': 'games/puzzle-master/index.html',
+        '넘버패드 메모리': 'games/numberpad-memory/index.html',
         '스페이스 슈터': 'games/space-shooter/index.html',
         '미스터리 퀘스트': 'games/mystery-quest/index.html',
         '솔리테어 클래식': 'games/solitaire/index.html',

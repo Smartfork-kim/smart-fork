@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키패드 메모리 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px; /* 패딩 줄임 */
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 450px; /* 너비 줄임 */
+            height: 600px; /* 높이 줄임 */
+            min-width: 450px;
+            max-width: 450px;
+            min-height: 600px;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%; /* 컨테이너 전체 높이 사용 */
+            min-height: 540px; /* 내부 컨텐츠 높이 조정 */
+            max-height: 540px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.2em; /* 크기 줄임 */
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            white-space: nowrap; /* 한 줄 유지 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+                    h2 {
+                font-size: 2em;
+                margin-bottom: 10px; /* 마진 줄임 */
+                height: 50px; /* 높이 줄임 */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50px;
+                max-height: 50px;
+            }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 15px;
+            width: 270px !important; /* 강제 고정 */
+            height: 270px !important; /* 강제 고정 */
+            min-width: 270px;
+            max-width: 270px;
+            min-height: 270px;
+            max-height: 270px;
+            margin: 10px auto; /* 마진 줄임 */
+            justify-content: center;
+            align-content: center;
+            box-sizing: border-box;
+            position: relative; /* 위치 안정성 */
+        }
+
+        .key {
+            width: 80px;
+            height: 80px;
+            min-width: 80px;
+            min-height: 80px;
+            max-width: 80px;
+            max-height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            font-size: 3em;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            line-height: 1;
+            box-sizing: border-box;
+            position: relative; /* 위치 고정 */
+            overflow: hidden; /* 내용이 넘치지 않도록 */
+        }
+
+        .key::before {
+            content: "8"; /* 가장 큰 숫자로 공간 확보 */
+            visibility: hidden; /* 보이지 않게 */
+            position: absolute;
+            font-size: 3em;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .key:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .key:active {
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .key.highlight {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border-color: #ff4757;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        .key.correct {
+            background: linear-gradient(45deg, #2ed573, #7bed9f);
+            border-color: #2ed573;
+            box-shadow: 0 0 25px rgba(46, 213, 115, 0.9);
+        }
+
+        .key.wrong {
+            background: linear-gradient(45deg, #ff4757, #ff6b6b);
+            border-color: #ff3742;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .game-info {
+            margin: 10px 0;
+            font-size: 1.3em;
+            height: 60px; /* 높이 줄임 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            max-height: 60px;
+        }
+
+        .timer {
+            font-size: 2em;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 5px 0;
+            height: 40px; /* 높이 줄임 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            max-height: 40px;
+        }
+
+        .sequence-display {
+            margin: 5px 0;
+            font-size: 1.4em;
+            height: 40px; /* 높이 줄임 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            max-height: 40px;
+        }
+
+        .input-phase {
+            margin: 5px 0;
+            font-size: 1.2em;
+            color: #feca57;
+            height: 35px; /* 높이 줄임 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 35px;
+            max-height: 35px;
+        }
+
+        /* 메인 화면 뇌 일러스트 */
+        .brain-container {
+            position: relative;
+            font-size: 4.5em; /* 크기 줄임 */
+            margin: 15px 0; /* 마진 줄임 */
+            height: 150px; /* 높이 줄임 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-numbers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .float-num {
+            position: absolute;
+            font-size: 0.35em; /* 상대적으로 약간 크게 */
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            animation: float 3s ease-in-out infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .float-num:nth-child(odd) {
+            animation-delay: -1.5s;
+        }
+
+        .float-num:nth-child(3n) {
+            animation-delay: -0.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: translateY(-20px) rotate(5deg);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 메인 화면 -->
+        <div id="mainScreen" class="screen active">
+            <div class="brain-container">
+                🧠
+                <div class="floating-numbers">
+                    <span class="float-num" style="top: 10%; left: 15%;">1</span>
+                    <span class="float-num" style="top: 25%; right: 20%;">7</span>
+                    <span class="float-num" style="top: 40%; left: 25%;">3</span>
+                    <span class="float-num" style="top: 60%; right: 15%;">9</span>
+                    <span class="float-num" style="top: 75%; left: 40%;">5</span>
+                    <span class="float-num" style="top: 15%; right: 45%;">2</span>
+                    <span class="float-num" style="top: 55%; left: 60%;">8</span>
+                    <span class="float-num" style="top: 35%; right: 35%;">4</span>
+                    <span class="float-num" style="top: 80%; right: 50%;">6</span>
+                </div>
+            </div>
+            <h1>🎮 키패드 메모리 게임</h1>
+            <p style="font-size: 0.9em; margin-bottom: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                숫자 위치를 기억하고 1부터 순서대로 클릭하세요!
+            </p>
+            <button class="btn" onclick="startGame()">게임 시작</button>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div id="gameScreen" class="screen">
+            <h2>라운드 <span id="round">1</span></h2>
+            <div class="game-info">
+                <div>점수: <span id="score">0</span></div>
+                <div class="timer" id="timer"></div>
+            </div>
+            
+            <div class="sequence-display" id="sequenceDisplay"></div>
+            <div class="input-phase" id="inputPhase"></div>
+            
+            <div class="keypad" id="keypad">
+                <div class="key" data-number="7"></div>
+                <div class="key" data-number="8"></div>
+                <div class="key" data-number="9"></div>
+                <div class="key" data-number="4"></div>
+                <div class="key" data-number="5"></div>
+                <div class="key" data-number="6"></div>
+                <div class="key" data-number="1"></div>
+                <div class="key" data-number="2"></div>
+                <div class="key" data-number="3"></div>
+            </div>
+        </div>
+
+        <!-- 게임오버 화면 -->
+        <div id="gameOverScreen" class="screen">
+            <h1>🎯 게임 오버</h1>
+            <div style="font-size: 1.5em; margin: 20px 0;">
+                <div>최종 라운드: <span id="finalRound">1</span></div>
+                <div>최종 점수: <span id="finalScore">0</span></div>
+            </div>
+            <button class="btn" onclick="restartGame()">다시하기</button>
+            <button class="btn" onclick="goToMain()">메인화면</button>
+        </div>
+    </div>
+
+    <script>
+        // 게임 상태 변수
+        let currentRound = 1;
+        let score = 0;
+        let currentSequence = {};
+        let playerInput = [];
+        let isInputPhase = false;
+        let inputTimer = null;
+        let sequenceTimer = null;
+
+        // 화면 전환 함수
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // 메인 화면으로 이동
+        function goToMain() {
+            showScreen('mainScreen');
+            resetGame();
+        }
+
+        // 게임 시작
+        function startGame() {
+            resetGame();
+            showScreen('gameScreen');
+            startRound();
+        }
+
+        // 게임 다시 시작
+        function restartGame() {
+            resetGame();
+            showScreen('gameScreen');
+            startRound();
+        }
+
+        // 게임 상태 초기화
+        function resetGame() {
+            currentRound = 1;
+            score = 0;
+            currentSequence = {};
+            playerInput = [];
+            isInputPhase = false;
+            clearTimers();
+            updateDisplay();
+        }
+
+        // 타이머들 정리
+        function clearTimers() {
+            if (inputTimer) clearInterval(inputTimer);
+            if (sequenceTimer) clearTimeout(sequenceTimer);
+            inputTimer = null;
+            sequenceTimer = null;
+        }
+
+        // 화면 표시 업데이트
+        function updateDisplay() {
+            document.getElementById('round').textContent = currentRound;
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = '';
+            document.getElementById('sequenceDisplay').textContent = '';
+            document.getElementById('inputPhase').textContent = '';
+            
+            // 키패드를 빈 상태로 초기화
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('highlight', 'correct', 'wrong');
+                key.textContent = '\u00A0'; // 공백 문자로 공간 유지
+                key.style.fontSize = '3em';
+                key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
+            });
+        }
+
+        // 라운드 시작
+        function startRound() {
+            updateDisplay();
+            generateSequence();
+            showSequence();
+        }
+
+        // 수열 생성
+        function generateSequence() {
+            currentSequence = {};
+            playerInput = [];
+            
+            // 라운드에 따른 수열 길이 결정
+            let sequenceLength;
+            if (currentRound === 1) {
+                sequenceLength = 2;
+            } else if (currentRound < 8) {
+                sequenceLength = currentRound + 1;
+            } else {
+                sequenceLength = Math.floor(Math.random() * 3) + 7; // 7-9 사이
+            }
+
+            // 1부터 순차적으로 숫자를 생성하고 랜덤 위치에 배치
+            let availablePositions = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            
+            for (let i = 1; i <= sequenceLength; i++) {
+                let randomIndex = Math.floor(Math.random() * availablePositions.length);
+                let position = availablePositions[randomIndex];
+                currentSequence[i] = position;
+                availablePositions.splice(randomIndex, 1);
+            }
+        }
+
+        // 수열 표시
+        function showSequence() {
+            document.getElementById('sequenceDisplay').textContent = '숫자 위치를 기억하세요!';
+            isInputPhase = false;
+            
+            // 모든 키를 빈 상태로 초기화
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('highlight');
+                key.textContent = '\u00A0'; // 공백 문자로 공간 유지
+                key.style.fontSize = '3em';
+                key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
+            });
+            
+            // 모든 숫자를 동시에 표시
+            for (let number in currentSequence) {
+                const position = currentSequence[number];
+                const keyElement = document.querySelector(`[data-number="${position}"]`);
+                keyElement.textContent = number;
+                keyElement.classList.add('highlight');
+                keyElement.style.fontSize = '3em';
+                keyElement.style.color = '#feca57';
+            }
+            
+            // 2초 후 숫자 숨기고 바로 입력 시작
+            sequenceTimer = setTimeout(() => {
+                document.querySelectorAll('.key').forEach(key => {
+                    key.classList.remove('highlight');
+                    key.textContent = '\u00A0'; // 공백 문자로 공간 유지
+                    key.style.fontSize = '3em';
+                    key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
+                });
+                startInputPhase(); // 딜레이 제거
+            }, 2000);
+        }
+
+        // 입력 페이즈 시작
+        function startInputPhase() {
+            isInputPhase = true;
+            playerInput = [];
+            document.getElementById('sequenceDisplay').textContent = '';
+            document.getElementById('inputPhase').textContent = '1부터 순서대로 키패드를 누르세요!';
+            
+            // 5초 타이머 시작
+            let timeLeft = 5;
+            document.getElementById('timer').textContent = `⏰ ${timeLeft}초`;
+            
+            inputTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `⏰ ${timeLeft}초`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(inputTimer);
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        // 키패드 클릭 이벤트
+        document.getElementById('keypad').addEventListener('click', (e) => {
+            if (!isInputPhase || !e.target.classList.contains('key')) return;
+            
+            const clickedPosition = parseInt(e.target.dataset.number);
+            const expectedNumber = playerInput.length + 1; // 다음에 눌러야 할 숫자 (1, 2, 3...)
+            const expectedPosition = currentSequence[expectedNumber]; // 그 숫자가 있었던 위치
+            
+            if (clickedPosition === expectedPosition) {
+                // 정답 - 해당 숫자를 다시 표시
+                playerInput.push(expectedNumber);
+                e.target.classList.add('correct');
+                e.target.textContent = expectedNumber; // 숫자 다시 표시
+                e.target.style.fontSize = '3em';
+                e.target.style.color = 'white';
+                
+                // 더 강한 피드백 효과
+                setTimeout(() => {
+                    e.target.classList.remove('correct');
+                }, 500); // 좀 더 오래 유지
+                
+                // 수열 완성 체크
+                if (playerInput.length === Object.keys(currentSequence).length) {
+                    clearInterval(inputTimer);
+                    roundComplete();
+                }
+            } else {
+                // 오답
+                e.target.classList.add('wrong');
+                setTimeout(() => e.target.classList.remove('wrong'), 300);
+                clearInterval(inputTimer);
+                gameOver();
+            }
+        });
+
+        // 라운드 완료
+        function roundComplete() {
+            isInputPhase = false;
+            score += currentRound * 10;
+            currentRound++;
+            
+            document.getElementById('timer').textContent = '';
+            document.getElementById('inputPhase').textContent = '라운드 클리어!';
+            
+            setTimeout(() => {
+                startRound();
+            }, 1500);
+        }
+
+        // 게임 오버
+        function gameOver() {
+            isInputPhase = false;
+            clearTimers();
+            
+            document.getElementById('finalRound').textContent = currentRound;
+            document.getElementById('finalScore').textContent = score;
+            
+            setTimeout(() => {
+                showScreen('gameOverScreen');
+            }, 1000);
+        }
+
+        // 키보드 이벤트 (숫자패드 지원)
+        document.addEventListener('keydown', (e) => {
+            if (!isInputPhase) return;
+            
+            const key = e.key;
+            if (key >= '1' && key <= '9') {
+                const keyElement = document.querySelector(`[data-number="${key}"]`);
+                if (keyElement) {
+                    keyElement.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
