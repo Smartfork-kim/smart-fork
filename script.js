@@ -109,9 +109,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // 게임 경로 매핑
+    const gameRoutes = {
+        '퍼즐 마스터': 'games/puzzle-master/index.html',
+        '스페이스 슈터': 'games/space-shooter/index.html',
+        '미스터리 퀘스트': 'games/mystery-quest/index.html',
+        '솔리테어 클래식': 'games/solitaire/index.html',
+        '축구 챔피언': 'games/soccer-champion/index.html',
+        '스피드 레이서': 'games/speed-racer/index.html'
+    };
+
     // 게임 모달 표시 함수
     function showGameModal(gameTitle) {
-        // 간단한 알림창 (나중에 실제 게임 페이지로 연결 가능)
+        const gameUrl = gameRoutes[gameTitle];
+        
+        if (!gameUrl) {
+            alert('이 게임은 아직 개발 중입니다!');
+            return;
+        }
+
         const modal = document.createElement('div');
         modal.className = 'game-modal';
         modal.innerHTML = `
@@ -121,8 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="close-btn">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p>${gameTitle} 게임이 곧 시작됩니다!</p>
-                    <p>게임 파일을 연결하시면 실제 게임을 플레이할 수 있습니다.</p>
+                    <p>${gameTitle} 게임을 시작하시겠습니까?</p>
                     <div class="modal-buttons">
                         <button class="start-game-btn">게임 시작</button>
                         <button class="cancel-btn">취소</button>
@@ -212,8 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.addEventListener('click', closeModal);
         cancelBtn.addEventListener('click', closeModal);
         startBtn.addEventListener('click', function() {
-            alert(`${gameTitle} 게임을 시작합니다! (실제 게임 파일을 연결해주세요)`);
-            closeModal();
+            // 게임 페이지로 이동
+            window.location.href = gameUrl;
         });
 
         modal.addEventListener('click', function(e) {
