@@ -5,11 +5,51 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* 다크 모드 기본 변수 */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-card: #2d2d2d;
+    --bg-header: rgba(45, 45, 45, 0.8);
+    --bg-container: rgba(45, 45, 45, 0.6);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-card: #ffffff;
+    --text-meta: rgba(255, 255, 255, 0.7);
+    --gradient-primary: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --gradient-secondary: linear-gradient(45deg, #4a90e2, #357abd);
+    --border-light: rgba(255, 255, 255, 0.1);
+    --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] {
+    /* 라이트 모드 변수 */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-header: rgba(255, 255, 255, 0.9);
+    --bg-container: rgba(255, 255, 255, 0.8);
+    --text-primary: #2c3e50;
+    --text-secondary: #6c757d;
+    --text-card: #2c3e50;
+    --text-meta: #6c757d;
+    --gradient-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --gradient-secondary: linear-gradient(45deg, #4a90e2, #357abd);
+    --border-light: rgba(74, 144, 226, 0.2);
+    --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
 body {
     font-family: 'Noto Sans KR', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-primary);
     min-height: 100vh;
-    color: #333;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    padding-top: 80px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .container {
@@ -18,35 +58,258 @@ body {
     padding: 20px;
 }
 
-/* 헤더 스타일 */
+/* 헤더 네비게이션 */
 .header {
-    text-align: center;
-    padding: 40px 0 60px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    margin-bottom: 40px;
+    background: var(--bg-header);
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-primary);
+    border-bottom: 1px solid var(--border-light);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.main-title {
-    font-size: 3rem;
+.header.header-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.header.header-visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 20px;
+}
+
+/* 로고 스타일 */
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.logo-image {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+    border-radius: 8px;
+    object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: contrast(1.1) brightness(1.05);
+    background: transparent;
+}
+
+.logo-text {
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #fff;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
-.main-title i {
-    margin-right: 15px;
-    color: #ffd700;
+/* 네비게이션 메뉴 */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
 }
 
-.subtitle {
-    font-size: 1.2rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 300;
+.nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 30px;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 10px 16px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    color: white;
+    background: var(--gradient-secondary);
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+.nav-link.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-secondary);
+    z-index: -1;
+}
+
+/* 히어로/광고 섹션 */
+.hero {
+    margin-bottom: 40px;
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    height: 250px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-primary);
+}
+
+/* 광고 슬라이더 */
+.ad-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.ad-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    pointer-events: none;
+}
+
+.ad-slide.active {
+    pointer-events: all;
+}
+
+.ad-slide.active {
+    opacity: 1;
+}
+
+.ad-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: contrast(1.05) brightness(1.02);
+}
+
+.ad-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    z-index: 10;
+    position: relative;
+}
+
+.ad-link:hover {
+    transform: scale(1.02);
+}
+
+/* 테마 토글 스위치 */
+.theme-toggle {
+    background: var(--border-light);
+    border: 2px solid var(--border-light);
+    border-radius: 25px;
+    width: 60px;
+    height: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-card);
+    padding: 3px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+/* 슬라이딩 원형 버튼 */
+.theme-toggle::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    left: 3px;
+    top: 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 다크모드일 때 - 토글 왼쪽, 내부 흰색 */
+[data-theme="dark"] .theme-toggle {
+    background: #4a5568;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .theme-toggle::before {
+    background: #ffffff;
+    left: 3px;
+    transform: translateX(0);
+}
+
+/* 라이트모드일 때 - 토글 오른쪽, 내부 검은색 */
+[data-theme="light"] .theme-toggle {
+    background: #e2e8f0;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .theme-toggle::before {
+    background: #2d3748;
+    left: 3px;
+    transform: translateX(27px);
 }
 
 /* 게임 섹션 */
@@ -58,17 +321,18 @@ body {
     position: relative;
     overflow: hidden;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-container);
     backdrop-filter: blur(10px);
     padding: 30px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-primary);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
 }
 
 .games-slider {
     position: relative;
     width: 100%;
-    height: 500px;
+    height: 600px;
 }
 
 .game-slide {
@@ -95,26 +359,29 @@ body {
 }
 
 .game-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-card);
     transition: all 0.3s ease;
     cursor: pointer;
     height: 100%;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--border-light);
 }
 
 .game-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-hover);
 }
 
 .game-image {
     position: relative;
     height: 200px;
     overflow: hidden;
+    background: var(--bg-card);
+    border-radius: 15px 15px 0 0;
 }
 
 .game-image img {
@@ -122,37 +389,87 @@ body {
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: contrast(1.05) brightness(1.02) saturate(1.1);
+    background: var(--bg-card);
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .game-card:hover .game-image img {
     transform: scale(1.1);
 }
 
-.play-overlay {
+/* 게임 오버레이 */
+.game-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 15px;
 }
 
-.game-card:hover .play-overlay {
+.game-card:hover .game-overlay {
     opacity: 1;
 }
 
-.play-overlay i {
-    font-size: 3rem;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    padding: 20px;
-    backdrop-filter: blur(10px);
+.game-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.difficulty, .category {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.difficulty.easy {
+    background: #2ecc71;
+    color: white;
+}
+
+.difficulty.medium {
+    background: #f39c12;
+    color: white;
+}
+
+.difficulty.hard {
+    background: #e74c3c;
+    color: white;
+}
+
+.category.puzzle {
+    background: #6c757d;
+    color: white;
+}
+
+.category.card {
+    background: #4a90e2;
+    color: white;
+}
+
+.category.action {
+    background: #f39c12;
+    color: white;
+}
+
+.category.adventure {
+    background: #27ae60;
+    color: white;
 }
 
 .game-info {
@@ -165,19 +482,40 @@ body {
 .game-title {
     font-size: 1.4rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-card);
     margin-bottom: 10px;
+    transition: color 0.3s ease;
 }
 
 .game-description {
-    color: #666;
+    color: var(--text-meta);
     line-height: 1.6;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     flex: 1;
+    transition: color 0.3s ease;
+}
+
+.game-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.play-time, .players {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-meta);
+    transition: color 0.3s ease;
+}
+
+.play-time i, .players i {
+    color: #4a90e2;
 }
 
 .play-btn {
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: var(--gradient-secondary);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -186,26 +524,31 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .play-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
 }
 
 /* 슬라이더 컨트롤 */
 .slider-controls {
     position: absolute;
     top: 50%;
-    width: 100%;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
     transform: translateY(-50%);
     pointer-events: none;
+    padding: 0 20px;
 }
 
 .slider-btn {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-card);
     border: none;
     width: 50px;
     height: 50px;
@@ -216,25 +559,28 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: all;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-light);
+    z-index: 10;
 }
 
 .slider-btn:hover {
-    background: #fff;
+    background: var(--bg-card);
     transform: scale(1.1);
 }
 
 .slider-btn i {
     font-size: 1.2rem;
-    color: #333;
+    color: var(--text-card);
+    transition: color 0.3s ease;
 }
 
 .prev-btn {
-    margin-left: -25px;
+    left: -25px;
 }
 
 .next-btn {
-    margin-right: -25px;
+    right: -25px;
 }
 
 /* 슬라이드 인디케이터 */
@@ -249,31 +595,181 @@ body {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--border-light);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .indicator.active {
-    background: #fff;
-    transform: scale(1.3);
+    background: #4a90e2;
+    transform: scale(1.2);
 }
 
 /* 푸터 */
 .footer {
+    background: var(--bg-header);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-primary);
+    border-top: 1px solid var(--border-light);
+    width: 100%;
+    margin-top: 40px;
+    transition: all 0.3s ease;
+}
+
+.footer-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-left {
+    flex: 1;
+}
+
+.footer-center {
+    flex: 1;
     text-align: center;
-    padding: 40px 0 20px;
-    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-center p {
+    margin: 0;
+    color: var(--text-secondary);
     font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.footer-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.footer-link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.footer-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+    transform: translateY(-2px);
+}
+
+/* 모달 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-primary);
+    border: 1px solid var(--border-light);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 25px;
+    text-align: center;
+}
+
+.modal-message {
+    color: var(--text-secondary);
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.modal-email {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+}
+
+.modal-email strong {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
     .game-cards {
         grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
     }
-    
+
     .main-title {
         font-size: 2.5rem;
     }
@@ -283,63 +779,118 @@ body {
     .container {
         padding: 15px;
     }
-    
+
+    .header-container {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+
+    body {
+        padding-top: 120px; /* 모바일에서 헤더 높이 증가 */
+    }
+
+    .footer-container {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 20px;
+        text-align: center;
+    }
+
+    .footer-right {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .nav-list {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+
+    .hero-content {
+        height: 200px;
+    }
+
     .game-cards {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .games-slider {
         height: auto;
     }
-    
-    .main-title {
-        font-size: 2rem;
-    }
-    
-    .subtitle {
-        font-size: 1rem;
-    }
-    
+
     .games-container {
         padding: 20px;
     }
-    
+
+    .game-image {
+        height: 250px; /* 모바일에서 이미지 높이 증가 */
+    }
+
     .slider-btn {
         width: 40px;
         height: 40px;
     }
-    
+
     .prev-btn {
-        margin-left: -20px;
+        left: -20px;
     }
-    
+
     .next-btn {
-        margin-right: -20px;
+        right: -20px;
     }
 }
 
 @media (max-width: 480px) {
-    .header {
-        padding: 30px 0 40px;
+    .header-container {
+        padding: 10px 15px;
     }
-    
-    .main-title {
-        font-size: 1.8rem;
+
+    body {
+        padding-top: 140px; /* 모바일에서 헤더 높이 더 증가 */
     }
-    
-    .main-title i {
-        margin-right: 10px;
+
+    .logo-image {
+        width: 35px;
+        height: 35px;
     }
-    
+
+    .logo-text {
+        font-size: 1.2rem;
+    }
+
+    .nav-list {
+        gap: 10px;
+    }
+
+    .nav-link {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .hero {
+        padding: 40px 0;
+    }
+
+    .hero-content {
+        height: 180px;
+    }
+
     .games-container {
         padding: 15px;
     }
-    
+
     .game-info {
         padding: 15px;
     }
-    
+
     .slider-controls {
         display: none;
     }

@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원카드 - 웹게임 모음</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #0F4C3A 0%, #2C5F2D 50%, #0F4C3A 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            height: 100vh;
+            width: 100vw;
+            color: white;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            max-height: 100vh;
+            max-width: 100vw;
+        }
+        
+        /* 스크롤바 숨기기 */
+        ::-webkit-scrollbar { display: none; }
+        html { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            min-width: 100vw;
+            min-height: 100vh;
+            display: grid;
+            grid-template-areas: 
+                ". north ."
+                "west center east"
+                ". . .";
+            grid-template-columns: 400px 1fr 400px;
+            grid-template-rows: 180px 1fr 250px;
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+        
+        /* 플레이어 배치: 동서남북 */
+        .player-north {
+            grid-area: north;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 180px;
+            overflow: visible;
+            padding: 10px;
+        }
+        
+        
+        .player-west {
+            grid-area: west;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(90deg);
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            padding: 0;
+        }
+        
+        .player-east {
+            grid-area: east;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            padding: 0;
+        }
+        
+        .center-area {
+            grid-area: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            position: relative;
+        }
+        
+        /* AI 카드 컨테이너 */
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 서쪽과 동쪽 봇 컨테이너 특별 설정 */
+        .player-west .player-container,
+        .player-east .player-container {
+            width: 150px;
+            height: 360px;
+            margin: 0 auto;
+        }
+        
+        /* 플레이어 컨테이너는 예외 */
+        .player-south .player-container {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: visible;
+        }
+        
+        /* AI 카드 스타일 */
+        .cards-hand {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            height: 150px;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        
+        /* 플레이어 카드 영역은 예외 */
+        .player-south .cards-hand {
+            justify-content: center;
+            height: 150px;
+            overflow: visible;
+            padding: 0;
+        }
+        
+        /* 북쪽 봇 카드 영역 (정확한 계산: 카드 7장 가로 배치) */
+        .player-north .cards-hand {
+            width: 600px;
+            height: 150px;
+            overflow: visible;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+        
+        /* 서쪽과 동쪽 봇 카드 영역 (정확한 계산: 카드 7장 배치용) */
+        .player-west .cards-hand,
+        .player-east .cards-hand {
+            height: 360px;
+            width: 150px;
+            overflow: visible;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        /* 카드 영역 스크롤바 숨기기 */
+        .cards-hand::-webkit-scrollbar {
+            display: none;
+        }
+        .cards-hand {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* 플레이어 카드 (실제 카드용으로 조정) */
+        .player-south {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 100% !important;
+            height: 280px !important;
+            z-index: 99999 !important;
+            display: block !important;
+            overflow: hidden !important;
+        }
+        
+        .player-south .cards-hand {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 280px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .player-south .card {
+            height: 240px;
+            width: 150px;
+            margin-left: -50px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+
+        .player-south .card img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        
+        .player-south .card:first-child {
+            margin-left: 0;
+        }
+        
+        .player-south .card:hover {
+            transform: translateY(-50px);
+            z-index: 10000;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        }
+        
+        .player-south .card.playable {
+            transform: translateY(-15px);
+            box-shadow: 0 0 30px rgba(39, 174, 96, 0.9);
+        }
+        
+        .player-south .card.playable:hover {
+            transform: translateY(-65px);
+        }
+        
+        /* 플레이어 카드 클릭 후 숨김 처리 */
+        .player-south .card.played {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* AI 카드 (뒷면) */
+        .ai-card {
+            height: 140px;
+            width: 100px;
+            margin-left: -35px;
+            border: none;
+            background: transparent;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            flex-shrink: 0;
+        }
+
+        .ai-card img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .ai-card:first-child {
+            margin-left: 0;
+        }
+        
+        /* 봇 상태 표시 */
+        .player-container {
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .player-container.inactive {
+            opacity: 0.4;
+            filter: brightness(0.5) saturate(0.5);
+        }
+        
+        .player-container.active {
+            opacity: 1;
+            filter: brightness(1) saturate(1);
+        }
+        
+        .player-container.inactive .ai-card {
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.7));
+        }
+        
+        /* 중앙 영역 카드들 (더 큰 확대) */
+        .deck {
+            height: 250px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deck img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .deck:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .open-deck {
+            height: 250px;
+            border: none;
+            background: transparent;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .open-deck img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        /* 덱 카운트 표시 */
+        .deck-count {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 원카드 버튼 */
+        .onecard-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #E74C3C, #C0392B);
+            color: white;
+            border: none;
+            padding: 30px 60px;
+            border-radius: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 20px 50px rgba(231, 76, 60, 0.6);
+            z-index: 1000;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+
+        
+
+        
+
+        
+        /* 무늬 선택기 */
+        .suit-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .suit-options {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+        }
+        
+        .suit-option {
+            width: 100px;
+            height: 100px;
+            border: 3px solid white;
+            border-radius: 15px;
+            background: white;
+            color: black;
+            font-size: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .suit-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+        }
+        
+        /* 디버그 모드 */
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .debug-btn {
+            background: rgba(155, 89, 182, 0.8);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-selector {
+            display: none;
+            position: fixed;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            border-radius: 20px;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .selectable-card {
+            width: 80px;
+            height: 115px;
+            background: white;
+            color: black;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* 애니메이션 */
+        .card-animation {
+            position: fixed;
+            height: 240px;
+            border: none;
+            background: transparent;
+            z-index: 1500;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-animation img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .card-back-animation {
+            position: fixed;
+            height: 130px;
+            border: none;
+            z-index: 1500;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-back-animation img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        @keyframes flyToCenter {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--target-x), var(--target-y)) scale(0.9);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes flyToPlayer {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--target-x), var(--target-y)) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
+    
+    <div class="game-container">
+        <!-- 북쪽: AI Bot 2 -->
+        <div class="player-north">
+            <div class="player-container" id="player-2">
+                <div class="cards-hand" id="cards-2"></div>
+            </div>
+        </div>
+        
+        <!-- 서쪽: AI Bot 1 -->
+        <div class="player-west">
+            <div class="player-container" id="player-1">
+                <div class="cards-hand" id="cards-1"></div>
+            </div>
+        </div>
+        
+        <!-- 중앙 영역 -->
+        <div class="center-area">
+            <div class="deck" id="deck" onclick="drawCard()">
+                <img src="../solitaire/cards/back.png" alt="카드 덱">
+                <div class="deck-count" id="deck-count">33장</div>
+            </div>
+            <div class="open-deck" id="open-deck"></div>
+
+            
+            <!-- 원카드 버튼 -->
+            <button class="onecard-button" id="onecard-button" onclick="onecardCall()">
+                원카드!
+            </button>
+        </div>
+        
+        <!-- 동쪽: AI Bot 3 -->
+        <div class="player-east">
+            <div class="player-container" id="player-3">
+                <div class="cards-hand" id="cards-3"></div>
+            </div>
+        </div>
+        
+        <!-- 디버그 패널 -->
+        <div class="debug-panel">
+            <button class="debug-btn" onclick="showCardSelector()">카드 추가</button>
+            <button class="debug-btn" onclick="startNewGame()">새 게임</button>
+        </div>
+    </div>
+    
+    <!-- 플레이어 (화면 하단 고정) - game-container 밖으로 이동 -->
+    <div class="player-south" id="player-south-main">
+        <div class="player-container" id="player-0">
+            <div class="cards-hand" id="cards-0"></div>
+        </div>
+    </div>
+    
+    <!-- 무늬 선택기 -->
+    <div class="suit-selector" id="suit-selector">
+        <h2 style="text-align: center; margin-bottom: 20px; color: white;">무늬를 선택하세요</h2>
+        <div class="suit-options">
+            <div class="suit-option" onclick="selectSuit('♠️')">♠️</div>
+            <div class="suit-option" onclick="selectSuit('♥️')" style="color: red;">♥️</div>
+            <div class="suit-option" onclick="selectSuit('♦️')" style="color: red;">♦️</div>
+            <div class="suit-option" onclick="selectSuit('♣️')">♣️</div>
+        </div>
+    </div>
+    
+    <!-- 카드 선택기 -->
+    <div class="card-selector" id="card-selector">
+        <h2 style="text-align: center; margin-bottom: 20px;">카드 선택 (디버그 모드)</h2>
+        <button style="position: absolute; top: 10px; right: 10px; background: #E74C3C; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="hideCardSelector()">닫기</button>
+        <div class="card-grid" id="card-grid">
+            <!-- 모든 카드들이 여기에 동적으로 생성됨 -->
+        </div>
+    </div>
+
+    <script>
+        // 게임 변수들
+        let gameState = {
+            players: [
+                { id: 0, name: "플레이어", hand: [], isAI: false },
+                { id: 1, name: "AI Bot 1", hand: [], isAI: true },
+                { id: 2, name: "AI Bot 2", hand: [], isAI: true },
+                { id: 3, name: "AI Bot 3", hand: [], isAI: true }
+            ],
+            currentPlayer: 0,
+            direction: 1, // 1: 시계방향, -1: 반시계방향
+            deck: [],
+            openDeck: [],
+            currentSuit: '♠️',
+            currentRank: '7',
+            attackStack: [], // 공격 카드들을 저장하는 배열
+            onecardButtonActive: false,
+            onecardTimer: null,
+            waitingForSuitSelection: false,
+            suitSelectionPlayerIndex: -1,
+            aiProcessing: false // AI 중복 호출 방지 플래그
+        };
+        
+        // 카드 생성 함수들
+        function createDeck() {
+            const suits = ['♠️', '♥️', '♦️', '♣️'];
+            const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            const deck = [];
+            
+            // 일반 카드 52장
+            for (let suit of suits) {
+                for (let rank of ranks) {
+                    deck.push({ suit, rank, type: 'normal' });
+                }
+            }
+            
+            // 조커 2장
+            deck.push({ suit: '🃏', rank: 'Blue', type: 'joker', color: 'blue' });
+            deck.push({ suit: '🃏', rank: 'Red', type: 'joker', color: 'red' });
+            
+            return deck;
+        }
+        
+        function shuffleDeck(deck) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            return deck;
+        }
+        
+        // 게임 초기화
+        function initGame() {
+            gameState.deck = shuffleDeck(createDeck());
+            gameState.openDeck = [];
+            
+            // 각 플레이어에게 7장씩 분배
+            for (let player of gameState.players) {
+                player.hand = [];
+                for (let i = 0; i < 7; i++) {
+                    if (gameState.deck.length > 0) {
+                        player.hand.push(gameState.deck.pop());
+                    }
+                }
+            }
+            
+            // 첫 번째 오픈 카드
+            let firstCard;
+            if (gameState.deck.length > 0) {
+                firstCard = gameState.deck.pop();
+                gameState.openDeck = [firstCard];
+                gameState.currentSuit = firstCard.suit;
+                gameState.currentRank = firstCard.rank;
+                
+                // 첫 카드가 특수 카드인 경우 효과 적용
+                applyFirstCardEffect(firstCard);
+            }
+            
+            // UI 업데이트 (중요: 카드 선택기보다 먼저 호출)
+            updateUI();
+            createCardSelector();
+            
+
+            
+            // 첫 번째 플레이어가 AI인 경우 AI 플레이 시작
+            setTimeout(() => {
+                if (gameState.players[gameState.currentPlayer].isAI) {
+                    aiPlay();
+                }
+            }, 1500);
+        }
+        
+        function applyFirstCardEffect(card) {
+            // 조커가 첫 카드인 경우 즉시 자유 플레이 상태로
+            if (card.type === 'joker') {
+                gameState.currentSuit = '♠️';
+                gameState.currentRank = 'free';
+
+                return;
+            }
+            
+            // 시작 카드가 공격 카드(2, A)일 경우 첫 플레이어에게 효과 적용
+            if (card.rank === 'A' || card.rank === '2') {
+                addAttackCard(card, -1); // -1은 덱에서 나온 카드를 의미
+            }
+        }
+        
+        // UI 업데이트 함수들
+        function updateUI() {
+            for (let i = 0; i < 4; i++) {
+                updatePlayerCards(i);
+            }
+            updateCurrentCard();
+            updateTurnIndicator();
+            updateDeckDisplay();
+        }
+        
+        function updatePlayerCards(playerIndex) {
+            const player = gameState.players[playerIndex];
+            const cardsContainer = document.getElementById(`cards-${playerIndex}`);
+            const playerContainer = document.getElementById(`player-${playerIndex}`);
+            
+            if (!cardsContainer) {
+                return;
+            }
+            
+            cardsContainer.innerHTML = '';
+            
+
+            
+            // 봇 상태 표시 업데이트
+            if (playerIndex !== 0) {
+                if (gameState.currentPlayer === playerIndex) {
+                    playerContainer.classList.remove('inactive');
+                    playerContainer.classList.add('active');
+                } else {
+                    playerContainer.classList.remove('active');
+                    playerContainer.classList.add('inactive');
+                }
+            }
+            
+            player.hand.forEach((card, cardIndex) => {
+                const cardElement = document.createElement('div');
+                
+                // 플레이어는 정면 카드, AI는 뒷면 카드
+                if (playerIndex === 0) {
+                    // 플레이어 카드 (정면, 클릭 가능)
+                    cardElement.className = 'card';
+                    cardElement.onclick = () => playCard(0, cardIndex);
+                    
+                    // 카드 이미지 설정 (img 태그 사용)
+                    const imagePath = getCardImagePath(card);
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imagePath;
+                    imgElement.alt = `${card.suit}${card.rank}`;
+                    cardElement.appendChild(imgElement);
+                    
+
+                    
+                    // 낼 수 있는 카드인지 확인
+                    if (canPlayCard(card)) {
+                        cardElement.classList.add('playable');
+                    }
+                } else {
+                    // AI 카드 (뒷면)
+                    cardElement.className = 'ai-card';
+                    
+                    // AI 카드 뒷면 이미지 설정 (img 태그 사용)
+                    const imgElement = document.createElement('img');
+                    imgElement.src = '../solitaire/cards/back.png';
+                    imgElement.alt = '카드 뒷면';
+                    cardElement.appendChild(imgElement);
+                }
+                
+                cardsContainer.appendChild(cardElement);
+            });
+        }
+        
+        function updateCurrentCard() {
+            if (gameState.openDeck.length > 0) {
+                const topCard = gameState.openDeck[gameState.openDeck.length - 1];
+                
+                // 현재 카드 이미지 설정
+                const imagePath = getCardImagePath(topCard);
+                
+                // open-deck에 img 태그로 이미지 적용
+                const openDeckElement = document.getElementById('open-deck');
+                openDeckElement.innerHTML = '';
+                
+                const imgElement = document.createElement('img');
+                imgElement.src = imagePath;
+                imgElement.alt = `${topCard.suit}${topCard.rank}`;
+                openDeckElement.appendChild(imgElement);
+                
+
+            }
+        }
+        
+        function updateDeckDisplay() {
+            const deckElement = document.getElementById('deck');
+            const deckCountElement = document.getElementById('deck-count');
+            
+            deckCountElement.textContent = `${gameState.deck.length}장`;
+            
+            // 덱이 0장일 때만 숨기기 (사용자 요구사항)
+            if (gameState.deck.length === 0) {
+                deckElement.style.display = 'none';
+            } else {
+                deckElement.style.display = 'block';
+            }
+        }
+        
+
+        
+        function updateTurnIndicator() {
+            for (let i = 1; i < 4; i++) {
+                const playerContainer = document.getElementById(`player-${i}`);
+                if (playerContainer) {
+                    if (gameState.currentPlayer === i) {
+                        playerContainer.classList.remove('inactive');
+                        playerContainer.classList.add('active');
+                    } else {
+                        playerContainer.classList.remove('active');
+                        playerContainer.classList.add('inactive');
+                    }
+                }
+            }
+        }
+        
+
+        
+        function getCardImagePath(card) {
+            if (card.type === 'joker') {
+                return `../solitaire/cards/joker-${card.color}.png`;
+            }
+            
+            // 무늬 변환
+            let suitName = '';
+            switch (card.suit) {
+                case '♠️': suitName = 'spades'; break;
+                case '♥️': suitName = 'hearts'; break;
+                case '♦️': suitName = 'diamonds'; break;
+                case '♣️': suitName = 'clubs'; break;
+            }
+            
+            // 랭크 변환 (ace, jack, queen, king은 그대로, 숫자는 그대로)
+            let rankName = card.rank.toLowerCase();
+            if (rankName === 'a') rankName = 'ace';
+            if (rankName === 'j') rankName = 'jack';
+            if (rankName === 'q') rankName = 'queen';
+            if (rankName === 'k') rankName = 'king';
+            
+            return `../solitaire/cards/${suitName}-${rankName}.png`;
+        }
+        
+        // 공격 카드 강도 함수
+        function getAttackStrength(card) {
+            if (card.type === 'joker') return 3;
+            if (card.rank === 'A') return 2;
+            if (card.rank === '2') return 1;
+            return 0;
+        }
+        
+        // 카드 게임 로직
+        function canPlayCard(card) {
+            // 공격을 받고 있는 상황에서의 처리
+            if (gameState.attackStack.length > 0) {
+                // 첫 번째 카드가 덱에서 나온 공격 카드인 경우 (게임 시작)
+                // 일반 규칙과 공격 방어 규칙 둘 다 적용
+                if (gameState.attackStack.length === 1 && gameState.attackStack[0].player === -1) {
+                    const normalRule = card.suit === gameState.currentSuit || card.rank === gameState.currentRank || card.type === 'joker';
+                    const defenseRule = canDefendAttack(card);
+    
+                    return normalRule || defenseRule;
+                }
+                
+                // 일반적인 공격 상황에서는 방어 카드만 낼 수 있음
+                return canDefendAttack(card);
+            }
+            
+            // 조커 공격 후 자유 플레이 상태
+            if (gameState.currentRank === 'free') {
+                return true; // 아무 카드나 낼 수 있음
+            }
+            
+            // 일반적인 경우: 같은 무늬 또는 같은 숫자
+            return card.suit === gameState.currentSuit || card.rank === gameState.currentRank || card.type === 'joker';
+        }
+        
+        function playCard(playerIndex, cardIndex) {
+            const player = gameState.players[playerIndex];
+            const card = player.hand[cardIndex];
+            
+            // 플레이어 턴이 아니거나 낼 수 없는 카드인 경우
+            if (gameState.currentPlayer !== playerIndex || !canPlayCard(card)) {
+                if (playerIndex === 0) {
+                    showGameMessage('지금은 당신의 턴이 아니거나 낼 수 없는 카드입니다!');
+                }
+                return;
+            }
+            
+            // 카드 요소 찾기 (애니메이션용)
+            let cardElement;
+            if (playerIndex === 0) {
+                const playerHand = document.getElementById('cards-0');
+                cardElement = playerHand.children[cardIndex];
+            } else {
+                // AI 카드는 AI 영역에서 가져옴
+                const aiCards = document.getElementById(`cards-${playerIndex}`);
+                cardElement = aiCards.children[0] || aiCards;
+            }
+            
+            // 카드 내기
+            const playedCard = player.hand.splice(cardIndex, 1)[0];
+            
+            // 애니메이션과 함께 카드 처리
+            if (cardElement) {
+                // 카드를 누르면 즉시 숨기기 (애니메이션 시작 전)
+                cardElement.style.opacity = '0';
+                cardElement.style.pointerEvents = 'none';
+                
+                animateCardToCenter(cardElement, playedCard, () => {
+                    // 애니메이션 완료 후 실제 게임 로직 처리
+                    gameState.openDeck.push(playedCard);
+                    
+                    // AI 처리 완료 플래그 해제 (AI인 경우에만, K 카드가 아닌 경우)
+                    if (gameState.players[playerIndex].isAI && playedCard.rank !== 'K') {
+                        gameState.aiProcessing = false;
+                    }
+                    
+                    // 자유 플레이 상태 확인
+                    const wasFreePlay = gameState.currentRank === 'free';
+                    
+                    // 첫 카드 공격 예외 상황에서 일반 카드를 낸 경우 공격스택 초기화
+                    if (gameState.attackStack.length === 1 && 
+                        gameState.attackStack[0].player === -1 && 
+                        playedCard.rank !== '2' && playedCard.rank !== 'A' && playedCard.type !== 'joker') {
+
+                        clearAttackStack();
+                    }
+                    
+                    // 현재 카드 정보 업데이트
+                    gameState.currentSuit = playedCard.suit;
+                    gameState.currentRank = playedCard.rank;
+                    
+                    // 승리 조건 확인
+                    if (player.hand.length === 0) {
+                        setTimeout(() => {
+                            showGameEndMessage(`🎉 ${player.name}이(가) 승리했습니다!`);
+                        }, 100);
+                        return;
+                    }
+                    
+                    // 카드를 낸 후 1장 남았으면 원카드 버튼 활성화
+                    if (player.hand.length === 1) {
+                        checkOnecardButton();
+                    }
+                    
+                    // 7 카드인 경우 원카드 버튼 기회를 먼저 주고 무늬 선택
+                    if (playedCard.rank === '7') {
+                        updateUI();
+                        
+                        // 무늬 선택 대기 상태로 설정
+                        gameState.waitingForSuitSelection = true;
+                        gameState.suitSelectionPlayerIndex = playerIndex;
+                        
+                        // 원카드 버튼이 이미 활성화되어 있는지 확인 (중복 체크 제거)
+                        if (!gameState.onecardButtonActive) {
+                            proceedToSuitSelection();
+                        } else {
+                            // 원카드 버튼이 활성화되어 있다면 최대 3.5초 후에 무늬 선택
+                            setTimeout(() => {
+                                if (gameState.waitingForSuitSelection) {
+                                    proceedToSuitSelection();
+                                }
+                            }, 3500);
+                        }
+                        
+                        return; // 무늬 선택 후 selectSuit 함수에서 턴을 넘김
+                    }
+                    
+                    // 특수 카드 효과 적용 (7 카드 제외)
+                    applyCardEffect(playedCard, playerIndex);
+                    
+                    // J 카드인 경우 applyCardEffect에서 이미 nextTurn을 호출했으므로 여기서는 넘기지 않음
+                    if (playedCard.rank === 'J') {
+                        updateUI();
+                        return;
+                    }
+                    
+                    // 공격 카드를 낸 경우 다음 플레이어로 턴 넘김
+                    if (playedCard.rank === '2' || playedCard.rank === 'A' || playedCard.type === 'joker') {
+                        nextTurn();
+                    } else if (playedCard.rank !== 'K') {
+                        // 다음 턴으로 (K 카드가 아닌 경우)
+                        nextTurn();
+                    } else {
+                        // K 카드: 같은 플레이어가 다시 플레이 (턴 넘기지 않음)
+                        setTimeout(() => {
+                            if (gameState.players[gameState.currentPlayer].isAI) {
+                                gameState.aiProcessing = false;
+                                aiPlay();
+                            } else {
+                                gameState.aiProcessing = false;
+                            }
+                        }, 1000);
+                    }
+                    
+                    updateUI();
+                });
+            } else {
+                // 애니메이션 요소가 없는 경우 바로 처리
+                gameState.openDeck.push(playedCard);
+                updateUI();
+            }
+        }
+        
+        function applyCardEffect(card, playerIndex) {
+            switch (card.rank) {
+                case '2':
+                    addAttackCard(card, playerIndex);
+                    break;
+                case 'A':
+                    addAttackCard(card, playerIndex);
+                    break;
+                case 'J':
+                    // 다음 플레이어 턴 건너뛰기 (nextTurn 두 번 호출)
+                    nextTurn(); // 1단계: 다음 플레이어로 이동
+                    nextTurn(); // 2단계: 그 플레이어를 건너뛰고 그 다음 플레이어로 이동
+                    break;
+                case 'Q':
+                    gameState.direction *= -1; // 방향 바꾸기
+                    break;
+                case '7':
+                    // 7 카드는 playCard 함수에서 별도 처리됨
+                    break;
+            }
+            
+            if (card.type === 'joker') {
+                addAttackCard(card, playerIndex);
+            }
+        }
+        
+        // 새로운 공격 시스템
+        function addAttackCard(card, playerIndex) {
+            gameState.attackStack.push({
+                card: card,
+                player: playerIndex,
+                value: getAttackValue(card)
+            });
+            gameState.isAttackMode = true;
+            
+
+        }
+        
+        function getAttackValue(card) {
+            if (card.type === 'joker') {
+                return card.color === 'blue' ? 3 : 5;
+            }
+            switch (card.rank) {
+                case '2': return 1;
+                case 'A': return 2;
+                default: return 0;
+            }
+        }
+        
+        function getTotalAttackValue() {
+            return gameState.attackStack.reduce((total, attack) => total + attack.value, 0);
+        }
+        
+        function canDefendAttack(card) {
+            if (gameState.attackStack.length === 0) return false;
+            
+            const lastAttack = gameState.attackStack[gameState.attackStack.length - 1];
+            const lastAttackCard = lastAttack.card;
+            
+            // 조커는 조커로만 막을 수 있음
+            if (lastAttackCard.type === 'joker') {
+                return card.type === 'joker';
+            }
+            
+            // A는 아무 무늬의 A나 조커로 막을 수 있음
+            if (lastAttackCard.rank === 'A') {
+                return card.rank === 'A' || card.type === 'joker';
+            }
+            
+            // 2는 아무 무늬의 2 또는 같은 무늬의 A 또는 조커로 막을 수 있음
+            if (lastAttackCard.rank === '2') {
+                return card.rank === '2' || 
+                       (card.rank === 'A' && card.suit === lastAttackCard.suit) || 
+                       card.type === 'joker';
+            }
+            
+            return false;
+        }
+        
+        function clearAttackStack() {
+            gameState.attackStack = [];
+            gameState.isAttackMode = false;
+        }
+        
+        function showSuitSelector() {
+            document.getElementById('suit-selector').style.display = 'block';
+        }
+        
+        function hideSuitSelector() {
+            document.getElementById('suit-selector').style.display = 'none';
+        }
+        
+        function selectSuit(suit) {
+            gameState.currentSuit = suit;
+            hideSuitSelector();
+            
+            showGameMessage(`✅ 무늬를 ${suit}로 변경했습니다!`);
+            updateUI();
+            
+
+            if (gameState.players[gameState.currentPlayer].hand.length > 0) {
+                nextTurn();
+            }
+        }
+        
+        function aiSelectSuit(aiIndex) {
+            const ai = gameState.players[aiIndex];
+            const suitCounts = { '♠️': 0, '♥️': 0, '♦️': 0, '♣️': 0 };
+            
+            // AI 손패에서 가장 많은 무늬 계산
+            ai.hand.forEach(card => {
+                if (suitCounts[card.suit] !== undefined) {
+                    suitCounts[card.suit]++;
+                }
+            });
+            
+            const bestSuit = Object.keys(suitCounts).reduce((a, b) => 
+                suitCounts[a] > suitCounts[b] ? a : b
+            );
+            
+            gameState.currentSuit = bestSuit;
+            
+            showGameMessage(`🤖 ${ai.name}이(가) 무늬를 ${bestSuit}로 변경했습니다!`);
+            updateUI();
+            
+
+            if (gameState.players[gameState.currentPlayer].hand.length > 0) {
+                nextTurn();
+            }
+        }
+        
+        function nextTurn() {
+            let nextPlayer = gameState.currentPlayer + gameState.direction;
+            
+            if (nextPlayer >= 4) nextPlayer = 0;
+            if (nextPlayer < 0) nextPlayer = 3;
+            
+            gameState.currentPlayer = nextPlayer;
+            
+            updateTurnIndicator();
+            
+            // 공격 스택이 있으면 공격 처리
+            if (gameState.attackStack.length > 0) {
+                handleAttackOnTurn();
+                return;
+            }
+            
+
+            if (gameState.players[gameState.currentPlayer].isAI) {
+                setTimeout(() => {
+                    aiPlay();
+                }, 1000);
+            }
+        }
+        
+        function handleAttackOnTurn() {
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+            const canDefend = currentPlayer.hand.some(card => canDefendAttack(card));
+            
+            if (!canDefend) {
+                executeAttackDamage(gameState.currentPlayer);
+            } else if (currentPlayer.isAI) {
+                setTimeout(() => {
+                    aiPlay();
+                }, 1000);
+            }
+        }
+        
+        function executeAttackDamage(playerIndex) {
+            const player = gameState.players[playerIndex];
+            const totalDamage = getTotalAttackValue();
+            
+
+            
+            // 조커 공격이 있었는지 확인
+            const hasJokerAttack = gameState.attackStack.some(attack => attack.card.type === 'joker');
+            
+            checkAndReshuffleDeck();
+            animateCardToPlayer(playerIndex, totalDamage, () => {
+                for (let i = 0; i < totalDamage; i++) {
+                    if (gameState.deck.length > 0) {
+                        player.hand.push(gameState.deck.pop());
+                        updateDeckDisplay();
+                    }
+                }
+                
+                if (!player.isAI) {
+                    showGameMessage(`공격을 막지 못해 카드 ${totalDamage}장을 가져갔습니다!`);
+                }
+                
+                finishAttackSequence(playerIndex, totalDamage, hasJokerAttack);
+            });
+        }
+        
+        function finishAttackSequence(playerIndex, totalDamage, hasJokerAttack) {
+            const player = gameState.players[playerIndex];
+            
+
+            
+            if (hasJokerAttack) {
+                gameState.currentSuit = '♠️';
+                gameState.currentRank = 'free';
+            }
+            
+            clearAttackStack();
+            updateUI();
+            nextTurn();
+        }
+        
+        function drawCard() {
+            if (gameState.currentPlayer !== 0) {
+                showGameMessage('지금은 당신의 턴이 아닙니다!');
+                return;
+            }
+            
+            checkAndReshuffleDeck();
+            
+            if (gameState.deck.length === 0) {
+                showGameMessage('덱에 카드가 없습니다!');
+                return;
+            }
+            
+            if (gameState.attackStack.length > 0) {
+                const canDefend = gameState.players[0].hand.some(card => canDefendAttack(card));
+                if (!canDefend) {
+                    executeAttackDamage(0);
+                    return;
+                }
+            }
+            animateCardToPlayer(0, 1, () => {
+                const drawnCard = gameState.deck.pop();
+                gameState.players[0].hand.push(drawnCard);
+                updateDeckDisplay();
+                nextTurn();
+                updateUI();
+            });
+        }
+        
+        function checkOnecardButton() {
+            const onecardPlayers = gameState.players.filter(player => player.hand.length === 1);
+            
+            if (onecardPlayers.length > 0 && !gameState.onecardButtonActive) {
+                showOnecardButton();
+            } else if (onecardPlayers.length === 0 && gameState.onecardButtonActive) {
+                hideOnecardButton();
+            }
+        }
+        
+        function showOnecardButton() {
+            if (gameState.onecardButtonActive) {
+                return;
+            }
+            
+            gameState.onecardButtonActive = true;
+            document.getElementById('onecard-button').style.display = 'block';
+            if (gameState.onecardTimer) {
+                clearTimeout(gameState.onecardTimer);
+            }
+            
+            gameState.onecardTimer = setTimeout(() => {
+                if (gameState.onecardButtonActive) {
+                    aiOnecardCall();
+                }
+            }, 1000);
+        }
+        
+        function hideOnecardButton() {
+            gameState.onecardButtonActive = false;
+            document.getElementById('onecard-button').style.display = 'none';
+            
+            if (gameState.onecardTimer) {
+                clearTimeout(gameState.onecardTimer);
+                gameState.onecardTimer = null;
+            }
+            
+            if (gameState.waitingForSuitSelection) {
+                setTimeout(() => {
+                    proceedToSuitSelection();
+                }, 500);
+            }
+        }
+        
+        function proceedToSuitSelection() {
+            if (!gameState.waitingForSuitSelection) return;
+            
+            const playerIndex = gameState.suitSelectionPlayerIndex;
+            
+            if (!gameState.players[playerIndex].isAI) {
+                showSuitSelector();
+            } else {
+                aiSelectSuit(playerIndex);
+            }
+            
+            gameState.waitingForSuitSelection = false;
+            gameState.suitSelectionPlayerIndex = -1;
+        }
+        
+        function onecardCall() {
+            if (!gameState.onecardButtonActive) return;
+            
+            const onecardAI = gameState.players.find(p => p.hand.length === 1 && p.isAI);
+            if (onecardAI) {
+                showGameMessage(`🎉 플레이어가 먼저 원카드를 외쳤습니다! ${onecardAI.name}이 카드 1장을 가져갑니다.`);
+                if (gameState.deck.length > 0) {
+                    onecardAI.hand.push(gameState.deck.pop());
+                    updateDeckDisplay();
+                }
+                updateUI();
+            } else {
+                showGameMessage('🎉 플레이어가 원카드를 외쳤습니다!');
+            }
+            
+            hideOnecardButton();
+        }
+        
+        function aiOnecardCall() {
+            if (!gameState.onecardButtonActive) return;
+            
+            const onecardPlayer = gameState.players.find(p => p.hand.length === 1);
+            if (onecardPlayer && !onecardPlayer.isAI) {
+                showGameMessage('😱 AI가 먼저 원카드를 외쳤습니다! 카드 1장을 가져갑니다.');
+                if (gameState.deck.length > 0) {
+                    gameState.players[0].hand.push(gameState.deck.pop());
+                    updateDeckDisplay();
+                }
+            } else {
+                const aiPlayer = gameState.players.find(p => p.hand.length === 1 && p.isAI);
+                if (aiPlayer) {
+                    showGameMessage(`🤖 ${aiPlayer.name}이(가) 원카드를 외쳤습니다!`);
+                }
+            }
+            
+            hideOnecardButton();
+            updateUI();
+        }
+        
+        function onecardTimeout() {
+            // 시간 초과 시 카드 1장 남은 플레이어가 페널티
+            const onecardPlayer = gameState.players.find(p => p.hand.length === 1);
+            if (onecardPlayer) {
+                showGameMessage(`⏰ ${onecardPlayer.name}이(가) 원카드 콜을 놓쳤습니다! 카드 1장을 가져갑니다.`);
+                if (gameState.deck.length > 0) {
+                    onecardPlayer.hand.push(gameState.deck.pop());
+                    updateDeckDisplay(); // 덱 카운트 업데이트
+                }
+            }
+            
+            hideOnecardButton();
+            updateUI();
+        }
+        
+        function createCardSelector() {
+            const cardGrid = document.getElementById('card-grid');
+            cardGrid.innerHTML = '';
+            
+            const suits = ['♠️', '♥️', '♦️', '♣️'];
+            const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            
+            // 일반 카드들
+            suits.forEach(suit => {
+                ranks.forEach(rank => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'selectable-card';
+                    cardElement.onclick = () => addCardToPlayer(suit, rank, 'normal');
+                    
+                    // 카드 이미지 설정
+                    const card = { suit, rank, type: 'normal' };
+                    const imagePath = getCardImagePath(card);
+                    cardElement.style.backgroundImage = `url('${imagePath}')`;
+                    cardElement.style.backgroundSize = 'cover';
+                    cardElement.style.backgroundPosition = 'center';
+                    cardElement.style.backgroundRepeat = 'no-repeat';
+                    
+                    cardGrid.appendChild(cardElement);
+                });
+            });
+            
+            // 조커 카드들
+            const blueJoker = document.createElement('div');
+            blueJoker.className = 'selectable-card';
+            blueJoker.onclick = () => addCardToPlayer('🃏', 'Blue', 'joker', 'blue');
+            const blueJokerCard = { suit: '🃏', rank: 'Blue', type: 'joker', color: 'blue' };
+            const blueJokerPath = getCardImagePath(blueJokerCard);
+            blueJoker.style.backgroundImage = `url('${blueJokerPath}')`;
+            blueJoker.style.backgroundSize = 'cover';
+            blueJoker.style.backgroundPosition = 'center';
+            blueJoker.style.backgroundRepeat = 'no-repeat';
+            cardGrid.appendChild(blueJoker);
+            
+            const redJoker = document.createElement('div');
+            redJoker.className = 'selectable-card';
+            redJoker.onclick = () => addCardToPlayer('🃏', 'Red', 'joker', 'red');
+            const redJokerCard = { suit: '🃏', rank: 'Red', type: 'joker', color: 'red' };
+            const redJokerPath = getCardImagePath(redJokerCard);
+            redJoker.style.backgroundImage = `url('${redJokerPath}')`;
+            redJoker.style.backgroundSize = 'cover';
+            redJoker.style.backgroundPosition = 'center';
+            redJoker.style.backgroundRepeat = 'no-repeat';
+            cardGrid.appendChild(redJoker);
+        }
+        
+        function addCardToPlayer(suit, rank, type, color = null) {
+            const card = { suit, rank, type };
+            if (color) card.color = color;
+            
+            gameState.players[0].hand.push(card);
+            updateUI();
+            hideCardSelector();
+        }
+        
+        function showCardSelector() {
+            document.getElementById('card-selector').style.display = 'block';
+        }
+        
+        function hideCardSelector() {
+            document.getElementById('card-selector').style.display = 'none';
+        }
+        
+        // 게임 시작
+        function startNewGame() {
+            // 게임 종료 팝업 닫기
+            const gameEndMessage = document.getElementById('game-end-message');
+            if (gameEndMessage) {
+                gameEndMessage.remove();
+            }
+            
+            // 게임 상태 초기화
+            gameState.currentPlayer = 0;
+            gameState.direction = 1;
+            gameState.attackStack = [];
+            gameState.isAttackMode = false;
+            gameState.onecardButtonActive = false;
+            gameState.waitingForSuitSelection = false;
+            gameState.suitSelectionPlayerIndex = -1;
+            gameState.aiProcessing = false;
+            
+            if (gameState.onecardTimer) {
+                clearTimeout(gameState.onecardTimer);
+                gameState.onecardTimer = null;
+            }
+            
+            // 원카드 버튼 숨기기
+            hideOnecardButton();
+            
+            // 무늬 선택기 숨기기
+            hideSuitSelector();
+            
+            initGame();
+        }
+        
+        // 메인메뉴로 이동
+        function goToMainMenu() {
+            // 게임 종료 팝업 닫기
+            const gameEndMessage = document.getElementById('game-end-message');
+            if (gameEndMessage) {
+                gameEndMessage.remove();
+            }
+            
+            // 메인메뉴로 이동
+            location.href = '../../index.html';
+        }
+        
+        // AI 로직
+        function aiPlay() {
+            const aiIndex = gameState.currentPlayer;
+            const ai = gameState.players[aiIndex];
+            
+            // AI가 아닌 경우 return
+            if (!ai.isAI) {
+                return;
+            }
+            
+            // 이미 AI가 실행 중인 경우 중복 호출 방지
+            if (gameState.aiProcessing) {
+                return;
+            }
+            
+            // AI 처리 시작 플래그 설정
+            gameState.aiProcessing = true;
+            
+            // AI가 낼 수 있는 카드들 찾기
+            const playableCards = ai.hand.map((card, index) => ({ card, index }))
+                .filter(({ card }) => canPlayCard(card));
+                
+
+            
+            if (playableCards.length > 0) {
+                // AI 전략에 따라 카드 선택
+                const selectedCard = selectAICard(ai, playableCards);
+                playCard(aiIndex, selectedCard.index);
+            } else {
+                // 덱이 비었으면 재셔플
+                const reshuffled = checkAndReshuffleDeck();
+                
+                // 낼 수 있는 카드가 없으면 덱에서 가져오기
+                if (gameState.deck.length > 0) {
+
+                    animateCardToPlayer(aiIndex, 1, () => {
+                        const drawnCard = gameState.deck.pop();
+                        ai.hand.push(drawnCard);
+                        updateDeckDisplay(); // 덱 카운트 업데이트
+                        
+                        // AI 처리 완료 플래그 해제
+                        gameState.aiProcessing = false;
+                        
+                        // AI는 카드를 뽑으면 턴이 자동으로 넘어감
+                        nextTurn();
+                        updateUI();
+                    });
+                } else {
+                    // 덱에 카드가 없는 경우 (재셔플도 불가능한 상황)
+
+                    
+                    // AI 처리 완료 플래그 해제
+                    gameState.aiProcessing = false;
+                    
+                    nextTurn();
+                    updateUI();
+                }
+            }
+        }
+        
+        function selectAICard(ai, playableCards) {
+            // AI 우선순위 전략
+            
+            // 1. 승리 확정 - 마지막 카드
+            if (ai.hand.length === 1) {
+                return playableCards[0];
+            }
+            
+            // 2. 전략적 공격 - 카드 수가 적은 플레이어 공격
+            const attackCards = playableCards.filter(({ card }) => 
+                card.rank === '2' || card.rank === 'A' || card.type === 'joker'
+            );
+            
+            if (attackCards.length > 0) {
+                const minCardPlayer = gameState.players.reduce((min, player, index) => {
+                    if (index === gameState.currentPlayer) return min;
+                    return player.hand.length < gameState.players[min].hand.length ? index : min;
+                }, 0);
+                
+                // 가장 적은 카드를 가진 플레이어가 있고, 그 플레이어가 원카드 상태라면 공격
+                if (gameState.players[minCardPlayer].hand.length <= 2) {
+                    // 가장 강한 공격 카드 선택
+                    const strongestAttack = attackCards.reduce((strongest, current) => {
+                        const strongestPower = getAttackPower(strongest.card);
+                        const currentPower = getAttackPower(current.card);
+                        return currentPower > strongestPower ? current : strongest;
+                    });
+                    return strongestAttack;
+                }
+            }
+            
+            // 3. 위기 방어 - 공격받았을 때 방어
+            if (gameState.attackStack.length > 0) {
+                const defenseCards = playableCards.filter(({ card }) => canDefendAttack(card));
+                
+                if (defenseCards.length > 0) {
+                    // 가장 약한 방어 카드 사용 (강한 카드 보존)
+                    return defenseCards.reduce((weakest, current) => {
+                        const weakestPower = getAttackPower(weakest.card);
+                        const currentPower = getAttackPower(current.card);
+                        return currentPower < weakestPower ? current : weakest;
+                    });
+                }
+            }
+            
+            // 4. 특수 능력 카드 사용
+            const abilityCards = playableCards.filter(({ card }) => 
+                card.rank === 'J' || card.rank === 'Q' || card.rank === 'K' || card.rank === '7'
+            );
+            
+            if (abilityCards.length > 0) {
+                // 다음 플레이어가 카드 적으면 J(턴 건너뛰기) 우선
+                const nextPlayerIndex = getNextPlayerIndex();
+                if (gameState.players[nextPlayerIndex].hand.length <= 3) {
+                    const skipCard = abilityCards.find(({ card }) => card.rank === 'J');
+                    if (skipCard) return skipCard;
+                }
+                
+                // K(한 번 더) 카드가 있으면 사용
+                const kingCard = abilityCards.find(({ card }) => card.rank === 'K');
+                if (kingCard) return kingCard;
+                
+                // 7(무늬 변경) 카드 사용
+                const sevenCard = abilityCards.find(({ card }) => card.rank === '7');
+                if (sevenCard) return sevenCard;
+            }
+            
+            // 5. 일반 카드 중 가장 높은 숫자 (보존 전략)
+            const normalCards = playableCards.filter(({ card }) => 
+                !['A', '2', 'J', 'Q', 'K', '7'].includes(card.rank) && card.type !== 'joker'
+            );
+            
+            if (normalCards.length > 0) {
+                return normalCards.reduce((highest, current) => {
+                    const highestValue = getCardValue(highest.card);
+                    const currentValue = getCardValue(current.card);
+                    return currentValue > highestValue ? current : highest;
+                });
+            }
+            
+            // 6. 마지막 선택 - 첫 번째 가능한 카드
+            return playableCards[0];
+        }
+        
+        function getAttackPower(card) {
+            if (card.type === 'joker') {
+                return card.color === 'red' ? 5 : 3;
+            }
+            switch (card.rank) {
+                case 'A': return 2;
+                case '2': return 1;
+                default: return 0;
+            }
+        }
+        
+        function getCardAttackValue(card) {
+            if (card.type === 'joker') {
+                return card.color === 'red' ? 5 : 3;
+            }
+            switch (card.rank) {
+                case 'A': return 2;
+                case '2': return 1;
+                default: return 0;
+            }
+        }
+        
+        function getCardValue(card) {
+            const values = {
+                'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
+                '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13
+            };
+            return values[card.rank] || 0;
+        }
+        
+        function getNextPlayerIndex() {
+            let next = gameState.currentPlayer + gameState.direction;
+            if (next >= 4) next = 0;
+            if (next < 0) next = 3;
+            return next;
+        }
+        
+        // 게임 메시지 표시 함수
+        function showGameMessage(message) {
+            // 기존 메시지가 있으면 제거
+            const existingMessage = document.getElementById('game-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // 메시지 요소 생성
+            const messageElement = document.createElement('div');
+            messageElement.id = 'game-message';
+            messageElement.textContent = message;
+            messageElement.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 10px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 1000;
+                text-align: center;
+                min-width: 200px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                animation: fadeInOut 2.5s ease-in-out forwards;
+            `;
+            
+            // CSS 애니메이션 추가
+            if (!document.getElementById('message-style')) {
+                const style = document.createElement('style');
+                style.id = 'message-style';
+                style.textContent = `
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                        20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // 메시지 표시
+            document.body.appendChild(messageElement);
+            
+            // 2.5초 후 자동 제거
+            setTimeout(() => {
+                if (messageElement && messageElement.parentNode) {
+                    messageElement.remove();
+                }
+            }, 2500);
+        }
+        
+        // 게임 종료 메시지 (버튼 포함)
+        function showGameEndMessage(message) {
+            // 기존 메시지가 있으면 제거
+            const existingMessage = document.getElementById('game-end-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // 메시지 요소 생성
+            const messageElement = document.createElement('div');
+            messageElement.id = 'game-end-message';
+            messageElement.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                font-size: 24px;
+                font-weight: bold;
+                z-index: 2000;
+                text-align: center;
+                min-width: 400px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                animation: gameEndFadeIn 0.5s ease-out forwards;
+            `;
+            
+            // 내용 구성
+            messageElement.innerHTML = `
+                <div style="margin-bottom: 30px; font-size: 28px;">${message}</div>
+                <div style="display: flex; gap: 20px; justify-content: center;">
+                    <button onclick="startNewGame()" style="
+                        background: linear-gradient(135deg, #27AE60, #2ECC71);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        🎮 다시하기
+                    </button>
+                    <button onclick="goToMainMenu()" style="
+                        background: linear-gradient(135deg, #3498DB, #2980B9);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        🏠 메인메뉴
+                    </button>
+                </div>
+            `;
+            
+            // CSS 애니메이션 추가
+            if (!document.getElementById('game-end-style')) {
+                const style = document.createElement('style');
+                style.id = 'game-end-style';
+                style.textContent = `
+                    @keyframes gameEndFadeIn {
+                        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                        100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // 메시지 표시
+            document.body.appendChild(messageElement);
+        }
+        
+        // 카드 애니메이션 함수
+        function animateCardToCenter(fromElement, card, callback) {
+            // 시작 위치
+            const fromRect = fromElement.getBoundingClientRect();
+            const centerElement = document.getElementById('open-deck');
+            const centerRect = centerElement.getBoundingClientRect();
+            
+            // 애니메이션 카드 생성
+            const animCard = document.createElement('div');
+            animCard.className = 'card-animation';
+            animCard.style.left = fromRect.left + 'px';
+            animCard.style.top = fromRect.top + 'px';
+            
+            // 카드 이미지 설정
+            const imagePath = getCardImagePath(card);
+            const imgElement = document.createElement('img');
+            imgElement.src = imagePath;
+            imgElement.alt = `${card.suit}${card.rank}`;
+            animCard.appendChild(imgElement);
+            
+            document.body.appendChild(animCard);
+            
+            // 목표 위치 계산
+            const deltaX = centerRect.left - fromRect.left;
+            const deltaY = centerRect.top - fromRect.top;
+            
+            // CSS 변수 설정
+            animCard.style.setProperty('--target-x', deltaX + 'px');
+            animCard.style.setProperty('--target-y', deltaY + 'px');
+            
+            // 애니메이션 시작 (자연스럽게)
+            setTimeout(() => {
+                animCard.style.animation = 'flyToCenter 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards';
+            }, 30);
+            
+            // 애니메이션 완료 후 정리
+            setTimeout(() => {
+                document.body.removeChild(animCard);
+                if (callback) callback();
+            }, 650);
+        }
+        
+        function animateCardToPlayer(playerIndex, count, callback) {
+            const deckElement = document.getElementById('deck');
+            const deckRect = deckElement.getBoundingClientRect();
+            
+            let playerElement;
+            if (playerIndex === 0) {
+                playerElement = document.querySelector('.player-south');
+            } else {
+                playerElement = document.getElementById(`player-${playerIndex}`);
+            }
+            const playerRect = playerElement.getBoundingClientRect();
+            
+            let completed = 0;
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    // 애니메이션 카드 생성
+                    const animCard = document.createElement('div');
+                    animCard.className = 'card-back-animation';
+                    animCard.style.left = deckRect.left + 'px';
+                    animCard.style.top = deckRect.top + 'px';
+                    
+                    // 뒷면 카드 이미지 설정
+                    const imgElement = document.createElement('img');
+                    imgElement.src = '../solitaire/cards/back.png';
+                    imgElement.alt = '카드 뒷면';
+                    animCard.appendChild(imgElement);
+                    
+                    document.body.appendChild(animCard);
+                    
+                    // 목표 위치 계산 (모든 플레이어 중앙으로)
+                    let deltaX, deltaY;
+                    if (playerIndex === 0) {
+                        // 플레이어의 경우 카드 영역 중앙으로
+                        const cardAreaCenter = playerRect.left + (playerRect.width / 2);
+                        deltaX = cardAreaCenter - deckRect.left + (i * 15) - 50; // 카드들이 약간씩 겹치도록
+                        deltaY = playerRect.top - deckRect.top + 50; // 플레이어 카드 영역 상단쪽으로
+                    } else {
+                        // AI의 경우 각 플레이어 영역 중앙으로
+                        const cardAreaCenter = playerRect.left + (playerRect.width / 2);
+                        deltaX = cardAreaCenter - deckRect.left + (i * 10) - 50; // 카드들이 약간씩 겹치도록
+                        deltaY = playerRect.top - deckRect.top + (playerRect.height / 2) - 50; // 플레이어 영역 중앙으로
+                    }
+                    
+                    // CSS 변수 설정
+                    animCard.style.setProperty('--target-x', deltaX + 'px');
+                    animCard.style.setProperty('--target-y', deltaY + 'px');
+                    
+                    // 애니메이션 시작 (자연스럽게)
+                    setTimeout(() => {
+                        animCard.style.animation = 'flyToPlayer 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards';
+                    }, 30);
+                    
+                    // 애니메이션 완료 후 정리
+                    setTimeout(() => {
+                        document.body.removeChild(animCard);
+                        completed++;
+                        if (completed === count && callback) {
+                            callback();
+                        }
+                    }, 650);
+                }, i * 100); // 카드마다 100ms 간격으로 자연스럽게
+            }
+        }
+        
+        // 덱 재셔플 (덱이 떨어졌을 때)
+        function reshuffleDeck() {
+            if (gameState.deck.length === 0 && gameState.openDeck.length > 1) {
+                // 현재 카드를 제외하고 나머지를 덱으로 이동
+                const currentCard = gameState.openDeck.pop();
+                gameState.deck = shuffleDeck([...gameState.openDeck]);
+                gameState.openDeck = [currentCard];
+                
+    
+                
+                // 덱 재셔플 시각적 효과
+                const deckElement = document.getElementById('deck');
+                deckElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    deckElement.style.transform = 'scale(1)';
+                    updateUI();
+                }, 300);
+                
+                return true; // 재셔플 성공
+            }
+            return false; // 재셔플이 일어나지 않음
+        }
+        
+        function checkAndReshuffleDeck() {
+            if (gameState.deck.length === 0) {
+                reshuffleDeck();
+                return true; // 재셔플이 일어났음을 알림
+            }
+            return false; // 재셔플이 일어나지 않음
+        }
+        
+        // 게임 시작
+        window.onload = function() {
+            startNewGame();
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,685 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 30%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.container {
+    max-width: 1780px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 25px;
+    padding: 40px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+}
+
+h1 {
+    text-align: center;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    background-size: 300% 300%;
+    animation: gradientShift 3s ease infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    font-size: 3em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: 2px;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.game-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: fit-content;
+    min-width: 340px; /* 그리드 너비에 맞춤 (4×80px + 2×10px 패딩 + 2×2px gap) */
+}
+
+.center-info {
+    text-align: center;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.center-info div {
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+}
+
+#stage {
+    font-size: 18px;
+    color: #2196F3;
+}
+
+#progress {
+    font-size: 14px;
+    color: #666;
+}
+
+#timer {
+    font-size: 16px;
+    font-weight: bold;
+    color: #FF6B35;
+    margin-top: 5px;
+}
+
+#timer.warning {
+    color: #FF4444;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.game-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+#new-game {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+#new-game::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+#new-game:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+#new-game:hover::before {
+    left: 100%;
+}
+
+#new-game:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+#status {
+    font-size: 18px;
+    color: #555;
+    font-weight: bold;
+}
+
+.game-content {
+    display: flex;
+    gap: 35px;
+    align-items: flex-start;
+    justify-content: center;
+    max-width: 100%;
+}
+
+.game-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    order: 2;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-template-rows: repeat(4, 80px);
+    gap: 2px;
+    background: #333;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.grid-cell {
+    background: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.grid-cell.occupied {
+    background: #4CAF50;
+    border-color: #45a049;
+    color: white;
+    cursor: grab;
+}
+
+.grid-cell.occupied:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-width: 3px;
+    cursor: grab;
+}
+
+.grid-cell.occupied:active {
+    cursor: grabbing;
+}
+
+.grid-cell.drop-zone {
+    background: #e3f2fd;
+    border-color: #2196F3;
+    border-width: 3px;
+}
+
+.grid-cell.invalid-drop {
+    background: #ffebee;
+    border-color: #f44336;
+    border-width: 3px;
+}
+
+.puzzle-area-left {
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+    max-width: 635px;
+    order: 1;
+}
+
+.puzzle-area-right {
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+    max-width: 635px;
+    order: 3;
+}
+
+.puzzle-area h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.puzzle-pieces {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 15px;
+    justify-items: center;
+    align-items: center;
+    max-width: 100%;
+}
+
+/* 모바일에서는 세로 배치 */
+@media (max-width: 768px) {
+    .puzzle-pieces {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    
+    .game-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .puzzle-area-left,
+    .puzzle-area-right {
+        order: unset;
+        max-width: none;
+    }
+    
+    .piece-cell {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+/* 큰 화면에서는 더 여유있게 배치 */
+@media (min-width: 1200px) {
+    .puzzle-pieces {
+        gap: 20px;
+    }
+}
+
+.puzzle-piece {
+    position: relative;
+    cursor: default;
+    padding: 5px;
+    background: transparent;
+    border: none;
+    transition: all 0.3s;
+    margin: 8px;
+    display: inline-block;
+}
+
+/* 컨테이너 전체 hover 제거하고 개별 요소 hover로 대체 */
+.piece-cell:hover, .piece-label:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.piece-cell[draggable="true"]:hover {
+    cursor: grab;
+}
+
+.piece-label[draggable="true"]:hover {
+    cursor: grab;
+}
+
+.puzzle-piece.dragging {
+    opacity: 0.3; /* 드래그 중에는 원본 반투명하게 표시 */
+    transform: scale(0.95);
+    cursor: grabbing;
+    z-index: 1000;
+}
+
+.puzzle-piece.placed {
+    opacity: 0.5;
+    transform: scale(0.8);
+    cursor: not-allowed;
+    pointer-events: none; /* 배치된 퍼즐은 전체 차단 */
+    filter: grayscale(0.3);
+    transition: all 0.3s ease;
+}
+
+.puzzle-piece.placed .piece-cell,
+.puzzle-piece.placed .piece-label {
+    pointer-events: none; /* 배치된 퍼즐의 개별 요소들도 차단 */
+    cursor: not-allowed;
+}
+
+
+
+.piece-grid {
+    display: grid;
+    gap: 2px;
+    /* 동적으로 설정됨 */
+}
+
+.piece-cell {
+    width: 70px;
+    height: 70px;
+    background: #2196F3;
+    border: 2px solid #1976D2;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    pointer-events: auto; /* 실제 셀은 클릭 가능 */
+    box-sizing: border-box;
+}
+
+.piece-label {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    pointer-events: auto; /* 라벨도 클릭 가능 */
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.drag-preview {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1001;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .game-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .game-board {
+        margin-bottom: 20px;
+        order: 1;
+    }
+    
+    .game-info {
+        min-width: 280px; /* 모바일 그리드 크기에 맞춤 */
+        padding: 10px 15px;
+    }
+    
+    .center-info {
+        gap: 15px;
+        flex-direction: column;
+    }
+    
+    .puzzle-area-left {
+        order: 2;
+        min-width: auto;
+    }
+    
+    .puzzle-area-right {
+        order: 3;
+        min-width: auto;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(4, 60px);
+        grid-template-rows: repeat(4, 60px);
+    }
+    
+    .piece-cell {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .piece-grid {
+        /* 동적으로 설정됨 */
+    }
+} 
+
+/* 게임오버 팝업 스타일 */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.popup-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 25px;
+    padding: 40px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    max-width: 450px;
+    width: 90%;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+}
+
+.popup-content {
+    text-align: center;
+}
+
+.popup-content h2 {
+    background: linear-gradient(45deg, #FF4444, #FF6B35, #FF9800);
+    background-size: 300% 300%;
+    animation: gradientShift 3s ease infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-content p {
+    color: #666;
+    font-size: 18px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.popup-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: normal;
+}
+
+.stat-item span:last-child {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.popup-btn {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 140px;
+}
+
+.popup-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.popup-btn:hover::before {
+    left: 100%;
+}
+
+.popup-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.popup-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.popup-btn.primary:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.popup-btn.secondary {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(149, 165, 166, 0.3);
+}
+
+.popup-btn.secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(149, 165, 166, 0.4);
+}
+
+.popup-btn.secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .popup-container {
+        padding: 30px 25px;
+        margin: 20px;
+        max-width: none;
+    }
+    
+    .popup-content h2 {
+        font-size: 2em;
+        margin-bottom: 12px;
+    }
+    
+    .popup-content p {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .popup-stats {
+        gap: 15px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .stat-item span:last-child {
+        font-size: 20px;
+    }
+    
+    .popup-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .popup-btn {
+        padding: 12px 20px;
+        font-size: 15px;
+        min-width: auto;
+    }
+} 

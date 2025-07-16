@@ -9,17 +9,63 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="main-title">
-                    <i class="fas fa-gamepad"></i>
-                    웹게임 모음
-                </h1>
-                <p class="subtitle">다양한 재미있는 웹게임을 한 곳에서 즐겨보세요!</p>
+    <!-- Header Navigation (Fixed Top) -->
+    <header class="header">
+        <div class="header-container">
+            <!-- Logo -->
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <img src="logo.png" alt="웹게임 모음" class="logo-image">
+                    <span class="logo-text">웹게임 모음</span>
+                </a>
             </div>
-        </header>
+
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">모든게임</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">캐주얼</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">아케이드</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">퍼즐</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">전략</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Theme Toggle (Inside Header) -->
+            <button class="theme-toggle" id="themeToggle"></button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Hero/Ad Section -->
+        <section class="hero">
+            <div class="hero-content">
+                                    <div class="ad-slider">
+                        <div class="ad-slide active">
+                            <a href="https://smartstore.naver.com/smartfork" target="_blank" class="ad-link">
+                                <img src="ad/ad1.gif" alt="광고 1" class="ad-image">
+                            </a>
+                        </div>
+                        <div class="ad-slide">
+                            <img src="ad/ad2.png" alt="광고 2" class="ad-image">
+                        </div>
+                        <div class="ad-slide">
+                            <img src="ad/ad3.jpg" alt="광고 3" class="ad-image">
+                        </div>
+                    </div>
+            </div>
+        </section>
 
         <!-- Games Section -->
         <main class="games-section">
@@ -29,43 +75,64 @@
                         <div class="game-cards">
                             <div class="game-card">
                                 <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/4A90E2/ffffff?text=메모리게임" alt="메모리게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <img src="games/thumbnails/numberpad-thumb.PNG" alt="넘버패드 메모리">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty easy">쉬움</span>
+                                            <span class="category puzzle">퍼즐</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="game-info">
                                     <h3 class="game-title">넘버패드 메모리</h3>
-                                    <p class="game-description">3x3 칸에 나타나는 숫자 순서를 기억하고 순서대로 클릭하세요.</p>
+                                    <p class="game-description">3x3 칸에 나타나는 숫자 순서를 기억하고 순서대로 클릭하세요. 기억력과 집중력을 테스트해보세요!</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 5-10분</span>
+                                        <span class="players"><i class="fas fa-user"></i> 1인</span>
+                                    </div>
                                     <button class="play-btn">게임 시작</button>
                                 </div>
                             </div>
 
                             <div class="game-card">
                                 <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/E74C3C/ffffff?text=액션게임" alt="액션게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <img src="games/thumbnails/solitaire-thumb.PNG" alt="솔리테어">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty medium">보통</span>
+                                            <span class="category card">카드</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="game-info">
-                                    <h3 class="game-title">스페이스 슈터</h3>
-                                    <p class="game-description">우주를 배경으로 한 스릴 넘치는 슈팅 게임. 적들을 물리치고 최고 점수에 도전하세요!</p>
-                                    <button class="play-btn">게임 시작</button>
+                                    <h3 class="game-title">솔리테어</h3>
+                                    <p class="game-description">클래식한 카드 게임의 정수! 혼자서 즐기는 최고의 퍼즐 카드게임.</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 10-30분</span>
+                                        <span class="players"><i class="fas fa-user"></i> 1인</span>
+                                    </div>
+                                    <a class="play-btn" href="games/solitaire/index.html">게임 시작</a>
                                 </div>
                             </div>
 
                             <div class="game-card">
                                 <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/2ECC71/ffffff?text=어드벤처" alt="어드벤처게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <img src="games/thumbnails/freecell-thumb.PNG" alt="프리셀">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty hard">어려움</span>
+                                            <span class="category card">카드</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="game-info">
-                                    <h3 class="game-title">미스터리 퀘스트</h3>
-                                    <p class="game-description">숨겨진 비밀을 찾아 떠나는 모험 게임. 단서를 수집하고 미스터리를 해결하세요.</p>
-                                    <button class="play-btn">게임 시작</button>
+                                    <h3 class="game-title">프리셀</h3>
+                                    <p class="game-description">전략과 논리로 푸는 프리셀! 모든 카드를 홈셀로 옮겨보세요.</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 15-45분</span>
+                                        <span class="players"><i class="fas fa-user"></i> 1인</span>
+                                    </div>
+                                    <a class="play-btn" href="games/freecell/index.html">게임 시작</a>
                                 </div>
                             </div>
                         </div>
@@ -75,42 +142,63 @@
                         <div class="game-cards">
                             <div class="game-card">
                                 <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/9B59B6/ffffff?text=카드게임" alt="카드게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <img src="games/thumbnails/onecard-thumb.PNG" alt="원카드">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty easy">쉬움</span>
+                                            <span class="category card">카드</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="game-info">
-                                    <h3 class="game-title">솔리테어 클래식</h3>
-                                    <p class="game-description">클래식한 카드 게임의 정수. 시간 가는 줄 모르고 즐길 수 있는 게임입니다.</p>
+                                    <h3 class="game-title">원카드</h3>
+                                    <p class="game-description">가장 먼저 카드를 모두 없애면 승리! 쉽고 빠른 파티 카드게임.</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 5-15분</span>
+                                        <span class="players"><i class="fas fa-users"></i> 2-4인</span>
+                                    </div>
+                                    <a class="play-btn" href="games/onecard/index.html">게임 시작</a>
+                                </div>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="game-image">
+                                    <img src="https://via.placeholder.com/300x200/3498db/ffffff?text=스페이스+슈터" alt="스페이스 슈터">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty medium">보통</span>
+                                            <span class="category action">액션</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-info">
+                                    <h3 class="game-title">스페이스 슈터</h3>
+                                    <p class="game-description">우주를 배경으로 한 스릴 넘치는 슈팅 게임. 적들을 물리치고 최고 점수에 도전하세요!</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 10-20분</span>
+                                        <span class="players"><i class="fas fa-user"></i> 1인</span>
+                                    </div>
                                     <button class="play-btn">게임 시작</button>
                                 </div>
                             </div>
 
                             <div class="game-card">
                                 <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/F39C12/ffffff?text=스포츠" alt="스포츠게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <img src="https://via.placeholder.com/300x200/e74c3c/ffffff?text=미스터리+퀘스트" alt="미스터리 퀘스트">
+                                    <div class="game-overlay">
+                                        <div class="game-stats">
+                                            <span class="difficulty hard">어려움</span>
+                                            <span class="category adventure">어드벤처</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="game-info">
-                                    <h3 class="game-title">축구 챔피언</h3>
-                                    <p class="game-description">실제와 같은 축구 경기를 체험하세요. 골을 넣고 챔피언이 되어보세요!</p>
-                                    <button class="play-btn">게임 시작</button>
-                                </div>
-                            </div>
-
-                            <div class="game-card">
-                                <div class="game-image">
-                                    <img src="https://via.placeholder.com/300x200/1ABC9C/ffffff?text=레이싱" alt="레이싱게임">
-                                    <div class="play-overlay">
-                                        <i class="fas fa-play"></i>
+                                    <h3 class="game-title">미스터리 퀘스트</h3>
+                                    <p class="game-description">숨겨진 비밀을 찾아 떠나는 모험 게임. 단서를 수집하고 미스터리를 해결하세요.</p>
+                                    <div class="game-meta">
+                                        <span class="play-time"><i class="fas fa-clock"></i> 30-60분</span>
+                                        <span class="players"><i class="fas fa-user"></i> 1인</span>
                                     </div>
-                                </div>
-                                <div class="game-info">
-                                    <h3 class="game-title">스피드 레이서</h3>
-                                    <p class="game-description">속도감 넘치는 레이싱 게임. 다양한 트랙에서 1등을 차지하세요!</p>
                                     <button class="play-btn">게임 시작</button>
                                 </div>
                             </div>
@@ -136,10 +224,41 @@
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>&copy; 2024 웹게임 모음. 모든 권리 보유.</p>
-        </footer>
+    </div>
+
+    <!-- Footer (Fixed Bottom) -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Left Side (Empty for balance) -->
+            <div class="footer-left"></div>
+            
+            <!-- Center (Copyright) -->
+            <div class="footer-center">
+                <p>&copy; 2024 Web Game Collection. All rights reserved.</p>
+            </div>
+            
+            <!-- Right Side (Contact Links) -->
+            <div class="footer-right">
+                <button class="footer-link" id="adInquiry">광고문의</button>
+                <button class="footer-link" id="improvementRequest">개선요청</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Popup Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle"></h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="modalMessage"></p>
+                <div class="modal-email">
+                    <strong>signboardkr@gmail.com</strong>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4x4 퍼즐 게임</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>4x4 퍼즐 게임</h1>
+        <div class="game-controls">
+            <button id="new-game">새 게임</button>
+        </div>
+        
+        <div class="game-content">
+            <div class="puzzle-area-left">
+                <div id="puzzle-pieces-left" class="puzzle-pieces">
+                    <!-- 왼쪽 퍼즐 조각들 -->
+                </div>
+            </div>
+            
+            <div class="game-board">
+                <div id="grid" class="grid">
+                    <!-- 4x4 그리드 (0-15) -->
+                </div>
+                <div class="game-info">
+                    <div class="center-info">
+                        <div id="stage">스테이지 1</div>
+                        <div id="progress">완료: 0단계</div>
+                        <div id="timer">⏰ 01:00</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="puzzle-area-right">
+                <div id="puzzle-pieces-right" class="puzzle-pieces">
+                    <!-- 오른쪽 퍼즐 조각들 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임오버 팝업 -->
+    <div id="game-over-popup" class="popup-overlay" style="display: none;">
+        <div class="popup-container">
+            <div class="popup-content">
+                <h2>⏰ 시간 초과!</h2>
+                <p>이번 스테이지를 완료하지 못했습니다.</p>
+                <div class="popup-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">스테이지</span>
+                        <span id="popup-stage">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">완료한 스테이지</span>
+                        <span id="popup-completed">0</span>
+                    </div>
+                </div>
+                <div class="popup-buttons">
+                    <button id="retry-btn" class="popup-btn primary">다시하기</button>
+                    <button id="main-btn" class="popup-btn secondary">메인으로 가기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

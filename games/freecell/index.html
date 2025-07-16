@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프리셀 - 웹게임 모음</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #0F4C75 0%, #3282B8 100%);
+            min-height: 100vh;
+            color: white;
+            user-select: none;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .game-board {
+            max-width: 1246px;
+            margin: 50px auto 0 auto;
+            box-sizing: border-box;
+        }
+        
+        .top-area {
+            display: flex;
+            margin-bottom: 45px;
+            width: 1246px;
+            height: 195px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .free-cells, .home-cells {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .free-cells {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .home-cells {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+        
+        .cell {
+            width: 140px;
+            height: 195px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 2px; /* 카드와 셀 경계 사이 최소 여백 */
+            box-sizing: border-box;
+        }
+        
+        .cell.drop-target {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+        }
+        
+        .play-area {
+            display: flex;
+            gap: 18px;
+            width: 1246px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        
+        .column {
+            min-height: 600px;
+            width: 140px;
+            position: relative;
+            padding: 3px 0 8px 0; /* 좌우 패딩 제거로 정확한 정렬 */
+            box-sizing: border-box;
+        }
+        
+
+        
+        .card {
+            width: 131px;
+            height: 182px;
+            border-radius: 12px;
+            cursor: grab;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+        }
+        
+        .column .card {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .cell .card {
+            position: relative;
+            margin: 0;
+            width: 131px; /* 셀 크기(140px)에서 여백 9px 제외, 실제 카드 비율 358:500 적용 */
+            height: 187px; /* 셀 크기(195px)에서 여백 8px 제외 */
+        }
+        
+        .card:active {
+            cursor: grabbing;
+        }
+        
+        .card.dragging {
+            position: fixed !important;
+            transform: scale(1.05) !important;
+            opacity: 0.9 !important;
+            pointer-events: none !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6) !important;
+            z-index: 9999 !important;
+            transition: none !important;
+        }
+        
+        .card img {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 24px;
+            display: none;
+            z-index: 2000;
+        }
+        
+
+        
+        @media (max-width: 768px) {
+            .game-board {
+                transform: scale(0.8);
+                transform-origin: top center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
+        <h1 class="game-title">
+            <span style="color: #e74c3c; font-size: 2.5rem; margin-right: 15px;">♥♦</span>
+            <span style="font-size: 2.5rem;">프리셀</span>
+            <span style="color: #2c3e50; font-size: 2.5rem; margin-left: 15px;">♣♠</span>
+        </h1>
+        <div class="controls">
+            <button class="btn" onclick="newGame()">새 게임</button>
+            <button class="btn" onclick="autoMove()">자동 이동</button>
+        </div>
+    </div>
+    
+
+    
+    <div class="game-board">
+        <div class="top-area">
+            <div class="free-cells">
+                <div class="cell" data-type="freecell" data-index="0"></div>
+                <div class="cell" data-type="freecell" data-index="1"></div>
+                <div class="cell" data-type="freecell" data-index="2"></div>
+                <div class="cell" data-type="freecell" data-index="3"></div>
+            </div>
+            <div class="home-cells">
+                <div class="cell" data-type="home" data-suit="hearts"></div>
+                <div class="cell" data-type="home" data-suit="diamonds"></div>
+                <div class="cell" data-type="home" data-suit="clubs"></div>
+                <div class="cell" data-type="home" data-suit="spades"></div>
+            </div>
+        </div>
+        
+        <div class="play-area">
+            <div class="column" data-column="0"></div>
+            <div class="column" data-column="1"></div>
+            <div class="column" data-column="2"></div>
+            <div class="column" data-column="3"></div>
+            <div class="column" data-column="4"></div>
+            <div class="column" data-column="5"></div>
+            <div class="column" data-column="6"></div>
+            <div class="column" data-column="7"></div>
+        </div>
+    </div>
+    
+    <div class="win-message" id="winMessage">
+        <div>🎉 축하합니다! 🎉</div>
+        <div>프리셀을 클리어했습니다!</div>
+        <button class="btn" onclick="newGame()" style="margin-top: 20px;">새 게임 시작</button>
+    </div>
+
+    <script>
+        class FreeCell {
+                        constructor() {
+                this.freeCells = [null, null, null, null];
+                this.homeCells = {hearts: [], diamonds: [], clubs: [], spades: []};
+                this.columns = [[], [], [], [], [], [], [], []];
+                this.isDragging = false;
+                this.dragPrepared = false;
+                this.draggedCard = null;
+                this.draggedCardElements = [];
+                this.draggedCardsData = [];
+                this.draggedFrom = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                this.isAutoCompleting = false;
+                this.cardValues = {
+                    'ace': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+                    'jack': 11, 'queen': 12, 'king': 13
+                };
+                this.init();
+            }
+            
+            init() {
+                this.createAndDealCards();
+                this.render();
+                this.setupEventListeners();
+            }
+            
+            createAndDealCards() {
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                const values = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king'];
+                const cards = [];
+                
+                // 카드 생성
+                for (let suit of suits) {
+                    for (let value of values) {
+                        cards.push({
+                            suit: suit,
+                            value: value,
+                            color: suit === 'hearts' || suit === 'diamonds' ? 'red' : 'black',
+                            number: this.cardValues[value]
+                        });
+                    }
+                }
+                
+                // 카드 섞기
+                for (let i = cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [cards[i], cards[j]] = [cards[j], cards[i]];
+                }
+                
+                // 카드 배치
+                let cardIndex = 0;
+                for (let col = 0; col < 8; col++) {
+                    const cardsInColumn = col < 4 ? 7 : 6;
+                    for (let row = 0; row < cardsInColumn; row++) {
+                        this.columns[col].push(cards[cardIndex]);
+                        cardIndex++;
+                    }
+                }
+            }
+            
+            setupEventListeners() {
+                // 기본 마우스 이벤트로 단순화
+                document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                document.addEventListener('dblclick', this.handleDoubleClickEvent.bind(this));
+            }
+            
+
+            
+            handleMouseDown(e) {
+                const card = e.target.closest('.card');
+                if (!card) return;
+                
+                const position = this.findCardPosition(card);
+                if (!position) return;
+                
+                if (!this.canPickUpCard(position)) return;
+                
+                // 클릭한 카드의 현재 위치 가져오기
+                const cardRect = card.getBoundingClientRect();
+                
+                // 마우스 클릭 위치와 카드 좌상단의 오프셋 계산 (단순화)
+                this.dragOffsetX = e.clientX - cardRect.left;
+                this.dragOffsetY = e.clientY - cardRect.top;
+                
+                // 드래그 준비만 하고 실제 시작은 mousemove에서 (더블클릭을 위해)
+                this.dragPrepared = true;
+                this.draggedCard = card;
+                this.draggedFrom = position;
+                this.draggedCardsData = this.getCardFromPosition(position);
+                
+
+                
+                e.preventDefault();
+            }
+            
+            startDragging() {
+                const position = this.draggedFrom;
+                const card = this.draggedCard;
+                
+                // 여러 카드를 드래그할 경우 DOM 요소들 찾기
+                this.draggedCardElements = [];
+                
+                if (position.type === 'column') {
+                    // 컬럼에서 여러 장 선택된 경우
+                    const column = document.querySelector(`[data-column="${position.column}"]`);
+                    const allCardElements = Array.from(column.querySelectorAll('.card'));
+                    
+                    // 선택된 카드들의 시작 인덱스
+                    const startIndex = this.columns[position.column].length - this.draggedCardsData.length;
+                    
+                    // 선택된 카드들의 DOM 요소들 수집
+                    for (let i = 0; i < this.draggedCardsData.length; i++) {
+                        const cardElement = allCardElements[startIndex + i];
+                        if (cardElement) {
+                            this.draggedCardElements.push(cardElement);
+                            
+                            // 현재 위치를 정확히 계산하여 fixed로 전환
+                            const rect = cardElement.getBoundingClientRect();
+                            
+                            // 기존 스타일 완전 제거 후 정확한 위치 설정
+                            cardElement.style.removeProperty('left');
+                            cardElement.style.removeProperty('transform');
+                            cardElement.style.position = 'fixed';
+                            cardElement.style.left = rect.left + 'px';
+                            cardElement.style.top = rect.top + 'px';
+                            cardElement.style.transform = 'scale(1.05)';
+                            cardElement.style.zIndex = (9999 + i).toString();
+                            cardElement.classList.add('dragging');
+                        }
+                    }
+                } else {
+                    // 프리셀이나 홈셀의 경우 단일 카드
+                    this.draggedCardElements.push(card);
+                    
+                    // 현재 위치를 정확히 계산하여 fixed로 전환
+                    const rect = card.getBoundingClientRect();
+                    
+                    // 기존 스타일 완전 제거 후 정확한 위치 설정
+                    card.style.removeProperty('left');
+                    card.style.removeProperty('transform');
+                    card.style.position = 'fixed';
+                    card.style.left = rect.left + 'px';
+                    card.style.top = rect.top + 'px';
+                    card.style.transform = 'scale(1.1)';
+                    card.style.zIndex = '9999';
+                    card.classList.add('dragging');
+                }
+                
+            }
+            
+            handleMouseMove(e) {
+                // 드래그 준비 상태에서 실제 드래그 시작
+                if (this.dragPrepared && !this.isDragging) {
+                    this.isDragging = true;
+                    this.dragPrepared = false;
+                    this.startDragging();
+                }
+                
+                if (!this.isDragging || !this.draggedCard) return;
+                
+                // 오프셋을 고려한 카드 위치 계산 (단순화)
+                const baseX = e.clientX - this.dragOffsetX;
+                const baseY = e.clientY - this.dragOffsetY;
+                
+                // 모든 선택된 카드들을 함께 이동 (원래 간격 유지)
+                this.draggedCardElements.forEach((cardElement, index) => {
+                    cardElement.style.position = 'fixed';
+                    cardElement.style.left = baseX + 'px';
+                    cardElement.style.top = (baseY + index * 30) + 'px'; // 원래 컬럼 간격(30px) 유지
+                    cardElement.style.transform = 'scale(1.05)';
+                    cardElement.style.pointerEvents = 'none';
+                });
+                
+                e.preventDefault();
+            }
+            
+            handleMouseUp(e) {
+                // 드래그 준비만 하고 실제 드래그하지 않은 경우 (클릭 또는 더블클릭)
+                if (this.dragPrepared && !this.isDragging) {
+                    this.dragPrepared = false;
+                    this.draggedCard = null;
+                    this.draggedFrom = null;
+                    this.draggedCardsData = [];
+                    return;
+                }
+                
+                if (!this.isDragging || !this.draggedCard) return;
+                
+                const target = this.findDropTarget(e.clientX, e.clientY);
+                
+                if (target && this.canDropCard(this.draggedFrom, target)) {
+                    this.moveCard(this.draggedFrom, target);
+                }
+                
+                // 모든 드래그된 카드들의 스타일 완전 초기화
+                this.draggedCardElements.forEach(cardElement => {
+                    cardElement.style.removeProperty('position');
+                    cardElement.style.removeProperty('left');
+                    cardElement.style.removeProperty('top');
+                    cardElement.style.removeProperty('transform');
+                    cardElement.style.removeProperty('z-index');
+                    cardElement.style.removeProperty('pointer-events');
+                    cardElement.classList.remove('dragging');
+                });
+                
+                // 드래그 상태 초기화
+                this.isDragging = false;
+                this.dragPrepared = false;
+                this.draggedCard = null;
+                this.draggedCardElements = [];
+                this.draggedCardsData = [];
+                this.draggedFrom = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                
+                // 화면 다시 그리기
+                this.render();
+                this.checkAutoComplete();
+                this.checkWin();
+                
+                e.preventDefault();
+            }
+
+            handleDoubleClickEvent(e) {
+                const card = e.target.closest('.card');
+                if (!card) return;
+                
+                // 클릭한 정확한 위치에서 카드 찾기
+                const clickX = e.clientX;
+                const clickY = e.clientY;
+                
+                // 컬럼에서 클릭한 카드 찾기 (우선순위)
+                const columns = document.querySelectorAll('.column');
+                let clickedCard = null;
+                let clickedPosition = null;
+                
+                for (let column of columns) {
+                    const cards = Array.from(column.querySelectorAll('.card'));
+                    for (let i = cards.length - 1; i >= 0; i--) {
+                        const cardElement = cards[i];
+                        const rect = cardElement.getBoundingClientRect();
+                        if (clickX >= rect.left && clickX <= rect.right && 
+                            clickY >= rect.top && clickY <= rect.bottom) {
+                            clickedCard = cardElement;
+                            const columnIndex = parseInt(column.dataset.column);
+                            clickedPosition = {type: 'column', column: columnIndex, row: i};
+                            break;
+                        }
+                    }
+                    if (clickedCard) break;
+                }
+                
+                // 컬럼에서 못 찾았으면 프리셀에서 찾기
+                if (!clickedCard) {
+                    const freecells = document.querySelectorAll('.cell[data-type="freecell"]');
+                    for (let cell of freecells) {
+                        const cardElement = cell.querySelector('.card');
+                        if (cardElement) {
+                            const rect = cardElement.getBoundingClientRect();
+                            if (clickX >= rect.left && clickX <= rect.right && 
+                                clickY >= rect.top && clickY <= rect.bottom) {
+                                clickedCard = cardElement;
+                                const index = parseInt(cell.dataset.index);
+                                clickedPosition = {type: 'freecell', index: index};
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (clickedCard && clickedPosition) {
+                    this.handleDoubleClick(e, clickedCard, clickedPosition);
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            handleDoubleClick(e, card, position) {
+                // 드래그 준비/진행 상태 완전 초기화 (더블클릭과 드래그 충돌 방지)
+                this.dragPrepared = false;
+                this.isDragging = false;
+                
+                if (this.draggedCard) {
+                    if (this.draggedCardElements.length > 0) {
+                        this.draggedCardElements.forEach(cardElement => {
+                            cardElement.classList.remove('dragging');
+                            cardElement.style.removeProperty('position');
+                            cardElement.style.removeProperty('left');
+                            cardElement.style.removeProperty('top');
+                            cardElement.style.removeProperty('transform');
+                            cardElement.style.removeProperty('z-index');
+                            cardElement.style.removeProperty('pointer-events');
+                        });
+                    } else {
+                        this.draggedCard.classList.remove('dragging');
+                        this.draggedCard.style.removeProperty('position');
+                        this.draggedCard.style.removeProperty('left');
+                        this.draggedCard.style.removeProperty('top');
+                        this.draggedCard.style.removeProperty('transform');
+                        this.draggedCard.style.removeProperty('z-index');
+                        this.draggedCard.style.removeProperty('pointer-events');
+                    }
+                    this.clearDropTargets();
+                    this.draggedCard = null;
+                    this.draggedCardElements = [];
+                    this.draggedCardsData = [];
+                    this.draggedFrom = null;
+                }
+                
+                if (!position) return;
+                
+                // 여러 카드 선택은 더블클릭으로 이동 불가
+                const cards = this.getCardFromPosition(position);
+                if (cards.length > 1) return;
+                
+                if (!this.canPickUpCard(position)) return;
+                
+                // 실제 카드 데이터 가져오기 (DOM 요소 대신)
+                const cardArray = this.getCardFromPosition(position);
+                if (!cardArray || cardArray.length === 0 || !cardArray[0]) return;
+                
+                const cardData = cardArray[0];
+                
+                // 홈셀에 놓을 수 있는지 먼저 확인 (모든 카드에 대해)
+                const homeCellTarget = this.findHomeCellTarget(cardData);
+                if (homeCellTarget) {
+                    const canDropToHomeCell = this.canDropCard(position, homeCellTarget);
+                    if (canDropToHomeCell) {
+                        this.animateCardMove(card, position, homeCellTarget);
+                        return;
+                    }
+                }
+                
+                // 홈셀에 놓을 수 없으면 프리셀로 이동
+                const freeCellTarget = this.findEmptyFreeCell();
+                if (freeCellTarget) {
+                    this.animateCardMove(card, position, freeCellTarget);
+                    return;
+                }
+                
+                e.preventDefault();
+            }
+            
+            animateOriginalCard(cardElement, fromPosition, toPosition, callback) {
+                // 솔리테어처럼 단순하게 - 목표 셀 찾기
+                let targetCell;
+                if (toPosition.type === 'freecell') {
+                    targetCell = document.querySelector(`.cell[data-type="freecell"][data-index="${toPosition.index}"]`);
+                } else if (toPosition.type === 'home') {
+                    targetCell = document.querySelector(`.cell[data-type="home"][data-suit="${toPosition.index}"]`);
+                }
+                
+                if (!targetCell) {
+                    this.moveCard(fromPosition, toPosition);
+                    this.render();
+                    this.checkAutoComplete();
+                    this.checkWin();
+                    if (callback) callback();
+                    return;
+                }
+                
+                // 원본 카드 위치 및 목표 위치 계산 (솔리테어처럼)
+                // 애니메이션 시작 전에 카드 위치 재확인
+                const cardRect = cardElement.getBoundingClientRect();
+                const targetRect = targetCell.getBoundingClientRect();
+                
+                // 카드가 실제로 원래 위치에 있는지 확인
+                if (cardRect.left === 0 && cardRect.top === 0) {
+                    // 카드 위치가 이상하면 즉시 이동
+                    this.moveCard(fromPosition, toPosition);
+                    this.render();
+                    this.checkAutoComplete();
+                    this.checkWin();
+                    if (callback) callback();
+                    return;
+                }
+                
+                // 원본 카드를 fixed로 전환하여 애니메이션
+                cardElement.style.position = 'fixed';
+                cardElement.style.left = cardRect.left + 'px';
+                cardElement.style.top = cardRect.top + 'px';
+                cardElement.style.zIndex = '10000';
+                cardElement.style.pointerEvents = 'none';
+                
+                // 강제로 위치 재설정 (휘는 현상 방지)
+                cardElement.style.transform = 'none';
+                cardElement.style.transition = 'none';
+                
+                // 목표 위치까지의 이동 거리 계산 (솔리테어처럼 정확하게)
+                const targetCenterX = targetRect.left + (targetRect.width / 2);
+                const targetCenterY = targetRect.top + (targetRect.height / 2);
+                
+                const cardCenterX = cardRect.left + (cardRect.width / 2);
+                const cardCenterY = cardRect.top + (cardRect.height / 2);
+                
+                const deltaX = targetCenterX - cardCenterX;
+                const deltaY = targetCenterY - cardCenterY;
+                
+                // 애니메이션 시작 (자동완성 시에만 더 빠르게)
+                const isAutoComplete = callback && callback.toString().includes('animateCardsSequentially');
+                const animationDuration = isAutoComplete ? '1s' : '0.3s';
+                const waitTime = isAutoComplete ? 10 : 50;
+                
+                // 위치 안정화를 위한 대기
+                setTimeout(() => {
+                    cardElement.style.transition = `transform ${animationDuration} cubic-bezier(0.165, 0.84, 0.44, 1)`;
+                    cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.9)`;
+                    cardElement.style.opacity = '0.85';
+                }, waitTime);
+                
+                // 애니메이션 완료 후 정리
+                const handleAnimationEnd = () => {
+                    try {
+                        // 이벤트 리스너 제거
+                        cardElement.removeEventListener('transitionend', handleAnimationEnd);
+                        
+                        // 실제 카드 이동 수행
+                        this.moveCard(fromPosition, toPosition);
+                        
+                        // 원본 카드 스타일 초기화
+                        cardElement.style.removeProperty('position');
+                        cardElement.style.removeProperty('left');
+                        cardElement.style.removeProperty('top');
+                        cardElement.style.removeProperty('transform');
+                        cardElement.style.removeProperty('z-index');
+                        cardElement.style.removeProperty('opacity');
+                        cardElement.style.removeProperty('transition');
+                        cardElement.style.removeProperty('pointer-events');
+                        
+                        // 렌더링으로 새로운 카드 표시
+                        this.render();
+                        this.checkAutoComplete();
+                        this.checkWin();
+                        
+                        // 콜백 함수가 있으면 호출
+                        if (callback && typeof callback === 'function') {
+                            callback();
+                        }
+                    } catch (error) {
+                        // 오류 발생 시에도 렌더링은 수행
+                        try {
+                            this.render();
+                            if (callback && typeof callback === 'function') {
+                                callback();
+                            }
+                        } catch (renderError) {
+                            // 렌더링 오류 무시
+                        }
+                    }
+                };
+                
+                // 애니메이션 완료 이벤트 리스너 등록
+                cardElement.addEventListener('transitionend', handleAnimationEnd);
+                
+                // 안전장치: 300ms 후에도 애니메이션이 끝나지 않으면 강제 완료
+                setTimeout(() => {
+                    if (cardElement.style.transition) {
+                        handleAnimationEnd();
+                    }
+                }, 300);
+            }
+            
+            animateCardMove(cardElement, fromPosition, toPosition, callback) {
+                // 솔리테어처럼 단순하게 - 원본 카드를 바로 이동
+                this.animateOriginalCard(cardElement, fromPosition, toPosition, callback);
+            }
+            
+            findCardRowInColumn(columnIndex, cardData) {
+                const column = this.columns[columnIndex];
+                for (let row = 0; row < column.length; row++) {
+                    if (this.cardsEqual(column[row], cardData)) {
+                        return row;
+                    }
+                }
+                return column.length - 1; // 기본값으로 맨 위
+            }
+            
+            findFreshCardElement(position) {
+                try {
+                    if (position.type === 'column') {
+                        const column = document.querySelector(`[data-column="${position.column}"]`);
+                        if (!column) return null;
+                        
+                        const cardElements = Array.from(column.querySelectorAll('.card'));
+                        
+                        // position.row가 지정되어 있으면 해당 위치의 카드 반환
+                        if (position.row !== undefined && position.row >= 0 && position.row < cardElements.length) {
+                            return cardElements[position.row] || null;
+                        }
+                        
+                        // 기본적으로는 맨 위 카드 반환
+                        return cardElements[cardElements.length - 1] || null;
+                        
+                    } else if (position.type === 'freecell') {
+                        const freecell = document.querySelector(`.cell[data-type="freecell"][data-index="${position.index}"]`);
+                        if (!freecell) return null;
+                        
+                        return freecell.querySelector('.card') || null;
+                    }
+                } catch (error) {
+                    // 무시
+                }
+                
+                return null;
+            }
+            
+            findEmptyFreeCell() {
+                for (let i = 0; i < 4; i++) {
+                    if (this.freeCells[i] === null) {
+                        return {type: 'freecell', index: i};
+                    }
+                }
+                return null;
+            }
+            
+            findHomeCellTarget(cardData) {
+                return {type: 'home', index: cardData.suit};
+            }
+            
+            findCardPosition(cardElement) {
+                const cardData = this.getCardData(cardElement);
+                
+                // 프리셀에서 찾기
+                for (let i = 0; i < 4; i++) {
+                    if (this.freeCells[i] && this.cardsEqual(this.freeCells[i], cardData)) {
+                        return {type: 'freecell', index: i};
+                    }
+                }
+                
+                // 컬럼에서 찾기
+                for (let col = 0; col < 8; col++) {
+                    for (let row = 0; row < this.columns[col].length; row++) {
+                        if (this.cardsEqual(this.columns[col][row], cardData)) {
+                            return {type: 'column', column: col, row: row};
+                        }
+                    }
+                }
+                
+                return null;
+            }
+            
+            findCardPositionByElement(cardElement) {
+                // DOM 요소의 실제 위치를 기반으로 정확한 위치 찾기
+                
+                // 프리셀에서 찾기
+                const freecellParent = cardElement.closest('.cell[data-type="freecell"]');
+                if (freecellParent) {
+                    const index = parseInt(freecellParent.dataset.index);
+                    return {type: 'freecell', index: index};
+                }
+                
+                // 컬럼에서 찾기
+                const columnParent = cardElement.closest('.column');
+                if (columnParent) {
+                    const columnIndex = parseInt(columnParent.dataset.column);
+                    const allCardsInColumn = Array.from(columnParent.querySelectorAll('.card'));
+                    const cardIndex = allCardsInColumn.indexOf(cardElement);
+                    
+                    if (cardIndex !== -1) {
+                        return {type: 'column', column: columnIndex, row: cardIndex};
+                    }
+                }
+                
+                // fallback: 기존 방식 사용
+                return this.findCardPosition(cardElement);
+            }
+            
+            getCardData(cardElement) {
+                const img = cardElement.querySelector('img');
+                const src = img.src;
+                const filename = src.split('/').pop();
+                const [suit, value] = filename.replace('.png', '').split('-');
+                return {
+                    suit: suit,
+                    value: value,
+                    color: suit === 'hearts' || suit === 'diamonds' ? 'red' : 'black',
+                    number: this.cardValues[value]
+                };
+            }
+            
+            cardsEqual(card1, card2) {
+                return card1.suit === card2.suit && card1.value === card2.value;
+            }
+            
+            canPickUpCard(position) {
+                if (position.type === 'freecell') {
+                    return true;
+                } else if (position.type === 'column') {
+                    // 선택한 카드부터 맨 아래까지가 올바른 순서인지 확인
+                    return this.isValidSequence(position.column, position.row);
+                }
+                return false;
+            }
+            
+            isValidSequence(columnIndex, startRow) {
+                const column = this.columns[columnIndex];
+                
+                for (let i = startRow; i < column.length - 1; i++) {
+                    const currentCard = column[i];
+                    const nextCard = column[i + 1];
+                    
+                    // 색깔이 번갈아가고 숫자가 내림차순이어야 함
+                    if (currentCard.color === nextCard.color || 
+                        currentCard.number !== nextCard.number + 1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            findDropTarget(x, y) {
+                // 드래그 중인 카드들을 임시로 숨기기
+                const draggedElements = this.draggedCardElements || [];
+                const originalPointerEvents = [];
+                
+                draggedElements.forEach((el, index) => {
+                    originalPointerEvents[index] = el.style.pointerEvents;
+                    el.style.pointerEvents = 'none';
+                });
+                
+                const element = document.elementFromPoint(x, y);
+                
+                // 원래 상태로 복원
+                draggedElements.forEach((el, index) => {
+                    el.style.pointerEvents = originalPointerEvents[index];
+                });
+                
+                if (!element) return null;
+                
+                // 셀 체크
+                const cell = element.closest('.cell');
+                if (cell) {
+                    const target = {
+                        type: cell.dataset.type,
+                        index: cell.dataset.index ? parseInt(cell.dataset.index) : cell.dataset.suit
+                    };
+                    return target;
+                }
+                
+                // 컬럼 체크
+                const column = element.closest('.column');
+                if (column) {
+                    const target = {
+                        type: 'column',
+                        index: parseInt(column.dataset.column)
+                    };
+                    return target;
+                }
+                
+                return null;
+            }
+            
+            canDropCard(from, to) {
+                const cards = this.getCardFromPosition(from);
+                if (!cards || cards.length === 0) {
+                    return false;
+                }
+                
+                const topCard = cards[0]; // 맨 위 카드만 체크
+                
+                if (to.type === 'freecell') {
+                    // 프리셀에는 카드 1장만 놓을 수 있음
+                    if (cards.length > 1) {
+                        return false;
+                    }
+                    const canDrop = this.freeCells[to.index] === null;
+                    return canDrop;
+                } else if (to.type === 'home') {
+                    // 홈셀에는 카드 1장만 놓을 수 있음
+                    if (cards.length > 1) {
+                        return false;
+                    }
+                    const stack = this.homeCells[to.index];
+                    if (topCard.suit !== to.index) return false;
+                    
+                    if (stack.length === 0) {
+                        return topCard.value === 'ace';
+                    } else {
+                        const homeTopCard = stack[stack.length - 1];
+                        return topCard.number === homeTopCard.number + 1;
+                    }
+                                } else if (to.type === 'column') {
+                    const column = this.columns[to.index];
+                    
+                    if (column.length === 0) {
+                        return true;
+                    }
+                    
+                    const columnTopCard = column[column.length - 1];
+                    const canDrop = topCard.color !== columnTopCard.color && topCard.number === columnTopCard.number - 1;
+                    return canDrop;
+                }
+                
+                return false;
+            }
+            
+            getCardFromPosition(position) {
+                if (position.type === 'freecell') {
+                    const card = this.freeCells[position.index];
+                    return card ? [card] : [];
+                } else if (position.type === 'column') {
+                    // 선택한 카드부터 맨 아래까지 모든 카드 반환
+                    const column = this.columns[position.column];
+                    if (position.row >= 0 && position.row < column.length) {
+                        return column.slice(position.row);
+                    }
+                    return [];
+                }
+                return [];
+            }
+            
+            getTopCardFromPosition(position) {
+                if (position.type === 'freecell') {
+                    return this.freeCells[position.index];
+                } else if (position.type === 'column') {
+                    return this.columns[position.column][position.row];
+                }
+                return null;
+            }
+            
+            moveCard(from, to) {
+                const cards = this.getCardFromPosition(from);
+                
+                // 카드 데이터 유효성 검사
+                if (!cards || cards.length === 0 || !cards[0]) {
+                    return;
+                }
+                
+                // 원래 위치에서 제거
+                if (from.type === 'freecell') {
+                    this.freeCells[from.index] = null;
+                } else if (from.type === 'column') {
+                    // 선택한 카드부터 맨 아래까지 모두 제거
+                    this.columns[from.column].splice(from.row, cards.length);
+                }
+                
+                // 새 위치에 추가
+                if (to.type === 'freecell') {
+                    this.freeCells[to.index] = cards[0];
+                } else if (to.type === 'home') {
+                    this.homeCells[to.index].push(cards[0]);
+                } else if (to.type === 'column') {
+                    // 여러 카드를 순서대로 추가
+                    this.columns[to.index].push(...cards);
+                }
+            }
+            
+
+            
+            clearDropTargets() {
+                document.querySelectorAll('.drop-target').forEach(el => {
+                    el.classList.remove('drop-target');
+                });
+            }
+            
+            render() {
+                this.renderFreeCells();
+                this.renderHomeCells();
+                this.renderColumns();
+            }
+            
+            renderFreeCells() {
+                for (let i = 0; i < 4; i++) {
+                    const cell = document.querySelector(`[data-type="freecell"][data-index="${i}"]`);
+                    if (this.freeCells[i]) {
+                        cell.innerHTML = '';
+                        const cardElement = this.createCardElement(this.freeCells[i]);
+                        
+                        // createCardElement가 null을 반환한 경우 처리
+                        if (!cardElement) {
+                            cell.innerHTML = '';
+                            return;
+                        }
+                        
+                        // 드래그 관련 스타일 완전 제거
+                        cardElement.style.removeProperty('position');
+                        cardElement.style.removeProperty('left');
+                        cardElement.style.removeProperty('top');
+                        cardElement.style.removeProperty('transform');
+                        cardElement.style.removeProperty('z-index');
+                        cardElement.style.removeProperty('pointer-events');
+                        cardElement.classList.remove('dragging');
+                        
+                        // 프리셀 기본 스타일 적용
+                        cardElement.style.position = 'relative';
+                        cardElement.style.margin = '0';
+                        
+                        cell.appendChild(cardElement);
+                    } else {
+                        cell.innerHTML = '';
+                    }
+                }
+            }
+            
+            renderHomeCells() {
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                const symbols = {hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠'};
+                
+                suits.forEach(suit => {
+                    const cell = document.querySelector(`[data-type="home"][data-suit="${suit}"]`);
+                    const stack = this.homeCells[suit];
+                    
+                    if (stack.length > 0) {
+                        cell.innerHTML = '';
+                        const cardElement = this.createCardElement(stack[stack.length - 1]);
+                        
+                        // createCardElement가 null을 반환한 경우 처리
+                        if (!cardElement) {
+                            cell.innerHTML = symbols[suit];
+                            return;
+                        }
+                        
+                        // 드래그 관련 스타일 완전 제거
+                        cardElement.style.removeProperty('position');
+                        cardElement.style.removeProperty('left');
+                        cardElement.style.removeProperty('top');
+                        cardElement.style.removeProperty('transform');
+                        cardElement.style.removeProperty('z-index');
+                        cardElement.style.removeProperty('pointer-events');
+                        cardElement.classList.remove('dragging');
+                        
+                        // 홈셀 기본 스타일 적용
+                        cardElement.style.position = 'relative';
+                        cardElement.style.margin = '0';
+                        
+                        cell.appendChild(cardElement);
+                    } else {
+                        cell.innerHTML = symbols[suit];
+                    }
+                });
+            }
+            
+            renderColumns() {
+                for (let col = 0; col < 8; col++) {
+                    const column = document.querySelector(`[data-column="${col}"]`);
+                    column.innerHTML = '';
+                    
+                    this.columns[col].forEach((card, index) => {
+                        const cardElement = this.createCardElement(card);
+                        
+                        // createCardElement가 null을 반환한 경우 처리
+                        if (!cardElement) {
+                            return;
+                        }
+                        
+                        // 드래그 관련 스타일 완전 제거 후 컬럼 스타일 적용
+                        cardElement.style.removeProperty('position');
+                        cardElement.style.removeProperty('left');
+                        cardElement.style.removeProperty('top');
+                        cardElement.style.removeProperty('transform');
+                        cardElement.style.removeProperty('z-index');
+                        cardElement.style.removeProperty('pointer-events');
+                        cardElement.classList.remove('dragging');
+                        
+                        // 컬럼에서 올바른 위치 설정
+                        cardElement.style.position = 'absolute';
+                        cardElement.style.left = '50%';
+                        cardElement.style.transform = 'translateX(-50%)';
+                        cardElement.style.top = `${index * 30}px`;
+                        
+                        column.appendChild(cardElement);
+                    });
+                }
+            }
+            
+            createCardElement(card) {
+                // 카드 유효성 검사 강화
+                if (!card) {
+                    return null;
+                }
+                
+                if (!card.suit || !card.value) {
+                    return null;
+                }
+                
+                try {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card';
+                    
+                    const img = document.createElement('img');
+                    img.src = `../solitaire/cards/${card.suit}-${card.value}.png`;
+                    img.alt = `${card.value} of ${card.suit}`;
+                    
+                    cardDiv.appendChild(img);
+                    return cardDiv;
+                } catch (error) {
+                    return null;
+                }
+            }
+            
+            checkAutoComplete() {
+                // 4개 무늬 모두가 완성되었는지 확인
+                if (this.areAllSuitsCompleted()) {
+                    this.autoMoveAllCardsToHome();
+                }
+            }
+            
+            checkWin() {
+                // 4개 무늬 모두가 완성되었는지 확인
+                if (this.areAllSuitsCompleted()) {
+                    this.autoMoveAllCardsToHome();
+                }
+            }
+            
+            isGameWon() {
+                // 모든 홈셀이 완성되었는지 확인
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                return suits.every(suit => this.homeCells[suit].length === 13);
+            }
+            
+            playWinAnimation() {
+                
+                // 홈셀의 모든 카드에 승리 효과 적용
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                suits.forEach((suit, suitIndex) => {
+                    const homeCell = document.querySelector(`[data-type="home"][data-suit="${suit}"]`);
+                    if (homeCell) {
+                        const card = homeCell.querySelector('.card');
+                        if (card) {
+                            // 순차적으로 승리 애니메이션 적용
+                            setTimeout(() => {
+                                card.style.transition = 'transform 0.5s ease-out';
+                                card.style.transform = 'scale(1.1) rotate(5deg)';
+                                
+                                setTimeout(() => {
+                                    card.style.transform = 'scale(1) rotate(0deg)';
+                                }, 500);
+                            }, suitIndex * 100);
+                        }
+                    }
+                });
+                
+                // 승리 메시지 표시
+                setTimeout(() => {
+                    this.showWinMessage();
+                }, 1000);
+            }
+            
+            showWinMessage() {
+                const winMessage = document.querySelector('.win-message');
+                if (winMessage) {
+                    winMessage.style.display = 'block';
+                    winMessage.innerHTML = `
+                        <h2>🎉 축하합니다! 🎉</h2>
+                        <p>프리셀을 완성했습니다!</p>
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                            <button onclick="newGame(); this.parentElement.parentElement.style.display='none';" style="padding: 10px 20px; border: none; border-radius: 5px; background: #4CAF50; color: white; cursor: pointer;">새로하기</button>
+                            <button onclick="window.location.href='../index.html'" style="padding: 10px 20px; border: none; border-radius: 5px; background: #2196F3; color: white; cursor: pointer;">메인으로 돌아가기</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            areAllSuitsCompleted() {
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                
+                for (let suit of suits) {
+                    // 각 무늬별로 A~K까지 모든 카드가 게임판에 올바른 순서로 있는지 확인
+                    if (!this.isSuitCompleted(suit)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            isSuitCompleted(suit) {
+                const homeStack = this.homeCells[suit];
+                const allCards = this.getAllCardsOfSuit(suit);
+                
+                // 해당 무늬의 카드가 13장이 아니면 완성되지 않음
+                if (allCards.length !== 13) return false;
+                
+                // A부터 K까지 순서대로 있는지 확인
+                for (let i = 0; i < 13; i++) {
+                    const expectedNumber = i + 1; // 1(A), 2, 3, ..., 13(K)
+                    
+                    if (!allCards.find(card => card.number === expectedNumber)) {
+                        return false;
+                    }
+                }
+                
+                // 모든 카드가 올바른 순서로 쌓일 수 있는지 확인
+                return this.canMoveAllCardsToHome(suit);
+            }
+            
+            getAllCardsOfSuit(suit) {
+                const cards = [];
+                
+                // 홈셀에서 찾기
+                cards.push(...this.homeCells[suit]);
+                
+                // 프리셀에서 찾기
+                for (let cell of this.freeCells) {
+                    if (cell && cell.suit === suit) {
+                        cards.push(cell);
+                    }
+                }
+                
+                // 컬럼에서 찾기
+                for (let column of this.columns) {
+                    for (let card of column) {
+                        if (card.suit === suit) {
+                            cards.push(card);
+                        }
+                    }
+                }
+                
+                return cards;
+            }
+            
+            canMoveAllCardsToHome(suit) {
+                const homeStack = this.homeCells[suit];
+                const expectedNext = homeStack.length + 1; // 홈셀에 들어가야 할 다음 번호
+                
+                // 프리셀에서 다음 카드 찾기
+                for (let i = 0; i < 4; i++) {
+                    const cell = this.freeCells[i];
+                    if (cell && cell.suit === suit && cell.number === expectedNext) {
+                        return true;
+                    }
+                }
+                
+                // 컬럼에서 다음 카드 찾기 (맨 위 카드만)
+                for (let column of this.columns) {
+                    if (column.length > 0) {
+                        const topCard = column[column.length - 1];
+                        if (topCard.suit === suit && topCard.number === expectedNext) {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+            
+            autoMoveAllCardsToHome() {
+                // 이미 자동완성 중이면 중복 실행 방지
+                if (this.isAutoCompleting) {
+                    return;
+                }
+                
+                this.isAutoCompleting = true;
+                
+                // 모든 카드를 수집하여 순서대로 이동할 카드 목록 생성
+                const cardsToMove = this.collectAllMovableCards();
+                
+                if (cardsToMove.length === 0) {
+                    this.isAutoCompleting = false;
+                    return;
+                }
+                
+                // 순차적으로 애니메이션 이동
+                this.animateCardsSequentially(cardsToMove, 0);
+            }
+            
+            collectAllMovableCards() {
+                const cardsToMove = [];
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                
+                // 각 무늬별로 이동 가능한 카드들을 수집
+                for (let suit of suits) {
+                    const homeStack = this.homeCells[suit];
+                    const expectedNext = homeStack.length + 1;
+                    
+                    // 홈셀이 이미 완성되었으면 스킵
+                    if (homeStack.length === 13) continue;
+                    
+                    let foundCard = false;
+                    
+                    // 프리셀에서 먼저 찾기 (우선순위)
+                    for (let i = 0; i < 4; i++) {
+                        const cell = this.freeCells[i];
+                        if (cell && cell.suit === suit && cell.number === expectedNext) {
+                            cardsToMove.push({
+                                card: cell,
+                                from: {type: 'freecell', index: i},
+                                to: {type: 'home', index: suit},
+                                suit: suit,
+                                number: cell.number
+                            });
+                            foundCard = true;
+                            break; // 같은 무늬의 같은 숫자는 하나만 찾기
+                        }
+                    }
+                    
+                    // 프리셀에서 못 찾았으면 컬럼에서 찾기
+                    if (!foundCard) {
+                        for (let col = 0; col < 8; col++) {
+                            const column = this.columns[col];
+                            if (column.length > 0) {
+                                // 컬럼에서 해당 카드의 정확한 위치 찾기
+                                for (let row = column.length - 1; row >= 0; row--) {
+                                    const card = column[row];
+                                    if (card.suit === suit && card.number === expectedNext) {
+                                        cardsToMove.push({
+                                            card: card,
+                                            from: {type: 'column', column: col, row: row},
+                                            to: {type: 'home', index: suit},
+                                            suit: suit,
+                                            number: card.number
+                                        });
+                                        foundCard = true;
+                                        break; // 같은 무늬의 같은 숫자는 하나만 찾기
+                                    }
+                                }
+                                if (foundCard) break; // 컬럼에서 찾았으면 다음 컬럼 검색 중단
+                            }
+                        }
+                    }
+                }
+                
+                // 모든 카드를 하나의 배열로 만들어서 연속 이동 (무늬 구분 없이)
+                const sortedCards = cardsToMove.sort((a, b) => {
+                    // 먼저 무늬 순서
+                    const suitOrder = ['hearts', 'diamonds', 'clubs', 'spades'];
+                    const suitA = suitOrder.indexOf(a.suit);
+                    const suitB = suitOrder.indexOf(b.suit);
+                    
+                    if (suitA !== suitB) {
+                        return suitA - suitB;
+                    }
+                    
+                    // 같은 무늬 내에서는 숫자 순서
+                    return a.number - b.number;
+                });
+                
+                return sortedCards;
+            }
+            
+            animateCardsSequentially(cardsToMove, index) {
+                if (index >= cardsToMove.length) {
+                    this.render();
+                    this.isAutoCompleting = false;
+                    
+                    // 자동완성 완료 후 승리 체크
+                    if (this.isGameWon()) {
+                        this.playWinAnimation();
+                    }
+                    return;
+                }
+                
+                const cardInfo = cardsToMove[index];
+                
+                // 원본 카드 엘리먼트 찾기
+                const cardElement = this.findCardElement(cardInfo.card, cardInfo.from);
+                
+                if (cardElement) {
+                    // 원본 카드를 직접 애니메이션으로 이동
+                    this.animateOriginalCard(cardElement, cardInfo.from, cardInfo.to, () => {
+                        // 애니메이션 완료 후 다음 카드 시작
+                        setTimeout(() => {
+                            this.animateCardsSequentially(cardsToMove, index + 1);
+                        }, 100);
+                    });
+                    
+                    // 카드가 10% 진행될 때 다음 카드 시작 (겹쳐서 이동)
+                    setTimeout(() => {
+                        // 다음 카드가 아직 처리되지 않았을 때만 시작
+                        if (index + 1 < cardsToMove.length) {
+                            this.animateCardsSequentially(cardsToMove, index + 1);
+                        }
+                    }, 100);
+                } else {
+                    // 카드 엘리먼트를 찾을 수 없으면 즉시 이동
+                    this.moveCard(cardInfo.from, cardInfo.to);
+                    this.render();
+                    // 다음 카드로 즉시 이동
+                    this.animateCardsSequentially(cardsToMove, index + 1);
+                }
+            }
+            
+            moveNextCardToHome(suit) {
+                const homeStack = this.homeCells[suit];
+                const expectedNext = homeStack.length + 1;
+                
+                // 홈셀이 이미 완성되었으면 스킵
+                if (homeStack.length === 13) return false;
+                
+                // 프리셀에서 찾기
+                for (let i = 0; i < 4; i++) {
+                    const cell = this.freeCells[i];
+                    if (cell && cell.suit === suit && cell.number === expectedNext) {
+                        this.homeCells[suit].push(cell);
+                        this.freeCells[i] = null;
+                        return true;
+                    }
+                }
+                
+                // 컬럼에서 찾기 (맨 위 카드만)
+                for (let col = 0; col < 8; col++) {
+                    const column = this.columns[col];
+                    if (column.length > 0) {
+                        const topCard = column[column.length - 1];
+                        if (topCard.suit === suit && topCard.number === expectedNext) {
+                            this.homeCells[suit].push(column.pop());
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+            
+            findCompletedSequence(column) {
+                if (column.length < 13) return {sequence: [], startIndex: -1}; // 13장 미만이면 완전한 시퀀스 불가능
+                
+                // 각 무늬별로 완전한 A~K 시퀀스 찾기
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                
+                for (let suit of suits) {
+                    const homeStack = this.homeCells[suit];
+                    
+                    // 홈셀이 이미 완성되어 있으면 스킵
+                    if (homeStack.length === 13) continue;
+                    
+                    // 컬럼에서 A(1)부터 K(13)까지 완전한 시퀀스 찾기
+                    for (let startIdx = 0; startIdx <= column.length - 13; startIdx++) {
+                        // A부터 시작하는지 확인
+                        if (column[startIdx].suit === suit && column[startIdx].value === 'ace') {
+                            const sequence = [];
+                            let isComplete = true;
+                            
+                            // A부터 K까지 13장이 연속으로 있는지 확인
+                            for (let i = 0; i < 13; i++) {
+                                const cardIndex = startIdx + i;
+                                if (cardIndex >= column.length) {
+                                    isComplete = false;
+                                    break;
+                                }
+                                
+                                const card = column[cardIndex];
+                                const expectedNumber = i + 1; // 1(A), 2, 3, ..., 13(K)
+                                
+                                if (card.suit === suit && card.number === expectedNumber) {
+                                    sequence.push(card);
+                                } else {
+                                    isComplete = false;
+                                    break;
+                                }
+                            }
+                            
+                            // 완전한 A~K 시퀀스가 발견되면 반환
+                            if (isComplete && sequence.length === 13) {
+                                return {sequence, startIndex: startIdx};
+                            }
+                        }
+                    }
+                }
+                
+                return {sequence: [], startIndex: -1};
+            }
+            
+            moveSequenceToHome(columnIndex, sequence, startIndex) {
+                const suit = sequence[0].suit;
+                
+                // 컬럼에서 제거 (startIndex부터 sequence.length만큼)
+                this.columns[columnIndex].splice(startIndex, sequence.length);
+                
+                // 홈셀에 추가
+                for (let card of sequence) {
+                    this.homeCells[suit].push(card);
+                }
+            }
+
+            autoMove() {
+                // 이동할 수 있는 카드들을 찾아서 순차적으로 이동
+                const moveableCards = [];
+                
+                // 컬럼에서 홈셀로 이동 가능한 카드들 찾기
+                for (let col = 0; col < 8; col++) {
+                    if (this.columns[col].length > 0) {
+                        const card = this.columns[col][this.columns[col].length - 1];
+                        const homeStack = this.homeCells[card.suit];
+                        
+                        if ((homeStack.length === 0 && card.value === 'ace') ||
+                            (homeStack.length > 0 && homeStack[homeStack.length - 1].number + 1 === card.number)) {
+                            
+                            // 카드의 정확한 위치 찾기
+                            const cardRow = this.findCardRowInColumn(col, card);
+                            moveableCards.push({
+                                card: card,
+                                fromPosition: {type: 'column', column: col, row: cardRow},
+                                toPosition: {type: 'home', index: card.suit},
+                                priority: card.value === 'ace' ? 1 : 2 // 에이스 우선
+                            });
+                        }
+                    }
+                }
+                
+                // 프리셀에서 홈셀로 이동 가능한 카드들 찾기
+                for (let i = 0; i < 4; i++) {
+                    if (this.freeCells[i]) {
+                        const card = this.freeCells[i];
+                        const homeStack = this.homeCells[card.suit];
+                        
+                        if ((homeStack.length === 0 && card.value === 'ace') ||
+                            (homeStack.length > 0 && homeStack[homeStack.length - 1].number + 1 === card.number)) {
+                            
+                            moveableCards.push({
+                                card: card,
+                                fromPosition: {type: 'freecell', index: i},
+                                toPosition: {type: 'home', index: card.suit},
+                                priority: card.value === 'ace' ? 1 : 2 // 에이스 우선
+                            });
+                        }
+                    }
+                }
+                
+                // 우선순위에 따라 정렬 (에이스 먼저, 그 다음 숫자 순)
+                moveableCards.sort((a, b) => {
+                    if (a.priority !== b.priority) return a.priority - b.priority;
+                    return a.card.number - b.card.number;
+                });
+                
+                // 순차적으로 이동
+                if (moveableCards.length > 0) {
+                    this.moveCardsSequentially(moveableCards, 0);
+                }
+            }
+            
+            moveCardsSequentially(moveableCards, index) {
+                if (index >= moveableCards.length) return;
+                
+                const moveData = moveableCards[index];
+                const cardElement = this.findCardElement(moveData.card, moveData.fromPosition);
+                
+                if (cardElement) {
+                    this.animateCardMove(cardElement, moveData.fromPosition, moveData.toPosition, () => {
+                        // 다음 카드 이동 (300ms 후)
+                        setTimeout(() => {
+                            this.moveCardsSequentially(moveableCards, index + 1);
+                        }, 300);
+                    });
+                } else {
+                    // 애니메이션 실패시 즉시 이동하고 다음으로
+                    this.moveCard(moveData.fromPosition, moveData.toPosition);
+                    this.render();
+                    setTimeout(() => {
+                        this.moveCardsSequentially(moveableCards, index + 1);
+                    }, 100);
+                }
+            }
+            
+            findCardElement(cardData, position) {
+                try {
+                    if (position.type === 'column') {
+                        const column = document.querySelector(`[data-column="${position.column}"]`);
+                        if (!column) return null;
+                        
+                        const cardElements = Array.from(column.querySelectorAll('.card'));
+                        
+                        // 정확한 row 위치의 카드 찾기 (자동완성에서는 항상 맨 위 카드)
+                        if (position.row !== undefined && position.row >= 0 && position.row < cardElements.length) {
+                            const targetCardElement = cardElements[position.row];
+                            if (targetCardElement) {
+                                const elementCardData = this.getCardData(targetCardElement);
+                                if (this.cardsEqual(elementCardData, cardData)) {
+                                    return targetCardElement;
+                                }
+                            }
+                        }
+                        
+                        // fallback: 맨 위 카드에서 찾기
+                        const lastCardElement = cardElements[cardElements.length - 1];
+                        if (lastCardElement) {
+                            const elementCardData = this.getCardData(lastCardElement);
+                            if (this.cardsEqual(elementCardData, cardData)) {
+                                return lastCardElement;
+                            }
+                        }
+                    } else if (position.type === 'freecell') {
+                        const freecell = document.querySelector(`.cell[data-type="freecell"][data-index="${position.index}"]`);
+                        if (!freecell) return null;
+                        
+                        const cardElement = freecell.querySelector('.card');
+                        if (cardElement) {
+                            const elementCardData = this.getCardData(cardElement);
+                            if (this.cardsEqual(elementCardData, cardData)) {
+                                return cardElement;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    // 무시
+                }
+                
+                return null;
+            }
+            
+            isCardAtPosition(cardData, position) {
+                try {
+                    if (position.type === 'column') {
+                        const column = this.columns[position.column];
+                        if (position.row >= 0 && position.row < column.length) {
+                            return this.cardsEqual(column[position.row], cardData);
+                        }
+                        return false;
+                    } else if (position.type === 'freecell') {
+                        const cellCard = this.freeCells[position.index];
+                        return cellCard && this.cardsEqual(cellCard, cardData);
+                    }
+                    return false;
+                } catch (error) {
+                    return false;
+                }
+            }
+            
+            checkWin() {
+                // 승리 체크는 isGameWon()에서 처리하므로 여기서는 제거
+            }
+            
+            newGame() {
+                this.freeCells = [null, null, null, null];
+                this.homeCells = {hearts: [], diamonds: [], clubs: [], spades: []};
+                this.columns = [[], [], [], [], [], [], [], []];
+                this.draggedCard = null;
+                this.draggedFrom = null;
+                document.getElementById('winMessage').style.display = 'none';
+                this.init();
+            }
+        }
+        
+        // 게임 시작
+        const game = new FreeCell();
+        
+        // 전역 함수들
+        function newGame() {
+            game.newGame();
+        }
+        
+        function autoMove() {
+            game.autoMove();
+        }
+    </script>
+</body>
+</html>
