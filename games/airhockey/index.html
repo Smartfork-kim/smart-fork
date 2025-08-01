@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에어하키 게임</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 15px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .player-score { color: #3498db; }
+        .ai-score { color: #e74c3c; }
+
+        #gameCanvas {
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: #2980b9; }
+        button:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .game-start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .start-content {
+            text-align: center;
+            color: white;
+            background: rgba(52, 152, 219, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .start-content h2 {
+            margin: 0 0 20px 0;
+            font-size: 28px;
+        }
+
+        .start-content p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .start-btn-center {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .start-btn-center:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.4);
+        }
+
+        .instructions-small {
+            font-size: 14px !important;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🏒 에어하키 게임 🏒</h1>
+            <div class="score-board">
+                <div class="player-score">플레이어: <span id="playerScore">0</span></div>
+                <div class="ai-score">컴퓨터: <span id="aiScore">0</span></div>
+            </div>
+        </div>
+        
+        <div class="canvas-container" style="position: relative; display: inline-block;">
+            <canvas id="gameCanvas" width="1100" height="693"></canvas>
+            
+            <div id="gameStartOverlay" class="game-start-overlay">
+                <div class="start-content">
+                    <h2>🏒 에어하키 게임 🏒</h2>
+                    <p>5점 먼저 득점하면 승리!</p>
+                    <button onclick="startGame()" id="startBtnCenter" class="start-btn-center">게임 시작</button>
+                    <p class="instructions-small">파란색 말렛을 클릭하고 드래그하세요</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startGame()" id="startBtn" style="display: none;">게임 시작</button>
+            <button onclick="resetGame()" id="resetBtn">다시 시작</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <p>🎯 목표: 5점 먼저 득점하면 승리!</p>
+        <p>🖱️ 파란색 말렛을 클릭하고 드래그하여 퍽을 상대방 골대에 넣으세요</p>
+        <p>⚡ 퍽은 벽과 말렛에 부딪히면 튕겨나갑니다</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 게임 상태
+        let gameState = 'menu';
+        let playerScore = 0;
+        let aiScore = 0;
+        const maxScore = 5;
+        
+        // 이미지 로딩
+        const images = {};
+        const imageNames = ['airhockey map', 'airhockey mallet blue', 'airhockey mallet red', 'airhockey puck'];
+        let imagesLoaded = 0;
+        
+        imageNames.forEach(name => {
+            images[name] = new Image();
+            images[name].onload = () => {
+                imagesLoaded++;
+                if (name === 'airhockey map') {
+                    canvas.width = images[name].width;
+                    canvas.height = images[name].height;
+                    
+                    // 게임 오브젝트 위치 조정
+                    player.x = canvas.width * 0.2;
+                    player.y = canvas.height * 0.5;
+                    ai.x = canvas.width * 0.8;
+                    ai.y = canvas.height * 0.5;
+                    puck.x = canvas.width * 0.5;
+                    puck.y = canvas.height * 0.5;
+                    
+                    ai.mode = 'defense';
+                    ai.attackTarget = { x: 50, y: canvas.height / 2 };
+                }
+                
+                if (imagesLoaded === imageNames.length) {
+                    initGame();
+                }
+            };
+            images[name].src = name + '.png';
+        });
+        
+        // 게임 오브젝트 정의
+        let player = {
+            x: 150, y: 300, prevX: 150, prevY: 300,
+            vx: 0, vy: 0, radius: 35, speed: 5
+        };
+        
+        let ai = {
+            x: 1050, y: 300, prevX: 1050, prevY: 300,
+            vx: 0, vy: 0, radius: 35, speed: 6,
+            mode: 'defense',
+            attackTarget: { x: 0, y: 0 },
+            pullbackStartTime: 0,
+            cooldownStartTime: 0
+        };
+        
+        let puck = {
+            x: 600, y: 300, radius: 22.5,
+            vx: 0, vy: 0, maxSpeed: 25,
+            trail: []
+        };
+        
+        let mouse = { x: 0, y: 0, isPressed: false };
+        
+        // 마우스 이벤트 처리
+        canvas.addEventListener('mousemove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouse.x = (e.clientX - rect.left) * scaleX;
+            mouse.y = (e.clientY - rect.top) * scaleY;
+            
+            if (mouse.x < canvas.width / 2 && mouse.isPressed) {
+                const clampedX = Math.max(45 + player.radius, Math.min(canvas.width / 2 - player.radius, mouse.x));
+                const clampedY = Math.max(39 + player.radius, Math.min(651 - player.radius, mouse.y));
+                
+                const distance = Math.sqrt((clampedX - player.x) ** 2 + (clampedY - player.y) ** 2);
+                const lerpFactor = Math.min(0.9, Math.max(0.3, distance / 80));
+                
+                player.x += (clampedX - player.x) * lerpFactor;
+                player.y += (clampedY - player.y) * lerpFactor;
+            }
+        });
+        
+        canvas.addEventListener('mousedown', () => mouse.isPressed = true);
+        canvas.addEventListener('mouseup', () => mouse.isPressed = false);
+        canvas.addEventListener('mouseleave', () => mouse.isPressed = false);
+        canvas.addEventListener('mouseenter', (e) => {
+            if (e.buttons === 1) mouse.isPressed = true;
+        });
+        
+        function initGame() {
+            resetPositions();
+            gameLoop();
+        }
+        
+        function startGame() {
+            playerScore = 0;
+            aiScore = 0;
+            updateScore();
+            
+            gameState = 'playing';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('gameStartOverlay').style.display = 'none';
+            
+            resetPositions();
+        }
+        
+        function resetGame() {
+            gameState = 'menu';
+            playerScore = 0;
+            aiScore = 0;
+            updateScore();
+            resetPositions();
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('gameStartOverlay').style.display = 'flex';
+            
+            document.querySelector('.start-content h2').textContent = '🏒 에어하키 게임 🏒';
+            document.querySelector('.start-content p').textContent = '5점 먼저 득점하면 승리!';
+            document.getElementById('startBtnCenter').textContent = '게임 시작';
+        }
+        
+        function resetPositions() {
+            player.x = canvas.width * 0.2;
+            player.y = canvas.height * 0.5;
+            ai.x = canvas.width * 0.8;
+            ai.y = canvas.height * 0.5;
+            puck.x = canvas.width * 0.5;
+            puck.y = canvas.height * 0.5;
+            puck.vx = (Math.random() - 0.5) * 4;
+            puck.vy = (Math.random() - 0.5) * 4;
+            puck.trail = [];
+            
+            ai.mode = 'defense';
+            ai.attackTarget = { x: 50, y: canvas.height / 2 };
+            ai.pullbackStartTime = 0;
+            ai.cooldownStartTime = 0;
+        }
+        
+        function updateScore() {
+            document.getElementById('playerScore').textContent = playerScore;
+            document.getElementById('aiScore').textContent = aiScore;
+        }
+        
+        function checkGoal() {
+            // 플레이어 골대 (왼쪽) - AI 득점
+            if (puck.x >= 72 && puck.x <= 125 && puck.y >= 280 && puck.y <= 410) {
+                aiScore++;
+                updateScore();
+                checkWin('AI');
+                resetPositions();
+                return true;
+            }
+            
+            // AI 골대 (오른쪽) - 플레이어 득점
+            if (puck.x >= 988 && puck.x <= 1039 && puck.y >= 280 && puck.y <= 410) {
+                playerScore++;
+                updateScore();
+                checkWin('Player');
+                resetPositions();
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function checkWin(winner) {
+            if (playerScore >= maxScore) {
+                gameState = 'gameOver';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('gameStartOverlay').style.display = 'flex';
+                document.querySelector('.start-content h2').textContent = '🎉 플레이어 승리! 🎉';
+                document.querySelector('.start-content p').textContent = '축하합니다! 다시 도전해보세요!';
+                document.getElementById('startBtnCenter').textContent = '다시 시작';
+            } else if (aiScore >= maxScore) {
+                gameState = 'gameOver';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('gameStartOverlay').style.display = 'flex';
+                document.querySelector('.start-content h2').textContent = '💻 컴퓨터 승리!';
+                document.querySelector('.start-content p').textContent = '다시 도전해보세요!';
+                document.getElementById('startBtnCenter').textContent = '다시 시작';
+            }
+        }
+        
+        function updatePlayer() {
+            player.prevX = player.x;
+            player.prevY = player.y;
+            
+            if (mouse.x < canvas.width / 2 && mouse.isPressed) {
+                const targetX = mouse.x;
+                const targetY = mouse.y;
+                
+                const distance = Math.sqrt((targetX - player.x) ** 2 + (targetY - player.y) ** 2);
+                const lerpFactor = Math.min(0.8, Math.max(0.2, distance / 100));
+                
+                player.x += (targetX - player.x) * lerpFactor;
+                player.y += (targetY - player.y) * lerpFactor;
+            }
+            
+            player.x = Math.max(45 + player.radius, Math.min(canvas.width / 2 - player.radius, player.x));
+            player.y = Math.max(39 + player.radius, Math.min(651 - player.radius, player.y));
+            
+            player.vx = player.x - player.prevX;
+            player.vy = player.y - player.prevY;
+            
+            const playerSpeed = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+            if (playerSpeed > 20) {
+                player.vx = (player.vx / playerSpeed) * 20;
+                player.vy = (player.vy / playerSpeed) * 20;
+            }
+        }
+        
+        function updateAI() {
+            if (gameState !== 'playing') return;
+            
+            ai.prevX = ai.x;
+            ai.prevY = ai.y;
+            
+            const distanceToPuck = Math.sqrt((puck.x - ai.x) ** 2 + (puck.y - ai.y) ** 2);
+            const playerGoalX = 50;
+            const playerGoalY = canvas.height / 2;
+            const puckSpeed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+            
+            const toGoalDx = playerGoalX - puck.x;
+            const toGoalDy = playerGoalY - puck.y;
+            const goalAngle = Math.atan2(toGoalDy, toGoalDx);
+            const isGoodAttackAngle = toGoalDx < 0;
+            
+            if (ai.mode === 'defense') {
+                if (puck.x > canvas.width * 0.5) {
+                    ai.mode = 'approach';
+                }
+                
+                const defenseX = canvas.width * 0.8;
+                const defenseY = canvas.height * 0.5;
+                
+                const dx = defenseX - ai.x;
+                const dy = defenseY - ai.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 5) {
+                    ai.x += (dx / distance) * ai.speed * 0.8;
+                    ai.y += (dy / distance) * ai.speed * 0.8;
+                }
+                
+            } else if (ai.mode === 'approach') {
+                const approachThreshold = puckSpeed > 15 ? 120 : puckSpeed > 10 ? 100 : 80;
+                
+                if (distanceToPuck < approachThreshold) {
+                    ai.mode = 'pullback';
+                    ai.pullbackStartTime = Date.now();
+                }
+                
+                const approachDistance = puckSpeed > 15 ? 80 : 60;
+                let targetX, targetY;
+                
+                if (isGoodAttackAngle) {
+                    targetX = puck.x - Math.cos(goalAngle) * approachDistance;
+                    targetY = puck.y - Math.sin(goalAngle) * approachDistance;
+                } else {
+                    const sideAngle = puck.y > canvas.height / 2 ? -Math.PI/2 : Math.PI/2;
+                    targetX = puck.x - Math.cos(sideAngle) * approachDistance;
+                    targetY = puck.y - Math.sin(sideAngle) * approachDistance;
+                }
+                
+                targetX = Math.max(canvas.width * 0.5 + ai.radius, targetX);
+                
+                const dx = targetX - ai.x;
+                const dy = targetY - ai.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 5) {
+                    const approachSpeed = puckSpeed > 15 ? 1.8 : 1.4;
+                    ai.x += (dx / distance) * ai.speed * approachSpeed;
+                    ai.y += (dy / distance) * ai.speed * approachSpeed;
+                }
+                
+            } else if (ai.mode === 'pullback') {
+                const pullbackTime = Date.now() - ai.pullbackStartTime;
+                const waitTime = puckSpeed > 15 ? 150 : puckSpeed > 10 ? 200 : 250;
+                
+                if (pullbackTime > waitTime) {
+                    ai.mode = 'attack';
+                    
+                    if (isGoodAttackAngle) {
+                        ai.attackTarget.x = playerGoalX;
+                        ai.attackTarget.y = playerGoalY;
+                    } else {
+                        if (puck.y > canvas.height / 2) {
+                            ai.attackTarget.x = puck.x;
+                            ai.attackTarget.y = 39 + 50;
+                        } else {
+                            ai.attackTarget.x = puck.x;
+                            ai.attackTarget.y = 651 - 50;
+                        }
+                    }
+                }
+                
+                const pullbackDistance = puckSpeed > 15 ? 40 : 30;
+                let pullbackX, pullbackY;
+                
+                if (isGoodAttackAngle) {
+                    pullbackX = puck.x - Math.cos(goalAngle) * pullbackDistance;
+                    pullbackY = puck.y - Math.sin(goalAngle) * pullbackDistance;
+                } else {
+                    const sideAngle = puck.y > canvas.height / 2 ? -Math.PI/2 : Math.PI/2;
+                    pullbackX = puck.x - Math.cos(sideAngle) * pullbackDistance;
+                    pullbackY = puck.y - Math.sin(sideAngle) * pullbackDistance;
+                }
+                
+                pullbackX = Math.max(canvas.width * 0.5 + ai.radius, pullbackX);
+                
+                const dx = pullbackX - ai.x;
+                const dy = pullbackY - ai.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 3) {
+                    const pullbackSpeed = puckSpeed > 15 ? 2.0 : 1.5;
+                    ai.x += (dx / distance) * ai.speed * pullbackSpeed;
+                    ai.y += (dy / distance) * ai.speed * pullbackSpeed;
+                }
+                
+            } else if (ai.mode === 'attack') {
+                const puckDx = puck.x - ai.x;
+                const puckDy = puck.y - ai.y;
+                const puckDistance = Math.sqrt(puckDx * puckDx + puckDy * puckDy);
+                
+                if (puckDistance > ai.radius + puck.radius + 5) {
+                    const attackSpeed = puckSpeed > 15 ? 3.0 : puckSpeed > 10 ? 2.5 : 2.0;
+                    ai.x += (puckDx / puckDistance) * ai.speed * attackSpeed;
+                    ai.y += (puckDy / puckDistance) * ai.speed * attackSpeed;
+                } else {
+                    ai.mode = 'cooldown';
+                    ai.cooldownStartTime = Date.now();
+                }
+            } else if (ai.mode === 'cooldown') {
+                const cooldownTime = Date.now() - ai.cooldownStartTime;
+                const cooldownDuration = puckSpeed > 15 ? 300 : puckSpeed > 10 ? 350 : 400;
+                
+                if (cooldownTime > cooldownDuration) {
+                    // 쿨다운이 끝나면 바로 approach 모드로 전환하여 더 자연스럽게 동작
+                    if (puck.x > canvas.width * 0.5) {
+                        ai.mode = 'approach';
+                    } else {
+                        ai.mode = 'defense';
+                    }
+                }
+                
+                // 쿨다운 중에는 자기 진영 중앙으로 이동
+                const centerX = canvas.width * 0.8; // AI 진영 중앙
+                const centerY = canvas.height * 0.5;
+                
+                const dx = centerX - ai.x;
+                const dy = centerY - ai.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 목표 위치에 더 가까이 있을 때는 더 정확한 정지
+                if (distance > 10) {
+                    ai.x += (dx / distance) * ai.speed * 1.8;
+                    ai.y += (dy / distance) * ai.speed * 1.8;
+                } else if (distance > 3) {
+                    // 가까이 있을 때는 더 부드럽게
+                    ai.x += (dx / distance) * ai.speed * 0.8;
+                    ai.y += (dy / distance) * ai.speed * 0.8;
+                } else {
+                    // 목표 위치에 도달했으면 정확히 위치 고정
+                    ai.x = centerX;
+                    ai.y = centerY;
+                }
+            }
+            
+            if ((puck.x < canvas.width * 0.5 || distanceToPuck > 400) && ai.mode !== 'cooldown') {
+                ai.mode = 'defense';
+            }
+            
+            ai.x = Math.max(canvas.width / 2 + ai.radius, Math.min(1060 - ai.radius, ai.x));
+            ai.y = Math.max(39 + ai.radius, Math.min(651 - ai.radius, ai.y));
+            
+            ai.vx = ai.x - ai.prevX;
+            ai.vy = ai.y - ai.prevY;
+            
+            const aiSpeed = Math.sqrt(ai.vx * ai.vx + ai.vy * ai.vy);
+            if (aiSpeed > 15) {
+                ai.vx = (ai.vx / aiSpeed) * 15;
+                ai.vy = (ai.vy / aiSpeed) * 15;
+            }
+            
+
+        }
+        
+        function updatePuck() {
+            if (gameState !== 'playing') return;
+            
+            puck.x += puck.vx;
+            puck.y += puck.vy;
+            
+            const puckSpeed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+            
+            if (puckSpeed > 3) {
+                puck.trail.push({ x: puck.x, y: puck.y, speed: puckSpeed });
+                
+                const maxTrailLength = puckSpeed > 15 ? 8 : puckSpeed > 10 ? 6 : puckSpeed > 5 ? 3 : 1;
+                if (puck.trail.length > maxTrailLength) {
+                    puck.trail.shift();
+                }
+            } else {
+                puck.trail = [];
+            }
+            
+            // 테두리 충돌 처리 (에너지 손실 포함)
+            if (puck.y - puck.radius <= 39) {
+                puck.vy = -puck.vy * 0.95;
+                puck.y = 39 + puck.radius;
+            }
+            if (puck.y + puck.radius >= 651) {
+                puck.vy = -puck.vy * 0.95;
+                puck.y = 651 - puck.radius;
+            }
+            
+            // 좌우 테두리 충돌 (골대 영역 제외)
+            if (puck.x - puck.radius <= 45) {
+                if (puck.y < 280 || puck.y > 410) {
+                    puck.vx = -puck.vx * 0.95;
+                    puck.x = 45 + puck.radius;
+                }
+            }
+            if (puck.x + puck.radius >= 1060) {
+                if (puck.y < 280 || puck.y > 410) {
+                    puck.vx = -puck.vx * 0.95;
+                    puck.x = 1060 - puck.radius;
+                }
+            }
+            
+            // 경계 벗어남 방지 (강제 보정)
+            if (puck.x < 45) puck.x = 45 + puck.radius;
+            if (puck.x > 1060) puck.x = 1060 - puck.radius;
+            if (puck.y < 39) puck.y = 39 + puck.radius;
+            if (puck.y > 651) puck.y = 651 - puck.radius;
+            
+            // 골대 뒤쪽 영역 추가 충돌 처리
+            if (puck.x < 45 && puck.y > 410) {
+                if (puck.x < 45) {
+                    puck.vx = -puck.vx * 0.95;
+                    puck.x = 45 + puck.radius;
+                }
+                if (puck.y > 651) {
+                    puck.vy = -puck.vy * 0.95;
+                    puck.y = 651 - puck.radius;
+                }
+            }
+            
+            checkPuckCollision(player);
+            checkPuckCollision(ai);
+            
+            puck.vx *= 0.99;
+            puck.vy *= 0.99;
+            
+            const speed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+            if (speed > puck.maxSpeed) {
+                puck.vx = (puck.vx / speed) * puck.maxSpeed;
+                puck.vy = (puck.vy / speed) * puck.maxSpeed;
+            }
+            
+            checkGoal();
+        }
+        
+        function checkPuckCollision(mallet) {
+            const dx = puck.x - mallet.x;
+            const dy = puck.y - mallet.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const malletSpeed = Math.sqrt(mallet.vx * mallet.vx + mallet.vy * mallet.vy);
+            let extendedRadius;
+            if (mallet === ai) {
+                extendedRadius = puck.radius + mallet.radius + Math.min(malletSpeed * 0.5, 3);
+            } else {
+                extendedRadius = puck.radius + mallet.radius + Math.max(malletSpeed * 2.0, malletSpeed * 1.0);
+            }
+            
+            if (distance < extendedRadius) {
+                const angle = Math.atan2(dy, dx);
+                
+                if (mallet === ai) {
+                    if (ai.mode !== 'cooldown') {
+                        ai.mode = 'cooldown';
+                        ai.cooldownStartTime = Date.now();
+                    }
+                }
+                
+                const targetX = mallet.x + Math.cos(angle) * (mallet.radius + puck.radius);
+                const targetY = mallet.y + Math.sin(angle) * (mallet.radius + puck.radius);
+                
+                puck.x = targetX;
+                puck.y = targetY;
+                
+                let basePower = 3;
+                let speedMultiplier = 4;
+                let totalPower = basePower + (malletSpeed * speedMultiplier);
+                
+                if (malletSpeed > 10) {
+                    totalPower += 3;
+                } else if (malletSpeed > 6) {
+                    totalPower += 2;
+                } else if (malletSpeed > 3) {
+                    totalPower += 1;
+                }
+                
+                const angleDegrees = Math.abs(angle * 180 / Math.PI);
+                if (angleDegrees < 15) {
+                    totalPower += 2;
+                } else if (angleDegrees < 45) {
+                    totalPower += 1;
+                } else if (angleDegrees > 135) {
+                    totalPower -= 1;
+                }
+                
+                totalPower = Math.min(totalPower, 25);
+                
+                if (mallet === ai && (ai.mode === 'attack' || ai.mode === 'pullback')) {
+                    if (ai.mode === 'attack') {
+                        totalPower = Math.min(totalPower * 1.8, 25);
+                        
+                        // AI가 자기 골대 쪽으로 치는 것을 방지
+                        const aiGoalX = 1013.5; // AI 골대 중앙 X 좌표 (988~1039의 중앙)
+                        const aiGoalY = 345;    // AI 골대 중앙 Y 좌표 (280~410의 중앙)
+                        
+                        // 퍽에서 AI 골대까지의 방향 벡터
+                        const toAiGoalDx = aiGoalX - puck.x;
+                        const toAiGoalDy = aiGoalY - puck.y;
+                        const toAiGoalDistance = Math.sqrt(toAiGoalDx * toAiGoalDx + toAiGoalDy * toAiGoalDy);
+                        
+                        // 현재 충돌 방향과 AI 골대 방향의 각도 차이 계산
+                        const currentAngle = Math.atan2(dy, dx);
+                        const toAiGoalAngle = Math.atan2(toAiGoalDy, toAiGoalDx);
+                        let angleDiff = Math.abs(currentAngle - toAiGoalAngle);
+                        
+                        // 각도 차이를 0~π 범위로 정규화
+                        if (angleDiff > Math.PI) {
+                            angleDiff = 2 * Math.PI - angleDiff;
+                        }
+                        
+                        // AI 골대 쪽으로 치는 경우 (각도 차이가 60도 이내)
+                        if (angleDiff < Math.PI / 3) {
+                            // 수직 방향으로 힘을 조정하여 골대 쪽으로 가지 않도록 함
+                            const safeAngle = puck.y > aiGoalY ? -Math.PI/2 : Math.PI/2;
+                            const adjustedAngle = safeAngle + (Math.random() - 0.5) * 0.5; // 약간의 랜덤성 추가
+                            
+                            puck.vx = Math.cos(adjustedAngle) * totalPower;
+                            puck.vy = Math.sin(adjustedAngle) * totalPower;
+                            return;
+                        }
+                    } else {
+                        totalPower = Math.min(totalPower * 1.2, 20);
+                    }
+                    
+                    const targetAngle = Math.atan2(ai.attackTarget.y - puck.y, ai.attackTarget.x - puck.x);
+                    const adjustedAngle = angle * 0.7 + targetAngle * 0.3;
+                    
+                    puck.vx = Math.cos(adjustedAngle) * totalPower;
+                    puck.vy = Math.sin(adjustedAngle) * totalPower;
+                } else {
+                    const malletAngle = Math.atan2(mallet.vy, mallet.vx);
+                    const speedRatio = Math.min(malletSpeed / 5, 1);
+                    const finalAngle = angle * (1 - speedRatio * 0.4) + malletAngle * speedRatio * 0.4;
+                    
+                    puck.vx = Math.cos(finalAngle) * totalPower;
+                    puck.vy = Math.sin(finalAngle) * totalPower;
+                }
+            }
+        }
+        
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (images['airhockey map']) {
+                ctx.drawImage(images['airhockey map'], 0, 0, canvas.width, canvas.height);
+            }
+            
+            if (images['airhockey mallet blue']) {
+                ctx.drawImage(images['airhockey mallet blue'], 
+                    player.x - player.radius, player.y - player.radius, 
+                    player.radius * 2, player.radius * 2);
+            }
+            
+            if (images['airhockey mallet red']) {
+                ctx.drawImage(images['airhockey mallet red'], 
+                    ai.x - ai.radius, ai.y - ai.radius, 
+                    ai.radius * 2, ai.radius * 2);
+            }
+            
+            if (puck.trail.length > 0 && images['airhockey puck']) {
+                const currentPuckSpeed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+                
+                for (let i = 0; i < puck.trail.length; i++) {
+                    const trailPoint = puck.trail[i];
+                    
+                    let baseAlpha;
+                    if (currentPuckSpeed > 15) {
+                        baseAlpha = 0.4;
+                    } else if (currentPuckSpeed > 10) {
+                        baseAlpha = 0.3;
+                    } else {
+                        baseAlpha = 0.15;
+                    }
+                    
+                    const alpha = (i + 1) / puck.trail.length * baseAlpha;
+                    const scale = 0.8 + (i / puck.trail.length) * 0.2;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.drawImage(images['airhockey puck'], 
+                        trailPoint.x - puck.radius * scale, 
+                        trailPoint.y - puck.radius * scale, 
+                        puck.radius * 2 * scale, 
+                        puck.radius * 2 * scale);
+                    ctx.restore();
+                }
+            }
+            
+            if (images['airhockey puck']) {
+                ctx.drawImage(images['airhockey puck'], 
+                    puck.x - puck.radius, puck.y - puck.radius, 
+                    puck.radius * 2, puck.radius * 2);
+            }
+        }
+        
+        function gameLoop() {
+            updatePlayer();
+            updateAI();
+            updatePuck();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html> 

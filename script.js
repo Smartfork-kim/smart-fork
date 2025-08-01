@@ -18,24 +18,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 슬라이더 관련 요소들
-    const slides = document.querySelectorAll('.game-slide');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const indicators = document.querySelectorAll('.indicator');
+    let slides = document.querySelectorAll('.game-slide');
+    let prevBtn = document.getElementById('prevBtn');
+    let nextBtn = document.getElementById('nextBtn');
+    let indicators = document.querySelectorAll('.indicator');
     
     let currentSlide = 0;
-    const totalSlides = slides.length;
+    let totalSlides = slides.length;
+
+    // 슬라이더 요소 업데이트 함수
+    function updateSliderElements() {
+        slides = document.querySelectorAll('.game-slide');
+        prevBtn = document.getElementById('prevBtn');
+        nextBtn = document.getElementById('nextBtn');
+        indicators = document.querySelectorAll('.indicator');
+        totalSlides = slides.length;
+        currentSlide = 0;
+    }
 
     // 슬라이드 변경 함수
     function changeSlide(slideIndex) {
         // 현재 활성 슬라이드와 인디케이터에서 active 클래스 제거
-        slides[currentSlide].classList.remove('active');
-        indicators[currentSlide].classList.remove('active');
+        if (slides[currentSlide] && indicators[currentSlide]) {
+            slides[currentSlide].classList.remove('active');
+            indicators[currentSlide].classList.remove('active');
+        }
         
         // 새로운 슬라이드와 인디케이터에 active 클래스 추가
         currentSlide = slideIndex;
-        slides[currentSlide].classList.add('active');
-        indicators[currentSlide].classList.add('active');
+        if (slides[currentSlide] && indicators[currentSlide]) {
+            slides[currentSlide].classList.add('active');
+            indicators[currentSlide].classList.add('active');
+        }
     }
 
     // 다음 슬라이드로 이동
@@ -95,6 +109,160 @@ document.addEventListener('DOMContentLoaded', function() {
     if (totalAdSlides > 0) {
         setInterval(changeAdSlide, 5000);
     }
+
+    // 카테고리 필터링 기능
+    const categoryLinks = document.querySelectorAll('.nav-link[data-category]');
+    const allGameCards = document.querySelectorAll('.game-card');
+    const gamesSliderContainer = document.querySelector('.games-slider');
+    const sliderControls = document.querySelector('.slider-controls');
+    const slideIndicators = document.querySelector('.slide-indicators');
+
+    // 카테고리별 게임 분류
+    const gamesByCategory = {
+        all: Array.from(allGameCards),
+        puzzle: Array.from(allGameCards).filter(card => card.dataset.category === 'puzzle'),
+        casual: Array.from(allGameCards).filter(card => card.dataset.category === 'casual'),
+        arcade: Array.from(allGameCards).filter(card => card.dataset.category === 'arcade'),
+        strategy: Array.from(allGameCards).filter(card => card.dataset.category === 'strategy')
+    };
+
+    // 카테고리 필터링 함수
+    function filterGamesByCategory(category) {
+        // 모든 게임 카드 숨기기
+        allGameCards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // 선택된 카테고리의 게임들만 보이기
+        const selectedGames = gamesByCategory[category] || gamesByCategory.all;
+        selectedGames.forEach(card => {
+            card.style.display = 'block';
+        });
+
+        if (category === 'all') {
+            // 모든게임 모드: 슬라이더 형태
+            sliderControls.style.display = 'flex';
+            slideIndicators.style.display = 'flex';
+            reorganizeGamesIntoSlides(selectedGames);
+        } else {
+            // 카테고리 모드: 스크롤 가능한 그리드 형태
+            sliderControls.style.display = 'none';
+            slideIndicators.style.display = 'none';
+            reorganizeGamesIntoGrid(selectedGames);
+        }
+    }
+
+    // 게임들을 3개씩 슬라이드로 재배치 (모든게임 모드)
+    function reorganizeGamesIntoSlides(games) {
+        const gamesSlider = document.querySelector('.games-slider');
+        
+        // 기존 슬라이드 제거
+        const existingSlides = gamesSlider.querySelectorAll('.game-slide');
+        existingSlides.forEach(slide => slide.remove());
+
+        // 3개씩 그룹으로 나누기
+        for (let i = 0; i < games.length; i += 3) {
+            const slide = document.createElement('div');
+            slide.className = 'game-slide';
+            if (i === 0) slide.classList.add('active');
+
+            const gameCardsContainer = document.createElement('div');
+            gameCardsContainer.className = 'game-cards';
+
+            // 3개 게임 추가
+            for (let j = i; j < Math.min(i + 3, games.length); j++) {
+                gameCardsContainer.appendChild(games[j].cloneNode(true));
+            }
+
+            slide.appendChild(gameCardsContainer);
+            gamesSlider.appendChild(slide);
+        }
+
+        // 슬라이더 인디케이터 업데이트
+        updateSlideIndicators();
+        
+        // 슬라이더 요소들 업데이트
+        updateSliderElements();
+        
+        // 이벤트 리스너 재등록
+        if (nextBtn) {
+            nextBtn.addEventListener('click', nextSlide);
+        }
+        if (prevBtn) {
+            prevBtn.addEventListener('click', prevSlide);
+        }
+    }
+
+    // 게임들을 스크롤 가능한 그리드로 재배치 (카테고리 모드)
+    function reorganizeGamesIntoGrid(games) {
+        const gamesSlider = document.querySelector('.games-slider');
+        
+        // 기존 슬라이드 제거
+        const existingSlides = gamesSlider.querySelectorAll('.game-slide');
+        existingSlides.forEach(slide => slide.remove());
+
+        // 단일 슬라이드 생성 (그리드용)
+        const slide = document.createElement('div');
+        slide.className = 'game-slide active category-mode';
+
+        const gameCardsContainer = document.createElement('div');
+        gameCardsContainer.className = 'game-cards category-grid';
+
+        // 모든 게임을 그리드에 추가
+        games.forEach(game => {
+            gameCardsContainer.appendChild(game.cloneNode(true));
+        });
+
+        slide.appendChild(gameCardsContainer);
+        gamesSlider.appendChild(slide);
+    }
+
+    // 슬라이더 인디케이터 업데이트
+    function updateSlideIndicators() {
+        const slides = document.querySelectorAll('.game-slide');
+        const indicatorsContainer = document.querySelector('.slide-indicators');
+        
+        // 기존 인디케이터 제거
+        indicatorsContainer.innerHTML = '';
+        
+        // 새로운 인디케이터 생성
+        slides.forEach((_, index) => {
+            const indicator = document.createElement('span');
+            indicator.className = 'indicator';
+            if (index === 0) indicator.classList.add('active');
+            indicator.dataset.slide = index;
+            
+            indicator.addEventListener('click', () => {
+                changeSlide(index);
+            });
+            
+            indicatorsContainer.appendChild(indicator);
+        });
+    }
+
+    // 카테고리 링크 클릭 이벤트
+    categoryLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 모든 링크에서 active 클래스 제거
+            categoryLinks.forEach(l => l.classList.remove('active'));
+            
+            // 클릭된 링크에 active 클래스 추가
+            this.classList.add('active');
+            
+            // 카테고리 필터링 실행
+            const category = this.dataset.category;
+            filterGamesByCategory(category);
+            
+            // 카테고리 모드일 때 body에 클래스 추가
+            if (category !== 'all') {
+                document.body.classList.add('category-mode-active');
+            } else {
+                document.body.classList.remove('category-mode-active');
+            }
+        });
+    });
 
     // 헤더 스크롤 숨김/표시 기능
     const header = document.querySelector('.header');

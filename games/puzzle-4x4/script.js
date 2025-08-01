@@ -7,7 +7,6 @@ class PuzzleGame {
         this.dragPreview = null;
         this.updateDragPreviewPosition = null;
         this.stage = 1;
-        this.completedStages = 0;
         
         // 그리드 드래그 관련 변수
         this.dragFromGrid = false;
@@ -20,29 +19,34 @@ class PuzzleGame {
         this.timerInterval = null;
         this.gameActive = true;
 
+        // 이전 스테이지 퍼즐 조합 기억 (중복 방지용)
+        this.previousPuzzleCombinations = new Set();
+
         this.init();
     }
 
     init() {
-        console.log('게임 초기화 시작');
         this.setupGrid();
-        console.log('그리드 설정 완료');
         this.setupEventListeners();
-        console.log('이벤트 리스너 설정 완료');
         this.generateRandomPuzzles();
-        console.log('퍼즐 생성 완료');
+        this.updateStageInfo();
         this.startTimer();
-        console.log('타이머 시작');
         this.setupPopupEventListeners();
-        console.log('팝업 이벤트 리스너 설정 완료');
     }
 
     setupGrid() {
         const grid = this.getElement('grid');
         if (grid) {
-            grid.innerHTML = Array.from({length: 16}, (_, i) => 
-                `<div class="grid-cell" data-index="${i}"></div>`
-            ).join('');
+            // Fragment를 사용하여 DOM 조작 최적화
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.dataset.index = i;
+                fragment.appendChild(cell);
+            }
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
         }
     }
 
@@ -204,27 +208,81 @@ class PuzzleGame {
         let pieceCount;
         if (this.stage <= 3) {
             pieceCount = 3 + this.stage; // 1스테이지=4개, 2스테이지=5개, 3스테이지=6개
+        } else if (this.stage <= 4) {
+            pieceCount = 6 + Math.floor(Math.random() * 3); // 4스테이지=6~8개 랜덤
         } else {
-            pieceCount = 6 + Math.floor(Math.random() * 3); // 4스테이지 이후=6~8개 랜덤
+            pieceCount = 5 + Math.floor(Math.random() * 3); // 5스테이지 이후=5~7개 랜덤
         }
         
         // 성공적으로 퍼즐을 생성할 때까지 반복
         let pieces = null;
         let attempts = 0;
-        while (pieces === null && attempts < 50) {
+        const maxAttempts = 200; // 시도 횟수 증가
+        
+        while (pieces === null && attempts < maxAttempts) {
             pieces = this.generateGridPieces(pieceCount);
             attempts++;
         }
         
-        // 만약 50번 시도해도 실패하면 간단한 2x2 조합으로 대체
+        // 만약 최대 시도 횟수만큼 시도해도 실패하면 다른 조각 개수로 시도
         if (pieces === null) {
-            console.log('퍼즐 생성 최종 실패, 기본 조합 사용');
-            pieces = [
-                [[0,0], [0,1], [1,0], [1,1]], // 2x2
-                [[0,2], [0,3], [1,2], [1,3]], // 2x2  
-                [[2,0], [2,1], [3,0], [3,1]], // 2x2
-                [[2,2], [2,3], [3,2], [3,3]]  // 2x2
-            ];
+
+            
+            // 스테이지에 따른 대체 조각 개수들
+            let alternativeCounts;
+            if (this.stage <= 3) {
+                alternativeCounts = [4, 5, 6].filter(count => count !== pieceCount);
+            } else if (this.stage <= 4) {
+                alternativeCounts = [6, 7, 8].filter(count => count !== pieceCount);
+            } else {
+                alternativeCounts = [5, 6, 7].filter(count => count !== pieceCount);
+            }
+            
+            for (const altCount of alternativeCounts) {
+                attempts = 0;
+                while (pieces === null && attempts < 50) {
+                    pieces = this.generateGridPieces(altCount);
+                    attempts++;
+                }
+                if (pieces !== null) {
+
+                    break;
+                }
+            }
+        }
+        
+        // 여전히 실패하면 스테이지에 맞는 간단한 조합으로 대체
+        if (pieces === null) {
+
+            
+            if (this.stage <= 3) {
+                // 1-3스테이지: 4개 조각
+                pieces = [
+                    [[0,0], [0,1], [0,2], [0,3]], // 가로 1줄
+                    [[1,0], [1,1], [1,2], [1,3]], // 가로 1줄
+                    [[2,0], [2,1], [2,2], [2,3]], // 가로 1줄
+                    [[3,0], [3,1], [3,2], [3,3]]  // 가로 1줄
+                ];
+            } else if (this.stage <= 4) {
+                // 4스테이지: 6개 조각
+                pieces = [
+                    [[0,0], [0,1]], // 2칸
+                    [[0,2], [0,3]], // 2칸
+                    [[1,0], [1,1]], // 2칸
+                    [[1,2], [1,3]], // 2칸
+                    [[2,0], [2,1], [2,2], [2,3]], // 4칸
+                    [[3,0], [3,1], [3,2], [3,3]]  // 4칸
+                ];
+            } else {
+                // 5스테이지 이후: 5개 조각
+                pieces = [
+                    [[0,0], [0,1], [0,2]], // 3칸
+                    [[0,3], [1,3]], // 2칸
+                    [[1,0], [1,1], [1,2]], // 3칸
+                    [[2,0], [2,1], [2,2], [2,3]], // 4칸
+                    [[3,0], [3,1], [3,2], [3,3]]  // 4칸
+                ];
+            }
         }
         
         this.puzzlePieces = pieces.map((piece, index) => ({
@@ -235,20 +293,28 @@ class PuzzleGame {
             position: null
         }));
         
+        // 성공적으로 생성된 퍼즐 조합을 사용된 것으로 기록 (스테이지 1부터 모든 조합 기록)
+        this.markCombinationAsUsed(pieces);
+        
         this.displayPuzzlePieces();
         this.updateStatus(`스테이지 ${this.stage}: ${this.puzzlePieces.length}개의 퍼즐 조각을 모두 배치하세요! (총 16칸)`);
     }
 
     // 4x4 그리드를 지정된 개수의 조각으로 분할 (최적화됨)
     generateGridPieces(pieceCount) {
-        const maxAttempts = 100;
+        const maxAttempts = 200; // 시도 횟수 증가 (중복 체크로 인해 더 많은 시도 필요)
         let attempts = 0;
         
         // 캐시된 검증 함수들
         const hasSmallPieces = (sizes) => this.stage >= 5 && sizes.some(size => size === 1);
         const hasMultipleLinearPuzzles = (pieces) => {
             const linearCount = pieces.filter(piece => this.isLinearPuzzle(piece)).length;
-            return linearCount > 1;
+            return linearCount > 2; // 1자 퍼즐 최대 2개까지 허용 (완화)
+        };
+        
+        // 전체 조합 중복 체크 함수
+        const isDuplicateCombination = (pieces) => {
+            return this.isCombinationUsed(pieces);
         };
         
         while (attempts < maxAttempts) {
@@ -272,9 +338,14 @@ class PuzzleGame {
                     continue; // 1칸짜리가 있으면 다시 시도
                 }
                 
-                // 1자 퍼즐 개수 확인 (최대 1개만 허용)
+                // 1자 퍼즐 개수 확인 (최대 2개까지 허용)
                 if (hasMultipleLinearPuzzles(pieces)) {
-                    continue; // 1자 퍼즐이 2개 이상이면 다시 시도
+                    continue; // 1자 퍼즐이 3개 이상이면 다시 시도
+                }
+                
+                // 전체 조합 중복 체크 (스테이지 2부터 이전 모든 스테이지와 비교)
+                if (this.stage >= 2 && isDuplicateCombination(pieces)) {
+                    continue; // 이전 스테이지들과 동일한 조합이면 다시 시도
                 }
                 
                 return pieces;
@@ -282,7 +353,6 @@ class PuzzleGame {
         }
         
         // 알고리즘이 실패하면 단순히 다시 시도
-        console.log('퍼즐 생성 실패, 다시 시도합니다...');
         return null;
     }
 
@@ -290,14 +360,16 @@ class PuzzleGame {
     generatePieceSizes(pieceCount) {
         const sizes = [];
         let remaining = 16;
-        const maxPieceSize = 6; // 하나의 조각 최대 6칸까지만 허용
+        const maxPieceSize = 8; // 하나의 조각 최대 8칸까지 허용 (증가)
         const minPieceSize = this.stage >= 5 ? 2 : 1; // 5단계 이상부터는 최소 2칸, 그 이전에는 1칸도 허용
         
         for (let i = 0; i < pieceCount - 1; i++) {
             const maxSize = Math.min(maxPieceSize, remaining - (pieceCount - i - 1) * minPieceSize); // 남은 조각들을 위해 최소 크기만큼 남겨둠
             const calculatedMinSize = Math.max(minPieceSize, Math.ceil(remaining / (pieceCount - i)) - 1); // 최소 크기, 균등 분배에서 ±1
             
-            const size = Math.min(maxSize, Math.max(calculatedMinSize, minPieceSize + Math.floor(Math.random() * 3))); // 최소~최소+2칸 사이 위주
+            // 더 다양한 크기 생성 (최소~최소+4칸 사이)
+            const randomVariation = Math.floor(Math.random() * 5); // 0~4
+            const size = Math.min(maxSize, Math.max(calculatedMinSize, minPieceSize + randomVariation));
             sizes.push(size);
             remaining -= size;
         }
@@ -424,6 +496,98 @@ class PuzzleGame {
         return shuffled;
     }
 
+    // 퍼즐 조합을 문자열로 변환 (중복 체크용)
+    combinationToString(pieces) {
+        // 각 조각을 정규화하여 문자열로 변환
+        const normalizedPieces = pieces.map(piece => this.normalizeShape(piece));
+        
+        // 조각들을 정렬하여 순서에 상관없이 같은 조합으로 인식
+        const sortedPieces = normalizedPieces.sort((a, b) => {
+            const aStr = JSON.stringify(a);
+            const bStr = JSON.stringify(b);
+            return aStr.localeCompare(bStr);
+        });
+        
+        const result = JSON.stringify(sortedPieces);
+        return result;
+    }
+
+    // 퍼즐 모양 정규화 (대칭만 고려)
+    normalizeShape(shape) {
+        if (shape.length === 0) return [];
+        
+        // 먼저 상대 좌표로 변환 (좌상단을 (0,0)으로)
+        const relativeShape = this.toRelativeCoordinates(shape);
+        
+        // 모든 가능한 변형 생성 (대칭만)
+        const variations = this.generateShapeVariations(relativeShape);
+        
+        // 사전순으로 가장 작은 것을 반환 (표준 형태)
+        return variations.reduce((min, variation) => {
+            const minStr = JSON.stringify(min);
+            const varStr = JSON.stringify(variation);
+            return varStr < minStr ? variation : min;
+        });
+    }
+
+    // 절대 좌표를 상대 좌표로 변환
+    toRelativeCoordinates(shape) {
+        if (shape.length === 0) return [];
+        
+        // 최소 row, col 찾기
+        const minRow = Math.min(...shape.map(([r, c]) => r));
+        const minCol = Math.min(...shape.map(([r, c]) => c));
+        
+        // 모든 좌표를 최소값 기준으로 이동
+        const relative = shape.map(([r, c]) => [r - minRow, c - minCol]);
+        
+        // 좌표 순서 정규화 (row 우선, col 차순으로 정렬)
+        return relative.sort((a, b) => {
+            if (a[0] !== b[0]) return a[0] - b[0]; // row 비교
+            return a[1] - b[1]; // col 비교
+        });
+    }
+
+    // 모양의 모든 변형 생성 (대칭만 고려)
+    generateShapeVariations(shape) {
+        if (shape.length === 0) return [[]];
+        
+        const variations = [];
+        
+        // 원본
+        variations.push([...shape]);
+        
+        // 각 변형을 생성하고 상대 좌표로 정규화
+        
+        // 가로 대칭 (좌우 뒤집기)
+        const maxCol = Math.max(...shape.map(([r, c]) => c));
+        const horizontalFlip = shape.map(([r, c]) => [r, maxCol - c]);
+        variations.push(this.toRelativeCoordinates(horizontalFlip));
+        
+        // 세로 대칭 (상하 뒤집기)
+        const maxRow = Math.max(...shape.map(([r, c]) => r));
+        const verticalFlip = shape.map(([r, c]) => [maxRow - r, c]);
+        variations.push(this.toRelativeCoordinates(verticalFlip));
+        
+        // 가로+세로 대칭 (180도 회전과 동일)
+        const bothFlip = shape.map(([r, c]) => [maxRow - r, maxCol - c]);
+        variations.push(this.toRelativeCoordinates(bothFlip));
+        
+        return variations;
+    }
+
+    // 퍼즐 조합이 이전에 사용되었는지 확인
+    isCombinationUsed(pieces) {
+        const combinationStr = this.combinationToString(pieces);
+        return this.previousPuzzleCombinations.has(combinationStr);
+    }
+
+    // 퍼즐 조합을 사용된 것으로 기록
+    markCombinationAsUsed(pieces) {
+        const combinationStr = this.combinationToString(pieces);
+        this.previousPuzzleCombinations.add(combinationStr);
+    }
+
     // 1자(일직선) 퍼즐인지 확인
     isLinearPuzzle(shape) {
         if (shape.length < 2) return false;
@@ -456,8 +620,8 @@ class PuzzleGame {
 
     // 타이머 관련 메서드들
     calculateTimeLimit() {
-        // 5스테이지마다 5초씩 감소, 최소 30초
-        const reductionSteps = Math.floor((this.stage - 1) / 5);
+        // 3스테이지마다 5초씩 감소, 최소 30초
+        const reductionSteps = Math.floor((this.stage - 1) / 3);
         const timeLimit = Math.max(30, 60 - (reductionSteps * 5));
         return timeLimit;
     }
@@ -538,7 +702,7 @@ class PuzzleGame {
         const completedElement = this.getElement('popup-completed');
         
         if (stageElement) stageElement.textContent = this.stage;
-        if (completedElement) completedElement.textContent = this.completedStages;
+
         
         // 팝업 표시
         const popup = this.getElement('game-over-popup');
@@ -592,7 +756,7 @@ class PuzzleGame {
 
     // 퍼즐 조각들 화면에 표시 (좌우 분할: 왼쪽 2x2, 오른쪽 2x2)
     displayPuzzlePieces() {
-        console.log('퍼즐 표시 시작, 퍼즐 개수:', this.puzzlePieces.length);
+
         const leftContainer = this.getElement('puzzle-pieces-left');
         const rightContainer = this.getElement('puzzle-pieces-right');
         
@@ -601,9 +765,7 @@ class PuzzleGame {
             rightContainer.innerHTML = '';
             
             this.puzzlePieces.forEach((puzzle, index) => {
-                console.log(`퍼즐 ${index} 생성 중:`, puzzle);
-                const pieceElement = this.createPuzzlePiece(puzzle, index);
-                console.log(`퍼즐 ${index} 요소:`, pieceElement);
+                            const pieceElement = this.createPuzzlePiece(puzzle, index);
                 
                 // 처음 4개는 왼쪽(2x2), 나머지 4개는 오른쪽(2x2)에 배치
                 if (index < 4) {
@@ -612,7 +774,7 @@ class PuzzleGame {
                     rightContainer.appendChild(pieceElement);
                 }
             });
-            console.log('모든 퍼즐 추가 완료');
+    
         } else {
             console.error('퍼즐 컨테이너를 찾을 수 없습니다!');
         }
@@ -950,10 +1112,7 @@ class PuzzleGame {
         
         if (!this.gameActive) return; // 게임이 비활성화되면 드롭 차단
         
-        console.log('onDrop 호출됨, target:', e.target, 'dragFromGrid:', this.dragFromGrid);
-        
-        if (!e.target.classList.contains('grid-cell')) {
-            console.log('그리드 셀이 아닌 곳에 드롭');
+                if (!e.target.classList.contains('grid-cell')) {
             if (this.dragFromGrid) {
                 this.restoreOriginalPosition();
                 this.updateStatus('원래 위치로 되돌렸습니다.');
@@ -965,12 +1124,12 @@ class PuzzleGame {
         const puzzleId = parseInt(e.dataTransfer.getData('text/plain'));
         const puzzle = this.puzzlePieces[puzzleId];
         
-        console.log('드롭 시도 - cellIndex:', cellIndex, 'puzzleId:', puzzleId, 'puzzle:', puzzle);
+
         
         this.clearHighlights();
         
         if (this.canPlacePuzzle(puzzle, cellIndex)) {
-            console.log('배치 가능 - 퍼즐 배치 중...');
+
             this.placePuzzle(puzzle, cellIndex);
             
             if (!this.dragFromGrid) {
@@ -986,14 +1145,13 @@ class PuzzleGame {
             this.originalGridState = null;
             this.draggedPiecePositions = [];
             
-            console.log('배치 완료, 드래그 상태 초기화됨, dropSuccessful:', this.dropSuccessful);
+
             this.updateStatus('퍼즐 조각이 배치되었습니다! (드래그해서 다시 움직일 수 있습니다)');
             this.checkGameComplete();
             
             // 드래그 이벤트 전파 중단
             return false;
         } else {
-            console.log('배치 불가능');
             if (this.dragFromGrid) {
                 this.restoreOriginalPosition();
                 this.updateStatus('그 위치에는 놓을 수 없습니다. 원래 위치로 되돌렸습니다.');
@@ -1004,7 +1162,7 @@ class PuzzleGame {
     }
 
     onDragEnd(e) {
-        console.log('onDragEnd 호출됨, dropSuccessful:', this.dropSuccessful, 'dragFromGrid:', this.dragFromGrid, 'currentDragging:', this.currentDragging);
+
         
         if (e.target.classList.contains('puzzle-piece')) {
             e.target.classList.remove('dragging');
@@ -1015,11 +1173,11 @@ class PuzzleGame {
         
         // 성공적으로 배치된 경우는 복원하지 않음
         if (!this.dropSuccessful && this.dragFromGrid && this.currentDragging !== null) {
-            console.log('드롭 실패 - 원래 위치로 복원');
+            
             this.restoreOriginalPosition();
             this.updateStatus('퍼즐 조각이 원래 위치로 되돌아갔습니다.');
         } else if (this.dropSuccessful) {
-            console.log('드롭 성공 - 복원하지 않음');
+
         }
         
         // 모든 드래그 상태 초기화
@@ -1317,12 +1475,22 @@ class PuzzleGame {
     checkGameComplete() {
         if (!this.gameActive) return; // 게임이 비활성화되면 체크하지 않음
         
-        const isGridFull = this.grid.every(cell => cell !== null);
+        // 최적화: every 대신 for 루프 사용 (더 빠른 종료 가능)
+        let isGridFull = true;
+        for (let i = 0; i < 16; i++) {
+            if (this.grid[i] === null) {
+                isGridFull = false;
+                break;
+            }
+        }
         
         if (isGridFull) {
             this.gameActive = false; // 게임 완료 시 타이머 정지
             this.stopTimer();
-            this.completedStages++;
+
+            
+            // 성공 액션 표시
+            this.showSuccessAction();
             
             setTimeout(() => {
                 this.updateStatus(`🎉 스테이지 ${this.stage} 완료! 다음 스테이지로...`);
@@ -1350,16 +1518,53 @@ class PuzzleGame {
         this.updateGridDisplay();
         this.generateRandomPuzzles();
         
+        // 스테이지 정보 업데이트
+        this.updateStageInfo();
+        
         // 새 스테이지에서 타이머 재시작
         this.startTimer();
         
-        // 생성된 퍼즐 개수는 이미 generateRandomPuzzles에서 메시지를 표시하므로 추가 메시지 불필요
+
     }
 
     // 상태 메시지 업데이트 (최적화됨)
     updateStatus(message) {
-        console.log('상태 업데이트:', message);
         // 상태 메시지는 로그만 기록 (UI 간소화를 위해)
+    }
+
+    // 스테이지 정보 업데이트
+    updateStageInfo() {
+        const stageElement = this.getElement('stage');
+        
+        if (stageElement) {
+            stageElement.textContent = `스테이지 ${this.stage}`;
+        }
+    }
+
+    // 성공 액션 표시
+    showSuccessAction() {
+        // 성공 메시지 요소 생성
+        const successElement = document.createElement('div');
+        successElement.className = 'success-action';
+        successElement.innerHTML = `
+            <div class="success-content">
+                <div class="success-icon">🎉</div>
+                <div class="success-text">스테이지 ${this.stage} 완료!</div>
+            </div>
+        `;
+        
+        // 게임 보드에 추가
+        const gameBoard = document.querySelector('.game-board');
+        if (gameBoard) {
+            gameBoard.appendChild(successElement);
+            
+            // 애니메이션 후 제거
+            setTimeout(() => {
+                if (successElement.parentNode) {
+                    successElement.parentNode.removeChild(successElement);
+                }
+            }, 2000);
+        }
     }
 
     // 새 게임 시작
@@ -1372,12 +1577,14 @@ class PuzzleGame {
         this.currentDragging = null;
         this.grabbedCellIndex = 0;
         this.stage = 1;
-        this.completedStages = 0;
         
         this.dragFromGrid = false;
         this.originalGridState = null;
         this.draggedPiecePositions = [];
         this.dropSuccessful = false;
+        
+        // 이전 퍼즐 조합 기록 초기화
+        this.previousPuzzleCombinations.clear();
         
         // DOM 캐시 초기화 (새 게임에서 요소들이 재생성될 수 있으므로)
         this.clearElementCache();
@@ -1389,6 +1596,9 @@ class PuzzleGame {
         
         this.updateGridDisplay();
         this.generateRandomPuzzles();
+        
+        // 스테이지 정보 업데이트
+        this.updateStageInfo();
         
         // 새 게임에서 타이머 재시작
         this.startTimer();
@@ -1416,7 +1626,7 @@ class PuzzleGame {
         this.clickOffsetX = undefined;
         this.clickOffsetY = undefined;
         
-        console.log('게임 메모리 정리 완료');
+
     }
 
     // 최적화된 DOM 요소 조회 (캐싱)

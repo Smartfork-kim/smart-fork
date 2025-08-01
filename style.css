@@ -358,6 +358,102 @@ body {
     height: 100%;
 }
 
+/* 카테고리 모드용 그리드 스타일 */
+.category-mode {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.category-grid {
+    height: auto !important;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px 0;
+    grid-template-rows: auto;
+    gap: 30px;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+}
+
+/* 카테고리 모드에서 큰 컨테이너 박스 완전 제거 */
+.category-mode .games-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+    overflow: visible !important;
+    position: static !important;
+}
+
+.category-mode .games-slider {
+    height: auto !important;
+    position: relative !important;
+    width: 100% !important;
+}
+
+/* 카테고리 모드에서 games-section도 수정 */
+.category-mode .games-section {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+/* 카테고리 모드에서 container도 수정 */
+.category-mode .container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+}
+
+/* body 클래스를 사용한 더 강력한 컨테이너 제거 */
+body.category-mode-active .games-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+    overflow: visible !important;
+    position: static !important;
+}
+
+body.category-mode-active .games-section {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+body.category-mode-active .container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+}
+
+.category-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.category-grid::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.category-grid::-webkit-scrollbar-thumb {
+    background: var(--gradient-secondary);
+    border-radius: 10px;
+}
+
+.category-grid::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #357abd, #4a90e2);
+}
+
 .game-card {
     background: var(--bg-card);
     border-radius: 15px;
@@ -382,6 +478,111 @@ body {
     overflow: hidden;
     background: var(--bg-card);
     border-radius: 15px 15px 0 0;
+}
+
+/* 모든게임 모드에서 이미지 비율 조정 (4:3 비율) */
+.game-cards:not(.category-grid) .game-image {
+    height: 225px; /* 300px * 0.75 = 225px (4:3 비율) */
+}
+
+/* 카테고리 모드 전용 게임 카드 디자인 */
+.category-grid .game-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-light) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    max-width: 350px !important;
+    margin: 0 auto !important;
+}
+
+.category-grid .game-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 카테고리 모드 이미지 (400:300 비율) */
+.category-grid .game-image {
+    width: 100% !important;
+    height: 262.5px !important; /* 350px * 0.75 = 262.5px (4:3 비율) */
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    background: var(--bg-card) !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+.category-grid .game-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.category-grid .game-image:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 카테고리 모드 게임 정보 */
+.category-grid .game-info {
+    padding: 20px !important;
+    background: var(--bg-card) !important;
+    text-align: center !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+.category-grid .game-title {
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 12px !important;
+    text-align: center !important;
+    padding: 0 10px !important;
+}
+
+.category-grid .game-description {
+    font-size: 0.9rem !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.6 !important;
+    margin-bottom: 15px !important;
+    flex: 1 !important;
+    text-align: left !important;
+    padding: 0 5px !important;
+}
+
+.category-grid .game-meta {
+    justify-content: flex-end !important;
+    gap: 20px !important;
+    margin-bottom: 15px !important;
+    font-size: 0.85rem !important;
+    text-align: right !important;
+    padding: 0 10px !important;
+}
+
+.category-grid .play-btn {
+    width: 100% !important;
+    padding: 12px 20px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    background: var(--gradient-secondary) !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+}
+
+.category-grid .play-btn:hover {
+    background: linear-gradient(45deg, #357abd, #4a90e2) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3) !important;
 }
 
 .game-image img {
@@ -435,6 +636,9 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    min-width: 60px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .difficulty.easy {
@@ -822,6 +1026,28 @@ body {
         gap: 20px;
     }
 
+    .category-grid {
+        max-height: 60vh;
+        gap: 20px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .category-grid .game-card {
+        max-width: 280px !important;
+    }
+
+    .category-grid .game-image {
+        height: 210px !important; /* 280px * 0.75 = 210px */
+    }
+
+    .category-grid .game-title {
+        font-size: 1.2rem !important;
+    }
+
+    .category-grid .game-description {
+        font-size: 0.85rem !important;
+    }
+
     .games-slider {
         height: auto;
     }
@@ -832,6 +1058,11 @@ body {
 
     .game-image {
         height: 250px; /* 모바일에서 이미지 높이 증가 */
+    }
+
+    /* 모든게임 모드 반응형 이미지 비율 */
+    .game-cards:not(.category-grid) .game-image {
+        height: 281px; /* 375px * 0.75 = 281px (4:3 비율) */
     }
 
     .slider-btn {
@@ -885,6 +1116,32 @@ body {
 
     .games-container {
         padding: 15px;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .category-grid .game-card {
+        max-width: 320px !important;
+    }
+
+    .category-grid .game-image {
+        height: 240px !important; /* 320px * 0.75 = 240px */
+    }
+
+    .category-grid .game-title {
+        font-size: 1.1rem !important;
+    }
+
+    .category-grid .game-description {
+        font-size: 0.8rem !important;
+    }
+
+    .category-grid .game-meta {
+        gap: 15px !important;
+        font-size: 0.8rem !important;
     }
 
     .game-info {
