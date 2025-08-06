@@ -24,17 +24,17 @@
         .container {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
-            padding: 30px; /* 패딩 줄임 */
+            padding: 40px; /* 패딩 늘림 */
             border-radius: 20px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            width: 450px; /* 너비 줄임 */
-            height: 600px; /* 높이 줄임 */
-            min-width: 450px;
-            max-width: 450px;
-            min-height: 600px;
-            max-height: 600px;
+            width: 480px; /* 3:5 비율에 맞게 조정 */
+            height: 800px; /* 3:5 비율에 맞게 조정 */
+            min-width: 320px; /* 최소 너비 설정 */
+            max-width: 480px;
+            min-height: 533px; /* 최소 높이 설정 (3:5 비율 유지) */
+            max-height: 800px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -42,12 +42,381 @@
             box-sizing: border-box;
         }
 
+        /* 반응형 디자인 */
+        @media (max-width: 520px) {
+            .container {
+                width: 85vw;
+                height: calc(85vw * 5/3);
+                padding: 28px;
+                min-width: 300px;
+                min-height: 500px;
+            }
+            
+            h1 {
+                font-size: 1.7em;
+                margin-bottom: 35px;
+                white-space: normal;
+            }
+            
+            h2 {
+                font-size: 1.7em;
+                margin-bottom: 7px;
+                height: 35px;
+                min-height: 35px;
+                max-height: 35px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.8em;
+                margin: 6px;
+            }
+            
+            .keypad {
+                width: 320px !important;
+                height: 320px !important;
+                min-width: 320px;
+                max-width: 320px;
+                min-height: 320px;
+                max-height: 320px;
+                gap: 10px;
+                margin: 10px auto;
+                grid-template-columns: repeat(3, 100px);
+                grid-template-rows: repeat(3, 100px);
+            }
+            
+            .key {
+                width: 100px;
+                height: 100px;
+                min-width: 100px;
+                min-height: 100px;
+                max-width: 100px;
+                max-height: 100px;
+                font-size: 3em;
+            }
+            
+            .key::before {
+                font-size: 3em;
+            }
+            
+            .brain-container {
+                font-size: 2.8em;
+                height: 78px;
+                margin: 25px 0 10px 0;
+            }
+            
+            .game-info {
+                font-size: 1.1em;
+                height: 42px;
+                min-height: 42px;
+                max-height: 42px;
+                margin: 6px 0;
+            }
+            
+            .timer {
+                font-size: 2.1em;
+                height: 42px;
+                min-height: 42px;
+                max-height: 42px;
+                margin: 18px 0;
+            }
+            
+            .sequence-display {
+                font-size: 1em;
+                height: 28px;
+                min-height: 28px;
+                max-height: 28px;
+                margin: 2px 0;
+            }
+            
+            .input-phase {
+                font-size: 1.1em;
+                height: 32px;
+                min-height: 32px;
+                max-height: 32px;
+                margin: 0;
+            }
+            
+            /* 메인 화면 게임 방법 텍스트 */
+            #mainScreen div[style*="font-size: 1.3em"] {
+                font-size: 1em !important;
+                margin-bottom: 35px !important;
+            }
+            
+            #mainScreen div[style*="font-size: 1.3em"] p {
+                margin-bottom: 6px !important;
+                font-size: 0.9em !important;
+            }
+            
+            #mainScreen div[style*="font-size: 1.3em"] p[style*="font-size: 1em"] {
+                font-size: 0.8em !important;
+            }
+            
+            /* 게임오버 화면 */
+            #gameOverScreen div[style*="font-size: 1.8em"] {
+                font-size: 1.4em !important;
+                margin: 18px 0 25px 0 !important;
+            }
+            
+            /* 인게임 화면 최적화 */
+            #gameScreen h2 {
+                font-size: 1.7em !important;
+                margin-bottom: 7px !important;
+                height: 35px !important;
+                min-height: 35px !important;
+                max-height: 35px !important;
+            }
+            
+            #gameScreen .game-info {
+                font-size: 1.1em !important;
+                height: 42px !important;
+                min-height: 42px !important;
+                max-height: 42px !important;
+                margin: 6px 0 !important;
+            }
+            
+            #gameScreen .timer {
+                font-size: 2.1em !important;
+                height: 42px !important;
+                min-height: 42px !important;
+                max-height: 42px !important;
+                margin: 18px 0 !important;
+            }
+            
+            #gameScreen .sequence-display {
+                font-size: 1em !important;
+                height: 28px !important;
+                min-height: 28px !important;
+                max-height: 28px !important;
+                margin: 2px 0 !important;
+            }
+            
+            #gameScreen .input-phase {
+                font-size: 1.1em !important;
+                height: 32px !important;
+                min-height: 32px !important;
+                max-height: 32px !important;
+                margin: 0 !important;
+            }
+            
+                         #gameScreen .keypad {
+                 width: 320px !important;
+                 height: 320px !important;
+                 min-width: 320px !important;
+                 max-width: 320px !important;
+                 min-height: 320px !important;
+                 max-height: 320px !important;
+                 gap: 10px !important;
+                 margin: 10px auto !important;
+                 grid-template-columns: repeat(3, 100px) !important;
+                 grid-template-rows: repeat(3, 100px) !important;
+             }
+             
+             #gameScreen .key {
+                 width: 100px !important;
+                 height: 100px !important;
+                 min-width: 100px !important;
+                 min-height: 100px !important;
+                 max-width: 100px !important;
+                 max-height: 100px !important;
+                 font-size: 3em !important;
+             }
+             
+             #gameScreen .key::before {
+                 font-size: 3em !important;
+             }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                width: 90vw;
+                height: calc(90vw * 5/3);
+                padding: 20px;
+                min-width: 260px;
+                min-height: 433px;
+            }
+            
+            h1 {
+                font-size: 1.2em;
+                margin-bottom: 25px;
+                white-space: normal;
+            }
+            
+            h2 {
+                font-size: 1.2em;
+                margin-bottom: 5px;
+                height: 25px;
+                min-height: 25px;
+                max-height: 25px;
+            }
+            
+            .btn {
+                padding: 7px 14px;
+                font-size: 0.6em;
+                margin: 4px;
+            }
+            
+            .keypad {
+                width: 284px !important;
+                height: 284px !important;
+                min-width: 284px;
+                max-width: 284px;
+                min-height: 284px;
+                max-height: 284px;
+                gap: 10px;
+                margin: 10px auto;
+                grid-template-columns: repeat(3, 88px);
+                grid-template-rows: repeat(3, 88px);
+            }
+            
+            .key {
+                width: 88px;
+                height: 88px;
+                min-width: 88px;
+                min-height: 88px;
+                max-width: 88px;
+                max-height: 88px;
+                font-size: 2.8em;
+            }
+            
+            .key::before {
+                font-size: 2.8em;
+            }
+            
+            .brain-container {
+                font-size: 2em;
+                height: 56px;
+                margin: 20px 0 8px 0;
+            }
+            
+            .game-info {
+                font-size: 0.8em;
+                height: 30px;
+                min-height: 30px;
+                max-height: 30px;
+                margin: 4px 0;
+            }
+            
+            .timer {
+                font-size: 1.5em;
+                height: 30px;
+                min-height: 30px;
+                max-height: 30px;
+                margin: 12px 0;
+            }
+            
+            .sequence-display {
+                font-size: 0.7em;
+                height: 20px;
+                min-height: 20px;
+                max-height: 20px;
+                margin: 1px 0;
+            }
+            
+            .input-phase {
+                font-size: 0.8em;
+                height: 22px;
+                min-height: 22px;
+                max-height: 22px;
+                margin: 0;
+            }
+            
+            /* 메인 화면 게임 방법 텍스트 */
+            #mainScreen div[style*="font-size: 1.3em"] {
+                font-size: 0.8em !important;
+                margin-bottom: 25px !important;
+            }
+            
+            #mainScreen div[style*="font-size: 1.3em"] p {
+                margin-bottom: 4px !important;
+                font-size: 0.7em !important;
+            }
+            
+            #mainScreen div[style*="font-size: 1.3em"] p[style*="font-size: 1em"] {
+                font-size: 0.6em !important;
+            }
+            
+            /* 게임오버 화면 */
+            #gameOverScreen div[style*="font-size: 1.8em"] {
+                font-size: 1.1em !important;
+                margin: 12px 0 18px 0 !important;
+            }
+            
+            /* 인게임 화면 최적화 */
+            #gameScreen h2 {
+                font-size: 1.2em !important;
+                margin-bottom: 5px !important;
+                height: 25px !important;
+                min-height: 25px !important;
+                max-height: 25px !important;
+            }
+            
+            #gameScreen .game-info {
+                font-size: 0.8em !important;
+                height: 30px !important;
+                min-height: 30px !important;
+                max-height: 30px !important;
+                margin: 4px 0 !important;
+            }
+            
+            #gameScreen .timer {
+                font-size: 1.5em !important;
+                height: 30px !important;
+                min-height: 30px !important;
+                max-height: 30px !important;
+                margin: 12px 0 !important;
+            }
+            
+            #gameScreen .sequence-display {
+                font-size: 0.7em !important;
+                height: 20px !important;
+                min-height: 20px !important;
+                max-height: 20px !important;
+                margin: 1px 0 !important;
+            }
+            
+            #gameScreen .input-phase {
+                font-size: 0.8em !important;
+                height: 22px !important;
+                min-height: 22px !important;
+                max-height: 22px !important;
+                margin: 0 !important;
+            }
+            
+                         #gameScreen .keypad {
+                 width: 284px !important;
+                 height: 284px !important;
+                 min-width: 284px !important;
+                 max-width: 284px !important;
+                 min-height: 284px !important;
+                 max-height: 284px !important;
+                 gap: 10px !important;
+                 margin: 10px auto !important;
+                 grid-template-columns: repeat(3, 88px) !important;
+                 grid-template-rows: repeat(3, 88px) !important;
+             }
+             
+             #gameScreen .key {
+                 width: 88px !important;
+                 height: 88px !important;
+                 min-width: 88px !important;
+                 min-height: 88px !important;
+                 max-width: 88px !important;
+                 max-height: 88px !important;
+                 font-size: 2.8em !important;
+             }
+             
+             #gameScreen .key::before {
+                 font-size: 2.8em !important;
+             }
+        }
+
         .screen {
             display: none;
             width: 100%;
             height: 100%; /* 컨테이너 전체 높이 사용 */
-            min-height: 540px; /* 내부 컨텐츠 높이 조정 */
-            max-height: 540px;
+            min-height: 720px; /* 3:5 비율에 맞게 조정 */
+            max-height: 720px;
         }
 
         .screen.active {
@@ -58,34 +427,35 @@
         }
 
         h1 {
-            font-size: 2.2em; /* 크기 줄임 */
-            margin-bottom: 20px;
+            font-size: 2.4em; /* 크기 조정 */
+            margin-bottom: 50px; /* 마진 늘림 */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             white-space: nowrap; /* 한 줄 유지 */
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2; /* 줄 간격 조정 */
         }
 
-                    h2 {
-                font-size: 2em;
-                margin-bottom: 10px; /* 마진 줄임 */
-                height: 50px; /* 높이 줄임 */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 50px;
-                max-height: 50px;
-            }
+                            h2 {
+            font-size: 2.4em; /* 크기 늘림 */
+            margin-bottom: 10px; /* 마진 줄임 */
+            height: 50px; /* 높이 줄임 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            max-height: 50px;
+        }
 
         .btn {
             background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
             border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
+            padding: 14px 28px; /* 패딩 조정 */
+            font-size: 1.2em; /* 크기 조정 */
             color: white;
             border-radius: 10px;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px; /* 마진 조정 */
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
@@ -101,33 +471,35 @@
 
         .keypad {
             display: grid;
-            grid-template-columns: repeat(3, 80px);
-            grid-template-rows: repeat(3, 80px);
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
             gap: 15px;
-            width: 270px !important; /* 강제 고정 */
-            height: 270px !important; /* 강제 고정 */
-            min-width: 270px;
-            max-width: 270px;
-            min-height: 270px;
-            max-height: 270px;
-            margin: 10px auto; /* 마진 줄임 */
+            width: 330px !important; /* 크기 키움 */
+            height: 330px !important; /* 크기 키움 */
+            min-width: 330px;
+            max-width: 330px;
+            min-height: 330px;
+            max-height: 330px;
+            margin: 15px auto; /* 마진 늘림 */
             justify-content: center;
             align-content: center;
             box-sizing: border-box;
             position: relative; /* 위치 안정성 */
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .key {
-            width: 80px;
-            height: 80px;
-            min-width: 80px;
-            min-height: 80px;
-            max-width: 80px;
-            max-height: 80px;
+            width: 100px;
+            height: 100px;
+            min-width: 100px;
+            min-height: 100px;
+            max-width: 100px;
+            max-height: 100px;
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 15px;
-            font-size: 3em;
+            font-size: 3.5em; /* 크기 키움 */
             color: white;
             cursor: pointer;
             transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
@@ -145,7 +517,7 @@
             content: "8"; /* 가장 큰 숫자로 공간 확보 */
             visibility: hidden; /* 보이지 않게 */
             position: absolute;
-            font-size: 3em;
+            font-size: 3.5em; /* 크기 키움 */
             font-weight: bold;
             line-height: 1;
         }
@@ -190,11 +562,10 @@
         }
 
         .game-info {
-            margin: 10px 0;
-            font-size: 1.3em;
+            margin: 8px 0; /* 마진 줄임 */
+            font-size: 1.6em; /* 크기 늘림 */
             height: 60px; /* 높이 줄임 */
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 60px;
@@ -202,21 +573,21 @@
         }
 
         .timer {
-            font-size: 2em;
+            font-size: 3em; /* 크기 더 키움 */
             color: #ff6b6b;
             font-weight: bold;
-            margin: 5px 0;
-            height: 40px; /* 높이 줄임 */
+            margin: 25px 0; /* 점수와 시간 사이 동일한 여백 */
+            height: 60px; /* 높이 늘림 */
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 40px;
-            max-height: 40px;
+            min-height: 60px;
+            max-height: 60px;
         }
 
         .sequence-display {
-            margin: 5px 0;
-            font-size: 1.4em;
+            margin: 2.5px 0; /* 시간과 텍스트 사이 여백 절반으로 줄임 */
+            font-size: 1.4em; /* 크기 줄임 */
             height: 40px; /* 높이 줄임 */
             display: flex;
             align-items: center;
@@ -226,26 +597,27 @@
         }
 
         .input-phase {
-            margin: 5px 0;
-            font-size: 1.2em;
+            margin: 0; /* 마진 제거 */
+            font-size: 1.5em; /* 크기 늘림 */
             color: #feca57;
-            height: 35px; /* 높이 줄임 */
+            height: 45px; /* 높이 늘림 */
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 35px;
-            max-height: 35px;
+            min-height: 45px;
+            max-height: 45px;
         }
 
         /* 메인 화면 뇌 일러스트 */
         .brain-container {
             position: relative;
-            font-size: 4.5em; /* 크기 줄임 */
-            margin: 15px 0; /* 마진 줄임 */
-            height: 150px; /* 높이 줄임 */
+            font-size: 5em; /* 크기 조정 */
+            margin: 40px 0 15px 0; /* 위쪽 마진 추가해서 아래로 내림 */
+            height: 140px; /* 높이 줄임 */
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1; /* z-index 추가 */
         }
 
         .floating-numbers {
@@ -289,7 +661,7 @@
     <div class="container">
         <!-- 메인 화면 -->
         <div id="mainScreen" class="screen active">
-            <a href="../../index.html" style="position: absolute; top: 15px; left: 15px; color: white; text-decoration: none; font-size: 0.9em; background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease;">← 메인으로 돌아가기</a>
+            <a href="../../index.html" style="position: absolute; top: 15px; left: 15px; color: white; text-decoration: none; font-size: 0.9em; background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; z-index: 10;">← 메인으로 돌아가기</a>
             
             <div class="brain-container">
                 🧠
@@ -305,15 +677,15 @@
                     <span class="float-num" style="top: 80%; right: 50%;">6</span>
                 </div>
             </div>
-            <h1>🎮 넘버패드 메모리</h1>
+            <h1>넘버패드 메모리</h1>
             
-            <div style="font-size: 0.85em; margin-bottom: 20px; line-height: 1.4; max-width: 90%; text-align: left;">
-                <p style="margin-bottom: 8px;"><strong>🎯 게임 방법:</strong></p>
-                <p style="margin-bottom: 5px;">1️⃣ 3×3 키패드에 숫자들이 나타납니다</p>
-                <p style="margin-bottom: 5px;">2️⃣ 숫자들이 사라진 후 기억해주세요</p>
-                <p style="margin-bottom: 5px;">3️⃣ <strong>1부터 차례대로</strong> 숫자가 있던 위치를 클릭!</p>
+            <div style="font-size: 1.3em; margin-bottom: 50px; line-height: 1.5; max-width: 100%; text-align: left;">
+                <p style="margin-bottom: 10px;"><strong>🎯 게임 방법:</strong></p>
+                <p style="margin-bottom: 8px;">1️⃣ 3×3 키패드에 숫자들이 나타납니다</p>
+                <p style="margin-bottom: 8px;">2️⃣ 숫자들이 사라진 후 기억해주세요</p>
+                <p style="margin-bottom: 8px;">3️⃣ <strong>1부터 차례대로</strong> 숫자가 있던 위치를 클릭!</p>
                 <p style="margin-bottom: 8px;">4️⃣ 5초 안에 모든 순서를 맞춰야 합니다</p>
-                <p style="font-size: 0.8em; color: #feca57;">💡 키보드 숫자패드로도 플레이 가능!</p>
+                <p style="font-size: 1em; color: #feca57;">💡 키보드 숫자패드로도 플레이 가능!</p>
             </div>
             
             <button class="btn" onclick="startGame()">게임 시작</button>
@@ -324,8 +696,9 @@
             <h2>라운드 <span id="round">1</span></h2>
             <div class="game-info">
                 <div>점수: <span id="score">0</span></div>
-                <div class="timer" id="timer"></div>
             </div>
+            
+            <div class="timer" id="timer"></div>
             
             <div class="sequence-display" id="sequenceDisplay"></div>
             <div class="input-phase" id="inputPhase"></div>
@@ -345,14 +718,14 @@
 
         <!-- 게임오버 화면 -->
         <div id="gameOverScreen" class="screen">
-            <h1>🎯 게임 오버</h1>
-            <div style="font-size: 1.5em; margin: 20px 0;">
+            <h1 style="margin-bottom: 25px;">🎯 게임 오버</h1>
+            <div style="font-size: 1.8em; margin: 25px 0 35px 0;">
                 <div>최종 라운드: <span id="finalRound">1</span></div>
                 <div>최종 점수: <span id="finalScore">0</span></div>
             </div>
             <button class="btn" onclick="restartGame()">다시하기</button>
             <button class="btn" onclick="goToMain()">게임 선택</button>
-            <button class="btn" onclick="window.location.href='../../index.html'" style="background: linear-gradient(45deg, #5f73e8, #6c63ff);">사이트 메인</button>
+            <button class="btn" onclick="window.location.href='../../index.html'" style="background: linear-gradient(45deg, #5f73e8, #6c63ff); box-shadow: 0 4px 15px rgba(95, 115, 232, 0.4);">사이트 메인</button>
         </div>
     </div>
 
@@ -425,7 +798,7 @@
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('highlight', 'correct', 'wrong');
                 key.textContent = '\u00A0'; // 공백 문자로 공간 유지
-                key.style.fontSize = '3em';
+                key.style.fontSize = '3.5em';
                 key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
             });
         }
@@ -472,7 +845,7 @@
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('highlight');
                 key.textContent = '\u00A0'; // 공백 문자로 공간 유지
-                key.style.fontSize = '3em';
+                key.style.fontSize = '3.5em';
                 key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
             });
             
@@ -482,7 +855,7 @@
                 const keyElement = document.querySelector(`[data-number="${position}"]`);
                 keyElement.textContent = number;
                 keyElement.classList.add('highlight');
-                keyElement.style.fontSize = '3em';
+                keyElement.style.fontSize = '3.5em';
                 keyElement.style.color = '#feca57';
             }
             
@@ -491,7 +864,7 @@
                 document.querySelectorAll('.key').forEach(key => {
                     key.classList.remove('highlight');
                     key.textContent = '\u00A0'; // 공백 문자로 공간 유지
-                    key.style.fontSize = '3em';
+                    key.style.fontSize = '3.5em';
                     key.style.color = 'transparent'; // 투명하게 만들어서 공간은 차지하지만 보이지 않음
                 });
                 startInputPhase(); // 딜레이 제거
@@ -503,7 +876,7 @@
             isInputPhase = true;
             playerInput = [];
             document.getElementById('sequenceDisplay').textContent = '';
-            document.getElementById('inputPhase').textContent = '1부터 순서대로 키패드를 누르세요!';
+            document.getElementById('inputPhase').textContent = '1부터 순서대로 클릭하세요!';
             
             // 5초 타이머 시작
             let timeLeft = 5;
@@ -533,7 +906,7 @@
                 playerInput.push(expectedNumber);
                 e.target.classList.add('correct');
                 e.target.textContent = expectedNumber; // 숫자 다시 표시
-                e.target.style.fontSize = '3em';
+                e.target.style.fontSize = '3.5em';
                 e.target.style.color = 'white';
                 
                 // 더 강한 피드백 효과

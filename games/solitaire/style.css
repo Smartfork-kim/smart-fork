@@ -1,0 +1,616 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --grid-cell-size: 130px;
+    --card-height: 180px;
+    --grid-gap: 20px;
+    --tableau-width: 1030px;
+    --top-area-height: 190px;
+    --top-area-gap: 120px;
+    --waste-card-offset: 25px;
+    --font-size-large: 2.5rem;
+    --font-size-medium: 1.1rem;
+    --padding-base: 10px;
+    --border-radius: 12px;
+    --back-btn-padding-h: 15px;
+    --back-btn-padding-v: 10px;
+    --game-header-padding: 20px;
+    --game-info-gap: 30px;
+    --info-padding-h: 15px;
+    --info-padding-v: 8px;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #0f4c29 0%, #2d5a3d 50%, #1a4c37 100%);
+    min-height: 100vh;
+    color: white;
+    overflow-x: auto;
+    padding: var(--padding-base);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 모바일 가로 방향 제한 */
+.mobile-landscape-notice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.notice-content {
+    text-align: center;
+    color: white;
+    padding: var(--padding-base);
+}
+
+.rotate-icon {
+    font-size: 3rem;
+    margin-bottom: var(--padding-base);
+    animation: rotate 2s ease-in-out infinite;
+}
+
+.notice-content p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+@keyframes rotate {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    75% { transform: rotate(90deg); }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+    .mobile-landscape-notice {
+        display: flex;
+    }
+    
+    .container {
+        display: none;
+    }
+}
+
+
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: var(--back-btn-padding-v) var(--back-btn-padding-h);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.game-header {
+    width: 100%;
+    max-width: var(--tableau-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--game-header-padding);
+    margin-bottom: var(--padding-base);
+}
+
+.game-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--padding-base);
+}
+
+.game-title {
+    font-size: var(--font-size-large);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.game-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--game-info-gap);
+    font-size: var(--font-size-medium);
+    flex-wrap: wrap;
+}
+
+.score, .time, .moves {
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--info-padding-v) var(--info-padding-h);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.score.score-update {
+    animation: scoreUpdate 0.5s ease-out;
+}
+
+@keyframes scoreUpdate {
+    0% { transform: scale(1); background: rgba(255, 255, 255, 0.1); }
+    50% { transform: scale(1.1); background: rgba(255, 215, 0, 0.3); }
+    100% { transform: scale(1); background: rgba(255, 255, 255, 0.1); }
+}
+
+.game-container {
+    max-width: var(--tableau-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+.game-area {
+    width: 100%;
+    max-width: var(--tableau-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-area {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+    height: var(--top-area-height);
+    width: var(--tableau-width);
+    margin-left: auto;
+    margin-right: auto;
+    gap: var(--top-area-gap);
+}
+
+.deck-area {
+    display: flex;
+    gap: var(--grid-gap);
+}
+
+.foundation-area {
+    display: flex;
+    gap: var(--grid-gap);
+}
+
+.tableau-area {
+    display: flex;
+    gap: var(--grid-gap);
+    justify-content: flex-start;
+    min-height: 500px;
+    width: var(--tableau-width);
+    margin: 0 auto;
+}
+
+.card-slot {
+    width: var(--grid-cell-size);
+    height: var(--card-height);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#waste {
+    width: 180px; /* 3장 겹쳐서 표시할 공간 확보 */
+}
+
+.card-slot:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 모바일 터치 시 파란색 형광 제거 */
+.card-slot {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* 카드가 있는 슬롯에서는 터치 드래그 허용 */
+.card-slot:has(.card) {
+    -webkit-touch-callout: auto;
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+#stock:empty:hover {
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.card-slot.highlight {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.foundation.drag-over {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.column {
+    width: var(--grid-cell-size);
+    min-height: var(--card-height);
+    position: relative;
+}
+
+.column.empty {
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.05);
+    height: var(--card-height);
+    max-height: var(--card-height);
+}
+
+.column.empty:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.column.empty.drag-over {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.card {
+    width: var(--grid-cell-size);
+    height: var(--card-height);
+    border-radius: var(--border-radius);
+    position: absolute;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: none;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.card:hover:not(.face-down) {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+.card.dragging {
+    transform: rotate(5deg) scale(1.05);
+    z-index: 1000;
+    opacity: 0.8;
+    filter: brightness(1.1);
+}
+
+/* 드래그 프리뷰 스타일 */
+.drag-preview {
+    position: fixed !important;
+    pointer-events: none !important;
+    z-index: 10000 !important;
+    opacity: 0.8 !important;
+    transform: rotate(5deg) scale(1.05) !important;
+    transition: none !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    filter: brightness(1.1) !important;
+}
+
+.card.animating {
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 200;
+}
+
+.card.flipping {
+    transform: rotateY(180deg);
+    transition: transform 0.3s;
+}
+
+.card.flipped {
+    transform: rotateY(0deg);
+    transition: transform 0.3s;
+}
+
+.card.auto-complete {
+    transition: all 0.3s ease-out;
+    z-index: 2000;
+}
+
+.card.winning {
+    animation: cardCelebration 2s ease-out;
+}
+
+@keyframes cardCelebration {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(180deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+}
+
+.card.score-popup {
+    animation: scoreFloatUp 1s ease-out forwards;
+}
+
+@keyframes scoreFloatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+}
+
+.card-stack {
+    position: relative;
+}
+
+.card-stack .card {
+    transition: all 0.3s ease-out;
+}
+
+.card.move-animation-normal {
+    transition: all 0.4s ease-out;
+    z-index: 1000;
+}
+
+.card.move-animation-fast {
+    transition: all 0.15s ease-out;
+    z-index: 1000;
+}
+
+.card.face-down {
+    background: transparent;
+    color: white;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.card.red {
+    color: #d32f2f;
+}
+
+.card.black {
+    color: #000;
+}
+
+.card-number {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.card-suit {
+    font-size: 1.2rem;
+}
+
+.card-center {
+    font-size: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.controls {
+    display: flex;
+    gap: var(--grid-gap);
+}
+
+.btn {
+    background: linear-gradient(45deg, #9B59B6, #8E44AD);
+    border: none;
+    padding: var(--info-padding-v) var(--info-padding-h);
+    color: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+}
+
+.win-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.win-content {
+    background: linear-gradient(135deg, #2d5a3d, #0f4c29);
+    padding: clamp(20px, 8vw, 40px);
+    border-radius: var(--border-radius);
+    text-align: center;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.win-title {
+    font-size: 3rem;
+    margin-bottom: var(--padding-base);
+    color: #ffd700;
+}
+
+.win-stats {
+    font-size: 1.2rem;
+    margin: var(--padding-base) 0;
+    line-height: 1.6;
+}
+
+/* 카드 이미지 지원 */
+.card.with-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.card.with-image .card-content,
+.card.with-image .rank,
+.card.with-image .suit,
+.card.with-image .card-suits {
+    display: none;
+}
+
+.card.face-down.with-image {
+    background-image: url('./cards/back.png');
+}
+
+/* 유연한 반응형 디자인 - 고정 픽셀 값 사용 */
+.back-btn {
+    font-size: 1rem;
+}
+
+.controls {
+    gap: 12px;
+}
+
+.btn {
+    font-size: 0.9rem;
+}
+
+/* 반응형 디자인 - 4x4 퍼즐과 동일한 방식 */
+@media (max-width: 1200px) {
+    :root {
+        --grid-cell-size: 110px;
+        --card-height: 152px;
+        --grid-gap: 19px;
+        --tableau-width: 900px;
+        --top-area-height: 160px;
+        --top-area-gap: 102px; /* 120px * 0.874 = 104.88px → 104px */
+        --waste-card-offset: 22px; /* 25px * 0.874 = 21.85px → 22px */
+        --font-size-large: 2rem;
+        --font-size-medium: 1rem;
+        --border-radius: 10px;
+    }
+    
+    #waste {
+        width: 157px; /* 180px * 0.874 = 157.32px → 157px */
+    }
+    
+    .top-area {
+        margin-bottom: 18px;
+    }
+    
+
+}
+
+@media (max-width: 900px) {
+    :root {
+        --grid-cell-size: 90px;
+        --card-height: 124px;
+        --grid-gap: 16px;
+        --tableau-width: 750px;
+        --top-area-height: 140px;
+        --top-area-gap: 81px; /* 120px * 0.728 = 87.36px → 86px */
+        --waste-card-offset: 18px; /* 25px * 0.728 = 18.2px → 18px */
+        --font-size-large: 1.8rem;
+        --font-size-medium: 0.9rem;
+        --border-radius: 8px;
+    }
+    
+    #waste {
+        width: 131px; /* 180px * 0.728 = 131.04px → 131px */
+    }
+    
+    .top-area {
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --grid-cell-size: 70px;
+        --card-height: 96px;
+        --grid-gap: 13px;
+        --tableau-width: 580px;
+        --top-area-height: 120px;
+        --top-area-gap: 67px; /* 120px * 0.563 = 67.56px → 67px */
+        --waste-card-offset: 14px; /* 25px * 0.563 = 14.075px → 14px */
+        --font-size-large: 1.5rem;
+        --font-size-medium: 0.8rem;
+        --padding-base: 8px;
+        --border-radius: 8px;
+    }
+    
+    #waste {
+        width: 101px; /* 180px * 0.563 = 101.34px → 101px */
+    }
+    
+    .top-area {
+        margin-bottom: 15px;
+    }
+    
+    .tableau-area {
+        min-height: 400px;
+    }
+    
+
+}
+
+@media (max-width: 600px) {
+    :root {
+        --grid-cell-size: 60px;
+        --card-height: 82px;
+        --grid-gap: 11px;
+        --tableau-width: 480px;
+        --top-area-height: 100px;
+        --top-area-gap: 55px; /* 120px * 0.466 = 55.92px → 55px */
+        --waste-card-offset: 12px; /* 25px * 0.466 = 11.65px → 12px */
+        --font-size-large: 1.3rem;
+        --font-size-medium: 0.7rem;
+        --border-radius: 6px;
+    }
+    
+    #waste {
+        width: 84px; /* 180px * 0.466 = 83.88px → 84px */
+    }
+    
+    .top-area {
+        margin-bottom: 12px;
+    }
+    
+    .tableau-area {
+        min-height: 300px;
+    }
+    
+
+}
+
+ 

@@ -7,23 +7,29 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="mobile-landscape-notice">
+        <div class="notice-content">
+            <div class="rotate-icon">📱</div>
+            <p>모바일에서는 가로로 플레이해주세요!</p>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>4x4 퍼즐 게임</h1>
-        <div class="game-controls">
-            <button id="new-game">새 게임</button>
+        <div class="top-buttons">
+            <div class="left-buttons">
+                <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
+                <button id="new-game" class="btn">새 게임</button>
+            </div>
         </div>
         
         <div class="game-content">
             <div class="puzzle-area-left">
-                <div id="puzzle-pieces-left" class="puzzle-pieces">
-                    <!-- 왼쪽 퍼즐 조각들 -->
-                </div>
+                <div id="puzzle-pieces-left" class="puzzle-pieces"></div>
             </div>
             
             <div class="game-board">
-                <div id="grid" class="grid">
-                    <!-- 4x4 그리드 (0-15) -->
-                </div>
+                <h1>4x4 퍼즐 게임</h1>
+                <div id="grid" class="grid"></div>
                 <div class="game-info">
                     <div class="center-info">
                         <div id="stage">스테이지 1</div>
@@ -33,24 +39,17 @@
             </div>
             
             <div class="puzzle-area-right">
-                <div id="puzzle-pieces-right" class="puzzle-pieces">
-                    <!-- 오른쪽 퍼즐 조각들 -->
-                </div>
+                <div id="puzzle-pieces-right" class="puzzle-pieces"></div>
             </div>
         </div>
     </div>
 
-    <!-- 게임오버 팝업 -->
     <div id="game-over-popup" class="popup-overlay" style="display: none;">
         <div class="popup-container">
             <div class="popup-content">
                 <h2>⏰ 시간 초과!</h2>
                 <p>이번 스테이지를 완료하지 못했습니다.</p>
                 <div class="popup-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">스테이지</span>
-                        <span id="popup-stage">1</span>
-                    </div>
                     <div class="stat-item">
                         <span class="stat-label">완료한 스테이지</span>
                         <span id="popup-completed">0</span>

@@ -8,11 +8,12 @@
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     color: #333;
+    overflow: hidden;
 }
 
 /* 게임 컨테이너 스타일 */
@@ -26,13 +27,58 @@ body {
     width: 100%;
 }
 
-/* 게임 제목 스타일 */
-h1 {
-    color: #4a5568;
+/* 게임 헤더 스타일 */
+.game-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+/* 게임 제목 스타일 */
+.game-header h1 {
+    color: #4a5568;
+    margin: 0;
     font-size: 2.5rem;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 게임 모드 선택 스타일 */
+.game-mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    color: #667eea;
+}
+
+.mode-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn.active {
+    background: #667eea;
+    color: white;
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn:active {
+    transform: translateY(0);
 }
 
 /* 현재 플레이어 상태 표시 */
@@ -51,25 +97,7 @@ h1 {
     font-size: 1.4rem;
 }
 
-/* 게임 모드 표시 스타일 */
-.game-mode {
-    font-size: 1rem;
-    margin-bottom: 15px;
-    padding: 8px 15px;
-    background: #e6fffa;
-    border-radius: 8px;
-    border: 1px solid #81e6d9;
-    color: #234e52;
-}
 
-.mode-label {
-    font-weight: bold;
-    margin-right: 8px;
-}
-
-.mode-value {
-    color: #2c7a7b;
-}
 
 /* 점수판 스타일 */
 .score-board {
@@ -87,12 +115,19 @@ h1 {
     flex-direction: column;
     align-items: center;
     gap: 5px;
+    width: 120px; /* 고정 너비 설정 */
 }
 
 .player {
     font-size: 1.5rem;
     font-weight: bold;
     color: #4a5568;
+    text-align: center;
+    width: 100%;
+    min-height: 2.5rem; /* 고정 높이 설정 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .score {
@@ -103,49 +138,41 @@ h1 {
     padding: 5px 15px;
     border-radius: 10px;
     border: 2px solid #e2e8f0;
-    min-width: 60px;
+    width: 80px; /* 고정 너비 설정 */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 게임 보드 스타일 */
+/* 게임 보드 스타일 - 4x4 퍼즐게임 스타일 적용 */
 .game-board {
-    position: relative;
-    width: 300px;
-    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    padding: 10px;
+    border-radius: 10px;
     margin: 0 auto 30px auto;
-    background: white;
-    border-radius: 0;
+    width: fit-content;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* 틱택토 선 그리드 */
-.game-board::before {
-    content: '';
-    position: absolute;
-    width: calc(100% + 40px);
-    height: calc(100% + 40px);
-    top: -20px;
-    left: -20px;
-    background: 
-        /* 세로선 2개 - 정확한 위치 (왼쪽으로 5px 추가 이동) */
-        linear-gradient(90deg, transparent 115px, #4a5568 115px, #4a5568 125px, transparent 125px),
-        linear-gradient(90deg, transparent 215px, #4a5568 215px, #4a5568 225px, transparent 225px),
-        /* 가로선 2개 - 정확한 위치 (아래쪽으로 15px 추가 이동) */
-        linear-gradient(0deg, transparent 115px, #4a5568 115px, #4a5568 125px, transparent 125px),
-        linear-gradient(0deg, transparent 215px, #4a5568 215px, #4a5568 225px, transparent 225px);
-    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-    background-repeat: no-repeat;
-    border-radius: 0;
-    pointer-events: none;
-    z-index: 2;
+/* 3x3 그리드 컨테이너 */
+.game-board-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
 }
 
-/* 게임 셀 스타일 */
+/* 게임 셀 스타일 - 4x4 퍼즐게임 셀 스타일 적용 */
 .cell {
     width: 100px;
     height: 100px;
-    background: transparent;
-    border: none;
-    border-radius: 0;
+    background: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 5px;
     font-size: 3rem;
     font-weight: bold;
     cursor: pointer;
@@ -153,30 +180,46 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4a5568;
+    color: #666;
     position: relative;
-    z-index: 1;
 }
 
 /* 셀 호버 효과 */
 .cell:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: #e0e0e0;
+    transform: scale(1.05);
+    border-color: #bbb;
 }
 
 /* X 플레이어 스타일 */
 .cell.x {
-    color: #e53e3e;
+    background: #e53e3e;
+    border-color: #c53030;
+    color: white;
+}
+
+.cell.x:hover {
+    background: #c53030;
+    border-color: #a93226;
 }
 
 /* O 플레이어 스타일 */
 .cell.o {
-    color: #3182ce;
+    background: #3182ce;
+    border-color: #2c5aa0;
+    color: white;
+}
+
+.cell.o:hover {
+    background: #2c5aa0;
+    border-color: #1e3a8a;
 }
 
 /* 승리한 셀 하이라이트 */
 .cell.winner {
-    background: rgba(198, 246, 213, 0.9);
-    color: #22543d;
+    background: #4CAF50;
+    border-color: #45a049;
+    color: white;
     animation: winner-pulse 0.6s ease-in-out;
 }
 
@@ -189,89 +232,310 @@ h1 {
 
 /* 게임 컨트롤 버튼 영역 */
 .game-controls {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
+    margin-top: 20px;
 }
 
-/* 버튼 공통 스타일 */
-.btn {
-    padding: 12px 24px;
+/* 컨트롤 버튼 공통 스타일 */
+.control-btn {
+    padding: 15px 20px;
     font-size: 1rem;
     font-weight: bold;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #667eea;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
-/* 버튼 호버 효과 */
-.btn:hover {
-    background: #5a67d8;
+/* 메인으로 가기 버튼 스타일 */
+#main-menu-btn {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+#main-menu-btn:hover {
+    background: linear-gradient(45deg, #c0392b, #a93226);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(231, 76, 60, 0.3);
 }
 
-/* 버튼 활성화 효과 */
-.btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* 게임 재시작 버튼 스타일 */
+#restart-btn {
+    background: linear-gradient(45deg, #667eea, #5a67d8);
+}
+
+#restart-btn:hover {
+    background: linear-gradient(45deg, #5a67d8, #4c51bf);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* 점수 초기화 버튼 스타일 */
 #reset-score-btn {
-    background: #e53e3e;
+    background: linear-gradient(45deg, #f39c12, #e67e22);
 }
 
 #reset-score-btn:hover {
-    background: #c53030;
+    background: linear-gradient(45deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+}
+
+/* 버튼 활성화 효과 */
+.control-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 600px) {
     .game-container {
-        margin: 20px;
-        padding: 20px;
+        margin: 5px;
+        padding: 15px;
+        max-width: 100%;
+        border-radius: 15px;
+        transform: scale(0.9);
+        transform-origin: center;
+    }
+    
+    h1 {
+        font-size: 2.25rem;
+        margin-bottom: 18px;
+    }
+
+    .status {
+        font-size: 1.08rem;
+        margin-bottom: 18px;
+        padding: 9px;
+    }
+
+    #current-player {
+        font-size: 1.26rem;
+    }
+
+    .game-mode-selector {
+        gap: 13.5px;
+        margin-bottom: 18px;
+    }
+    
+    .mode-btn {
+        padding: 10.8px 18px;
+        font-size: 0.9rem;
+    }
+
+    .score-board {
+        margin-bottom: 27px;
+        padding: 13.5px;
+    }
+
+    .score-item {
+        width: 108px;
+    }
+
+    .player {
+        font-size: 1.35rem;
+        min-height: 2.25rem;
+    }
+
+    .score {
+        font-size: 1.8rem;
+        width: 72px;
+    }
+    
+    .game-board {
+        padding: 9px;
+        margin: 0 auto 27px auto;
+    }
+    
+    .game-board-grid {
+        grid-template-columns: repeat(3, 90px);
+        grid-template-rows: repeat(3, 90px);
+        gap: 4.5px;
+    }
+    
+    .cell {
+        width: 90px;
+        height: 90px;
+        font-size: 2.7rem;
+    }
+    
+    .game-controls {
+        gap: 13.5px;
+        margin-top: 18px;
+    }
+    
+    .control-btn {
+        padding: 13.5px 18px;
+        min-height: 45px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .game-container {
+        margin: 2px;
+        padding: 10px;
+        transform: scale(0.85);
     }
     
     h1 {
         font-size: 2rem;
+        margin-bottom: 16px;
+    }
+
+    .status {
+        font-size: 0.96rem;
+        margin-bottom: 16px;
+        padding: 8px;
+    }
+
+    #current-player {
+        font-size: 1.12rem;
+    }
+
+    .game-mode-selector {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .mode-btn {
+        padding: 9.6px 16px;
+        font-size: 0.8rem;
+    }
+
+    .score-board {
+        margin-bottom: 24px;
+        padding: 12px;
+    }
+
+    .score-item {
+        width: 96px;
+    }
+
+    .player {
+        font-size: 1.2rem;
+        min-height: 2rem;
+    }
+
+    .score {
+        font-size: 1.6rem;
+        width: 64px;
     }
     
     .game-board {
-        width: 240px;
-        height: 240px;
+        padding: 8px;
+        margin: 0 auto 24px auto;
     }
     
-    /* 모바일에서 선 위치 조정 */
-    .game-board::before {
-        background: 
-            /* 세로선 2개 - 모바일 정확한 위치 (왼쪽으로 5px 추가 이동) */
-            linear-gradient(90deg, transparent 95px, #4a5568 95px, #4a5568 105px, transparent 105px),
-            linear-gradient(90deg, transparent 175px, #4a5568 175px, #4a5568 185px, transparent 185px),
-            /* 가로선 2개 - 모바일 정확한 위치 (아래쪽으로 15px 추가 이동) */
-            linear-gradient(0deg, transparent 95px, #4a5568 95px, #4a5568 105px, transparent 105px),
-            linear-gradient(0deg, transparent 175px, #4a5568 175px, #4a5568 185px, transparent 185px);
+    .game-board-grid {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+        gap: 4px;
     }
     
     .cell {
         width: 80px;
         height: 80px;
-        font-size: 2.5rem;
+        font-size: 2.4rem;
     }
     
     .game-controls {
-        flex-direction: column;
-        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
     }
     
-    .btn {
-        width: 100%;
-        max-width: 200px;
+    .control-btn {
+        padding: 12px 16px;
+        min-height: 40px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .game-container {
+        margin: 1px;
+        padding: 8px;
+        transform: scale(0.8);
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+        margin-bottom: 14px;
+    }
+
+    .status {
+        font-size: 0.84rem;
+        margin-bottom: 14px;
+        padding: 7px;
+    }
+
+    #current-player {
+        font-size: 0.98rem;
+    }
+
+    .game-mode-selector {
+        gap: 10.5px;
+        margin-bottom: 14px;
+    }
+    
+    .mode-btn {
+        padding: 8.4px 14px;
+        font-size: 0.7rem;
+    }
+
+    .score-board {
+        margin-bottom: 21px;
+        padding: 10.5px;
+    }
+
+    .score-item {
+        width: 84px;
+    }
+
+    .player {
+        font-size: 1.05rem;
+        min-height: 1.75rem;
+    }
+
+    .score {
+        font-size: 1.4rem;
+        width: 56px;
+    }
+    
+    .game-board {
+        padding: 7px;
+        margin: 0 auto 21px auto;
+    }
+    
+    .game-board-grid {
+        grid-template-columns: repeat(3, 70px);
+        grid-template-rows: repeat(3, 70px);
+        gap: 3.5px;
+    }
+    
+    .cell {
+        width: 70px;
+        height: 70px;
+        font-size: 2.1rem;
+    }
+    
+    .game-controls {
+        gap: 10.5px;
+        margin-top: 14px;
+    }
+    
+    .control-btn {
+        padding: 10.5px 14px;
+        min-height: 35px;
+        font-size: 0.7rem;
     }
 }
 

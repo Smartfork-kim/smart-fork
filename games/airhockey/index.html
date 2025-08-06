@@ -5,15 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>에어하키 게임</title>
     <style>
-        body {
-            margin: 0;
+        /* 모바일 세로 모드 제한 */
+        .mobile-landscape-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .notice-content {
+            text-align: center;
+            color: white;
             padding: 20px;
+        }
+
+        .rotate-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: rotate 2s ease-in-out infinite;
+        }
+
+        .notice-content p {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            75% { transform: rotate(90deg); }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            .mobile-landscape-notice {
+                display: flex;
+            }
+            
+            .game-container {
+                display: none;
+            }
+        }
+
+        /* CSS 리셋 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Arial', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            display: block;
+            text-align: center;
         }
 
         .game-container {
@@ -21,12 +80,52 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            margin: 20px;
+            max-width: calc(100% - 40px);
+            overflow: visible;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                margin: 0;
+                border-radius: 0;
+                display: flex;
+                flex-direction: column;
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .instructions {
+                display: none;
+            }
         }
 
         .game-header {
             text-align: center;
             margin-bottom: 20px;
+            position: relative;
+        }
+
+        .main-menu-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .main-menu-btn:hover {
+            background: #c0392b;
+        }
+
+        #resetBtn:hover {
+            background: #2980b9;
         }
 
         .score-board {
@@ -48,11 +147,13 @@
             margin: 0 auto;
             max-width: 100%;
             height: auto;
-        }
-
-        .controls {
-            text-align: center;
-            margin-top: 15px;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         button {
@@ -137,16 +238,26 @@
     </style>
 </head>
 <body>
+    <!-- 모바일 세로 모드 제한 알림 -->
+    <div class="mobile-landscape-notice">
+        <div class="notice-content">
+            <div class="rotate-icon">📱</div>
+            <p>에어하키는 가로로 플레이해주세요!</p>
+        </div>
+    </div>
+
     <div class="game-container">
         <div class="game-header">
             <h1>🏒 에어하키 게임 🏒</h1>
+            <button id="main-menu-btn" class="main-menu-btn">메인으로 가기</button>
+            <button onclick="resetGame()" id="resetBtn" style="position: absolute; top: 0; right: 0; background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; transition: background 0.3s;">다시 시작</button>
             <div class="score-board">
                 <div class="player-score">플레이어: <span id="playerScore">0</span></div>
                 <div class="ai-score">컴퓨터: <span id="aiScore">0</span></div>
             </div>
         </div>
         
-        <div class="canvas-container" style="position: relative; display: inline-block;">
+        <div class="canvas-container" style="position: relative; display: flex; align-items: center; justify-content: center;">
             <canvas id="gameCanvas" width="1100" height="693"></canvas>
             
             <div id="gameStartOverlay" class="game-start-overlay">
@@ -154,24 +265,32 @@
                     <h2>🏒 에어하키 게임 🏒</h2>
                     <p>5점 먼저 득점하면 승리!</p>
                     <button onclick="startGame()" id="startBtnCenter" class="start-btn-center">게임 시작</button>
-                    <p class="instructions-small">파란색 말렛을 클릭하고 드래그하세요</p>
+                    <p class="instructions-small">파란색 말렛을 클릭/터치하고 드래그하세요</p>
                 </div>
             </div>
         </div>
         
-        <div class="controls">
-            <button onclick="startGame()" id="startBtn" style="display: none;">게임 시작</button>
-            <button onclick="resetGame()" id="resetBtn">다시 시작</button>
-        </div>
+
     </div>
 
     <div class="instructions">
         <p>🎯 목표: 5점 먼저 득점하면 승리!</p>
-        <p>🖱️ 파란색 말렛을 클릭하고 드래그하여 퍽을 상대방 골대에 넣으세요</p>
+        <p>🖱️👆 파란색 말렛을 클릭/터치하고 드래그하여 퍽을 상대방 골대에 넣으세요</p>
         <p>⚡ 퍽은 벽과 말렛에 부딪히면 튕겨나갑니다</p>
     </div>
 
     <script>
+        // 메인으로 가기 버튼 이벤트 리스너 추가
+        document.getElementById('main-menu-btn').addEventListener('click', function() {
+            window.location.href = '../../index.html';
+        });
+
+        // 윈도우 리사이즈 시 게임 크기 조정
+        window.addEventListener('resize', adjustGameSize);
+        
+        // 페이지 로드 시 게임 크기 조정
+        window.addEventListener('load', adjustGameSize);
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -186,6 +305,122 @@
         const imageNames = ['airhockey map', 'airhockey mallet blue', 'airhockey mallet red', 'airhockey puck'];
         let imagesLoaded = 0;
         
+        function adjustGameSize() {
+            if (window.innerHeight <= 500) {
+                const screenHeight = window.innerHeight;
+                const screenWidth = window.innerWidth;
+                
+                const gameContainer = document.querySelector('.game-container');
+                const containerPadding = 10;
+                const containerHeight = screenHeight - (containerPadding * 2);
+                const containerWidth = screenWidth - (containerPadding * 2);
+                
+                gameContainer.style.height = containerHeight + 'px';
+                gameContainer.style.width = containerWidth + 'px';
+                gameContainer.style.display = 'block';
+                gameContainer.style.padding = '0';
+                gameContainer.style.margin = '0';
+                gameContainer.style.borderRadius = '10px';
+                gameContainer.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+                gameContainer.style.position = 'fixed';
+                gameContainer.style.top = containerPadding + 'px';
+                gameContainer.style.left = containerPadding + 'px';
+                gameContainer.style.zIndex = '1000';
+                
+                const headerHeight = screenHeight * 0.12;
+                const canvasHeight = screenHeight * 0.80;
+                
+                const header = document.querySelector('.game-header');
+                header.style.height = headerHeight + 'px';
+                header.style.padding = '10px';
+                header.style.margin = '0';
+                header.style.position = 'relative';
+                header.style.display = 'flex';
+                header.style.flexDirection = 'column';
+                header.style.justifyContent = 'space-between';
+                header.style.alignItems = 'center';
+                
+                const headerTitle = header.querySelector('h1');
+                headerTitle.style.fontSize = Math.max(16, screenHeight * 0.04) + 'px';
+                headerTitle.style.margin = '0';
+                headerTitle.style.lineHeight = '1';
+                
+                const scoreBoard = header.querySelector('.score-board');
+                scoreBoard.style.fontSize = Math.max(14, screenHeight * 0.03) + 'px';
+                scoreBoard.style.margin = '0';
+                
+                const buttons = header.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    btn.style.padding = '8px 12px';
+                    btn.style.fontSize = Math.max(12, screenHeight * 0.025) + 'px';
+                    btn.style.position = 'absolute';
+                    btn.style.top = '10px';
+                    if (btn.id === 'main-menu-btn') {
+                        btn.style.left = '10px';
+                        btn.style.right = 'auto';
+                    } else if (btn.id === 'resetBtn') {
+                        btn.style.right = '10px';
+                        btn.style.left = 'auto';
+                    }
+                });
+                
+                const canvasContainer = document.querySelector('.canvas-container');
+                canvasContainer.style.height = canvasHeight + 'px';
+                canvasContainer.style.padding = '20px 10px 10px 10px';
+                
+                const canvasPadding = 20;
+                const availableWidth = screenWidth - canvasPadding * 2;
+                const availableHeight = canvasHeight - canvasPadding * 2;
+                
+                const originalRatio = 1100 / 693;
+                
+                let finalCanvasWidth = availableHeight * originalRatio;
+                let finalCanvasHeight = availableHeight;
+                
+                if (finalCanvasWidth > availableWidth) {
+                    finalCanvasWidth = availableWidth;
+                    finalCanvasHeight = availableWidth / originalRatio;
+                }
+                
+                canvas.style.width = finalCanvasWidth + 'px';
+                canvas.style.height = finalCanvasHeight + 'px';
+                
+                const overlay = document.getElementById('gameStartOverlay');
+                const startContent = overlay.querySelector('.start-content');
+                startContent.style.padding = '20px';
+                
+                const startTitle = startContent.querySelector('h2');
+                startTitle.style.fontSize = Math.max(20, screenHeight * 0.05) + 'px';
+                
+                const startText = startContent.querySelector('p');
+                startText.style.fontSize = Math.max(14, screenHeight * 0.03) + 'px';
+                
+                const startBtn = startContent.querySelector('.start-btn-center');
+                startBtn.style.padding = '12px 24px';
+                startBtn.style.fontSize = Math.max(16, screenHeight * 0.04) + 'px';
+                
+                const instructionsSmall = startContent.querySelector('.instructions-small');
+                instructionsSmall.style.fontSize = Math.max(12, screenHeight * 0.025) + 'px';
+                
+                if (images['airhockey map']) {
+                    resetPositions();
+                }
+            } else {
+                const gameContainer = document.querySelector('.game-container');
+                gameContainer.style.height = '';
+                gameContainer.style.width = '';
+                gameContainer.style.display = '';
+                gameContainer.style.padding = '';
+                gameContainer.style.position = '';
+                gameContainer.style.top = '';
+                gameContainer.style.left = '';
+                gameContainer.style.zIndex = '';
+                
+                canvas.style.width = '';
+                canvas.style.height = '';
+            }
+        }
+        
         imageNames.forEach(name => {
             images[name] = new Image();
             images[name].onload = () => {
@@ -194,7 +429,6 @@
                     canvas.width = images[name].width;
                     canvas.height = images[name].height;
                     
-                    // 게임 오브젝트 위치 조정
                     player.x = canvas.width * 0.2;
                     player.y = canvas.height * 0.5;
                     ai.x = canvas.width * 0.8;
@@ -207,6 +441,7 @@
                 }
                 
                 if (imagesLoaded === imageNames.length) {
+                    adjustGameSize();
                     initGame();
                 }
             };
@@ -236,14 +471,20 @@
         
         let mouse = { x: 0, y: 0, isPressed: false };
         
-        // 마우스 이벤트 처리
-        canvas.addEventListener('mousemove', (e) => {
+        // 마우스/터치 이벤트 처리
+        function handleInput(e, isTouch = false) {
             e.preventDefault();
+            if (isTouch) e.stopPropagation();
+            
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            mouse.x = (e.clientX - rect.left) * scaleX;
-            mouse.y = (e.clientY - rect.top) * scaleY;
+            
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            mouse.x = (clientX - rect.left) * scaleX;
+            mouse.y = (clientY - rect.top) * scaleY;
             
             if (mouse.x < canvas.width / 2 && mouse.isPressed) {
                 const clampedX = Math.max(45 + player.radius, Math.min(canvas.width / 2 - player.radius, mouse.x));
@@ -255,14 +496,32 @@
                 player.x += (clampedX - player.x) * lerpFactor;
                 player.y += (clampedY - player.y) * lerpFactor;
             }
-        });
-        
+        }
+
+        canvas.addEventListener('mousemove', (e) => handleInput(e));
         canvas.addEventListener('mousedown', () => mouse.isPressed = true);
         canvas.addEventListener('mouseup', () => mouse.isPressed = false);
         canvas.addEventListener('mouseleave', () => mouse.isPressed = false);
         canvas.addEventListener('mouseenter', (e) => {
             if (e.buttons === 1) mouse.isPressed = true;
         });
+
+        canvas.addEventListener('touchstart', (e) => {
+            handleInput(e, true);
+            mouse.isPressed = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => handleInput(e, true), { passive: false });
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mouse.isPressed = false;
+        }, { passive: false });
+        canvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mouse.isPressed = false;
+        }, { passive: false });
         
         function initGame() {
             resetPositions();
@@ -275,7 +534,7 @@
             updateScore();
             
             gameState = 'playing';
-            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtnCenter').disabled = true;
             document.getElementById('gameStartOverlay').style.display = 'none';
             
             resetPositions();
@@ -287,7 +546,7 @@
             aiScore = 0;
             updateScore();
             resetPositions();
-            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtnCenter').disabled = false;
             document.getElementById('gameStartOverlay').style.display = 'flex';
             
             document.querySelector('.start-content h2').textContent = '🏒 에어하키 게임 🏒';
@@ -342,14 +601,14 @@
         function checkWin(winner) {
             if (playerScore >= maxScore) {
                 gameState = 'gameOver';
-                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtnCenter').disabled = false;
                 document.getElementById('gameStartOverlay').style.display = 'flex';
                 document.querySelector('.start-content h2').textContent = '🎉 플레이어 승리! 🎉';
                 document.querySelector('.start-content p').textContent = '축하합니다! 다시 도전해보세요!';
                 document.getElementById('startBtnCenter').textContent = '다시 시작';
             } else if (aiScore >= maxScore) {
                 gameState = 'gameOver';
-                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtnCenter').disabled = false;
                 document.getElementById('gameStartOverlay').style.display = 'flex';
                 document.querySelector('.start-content h2').textContent = '💻 컴퓨터 승리!';
                 document.querySelector('.start-content p').textContent = '다시 도전해보세요!';
@@ -361,6 +620,7 @@
             player.prevX = player.x;
             player.prevY = player.y;
             
+            // 마우스/터치 입력에 따른 플레이어 말렛 이동
             if (mouse.x < canvas.width / 2 && mouse.isPressed) {
                 const targetX = mouse.x;
                 const targetY = mouse.y;
@@ -372,6 +632,7 @@
                 player.y += (targetY - player.y) * lerpFactor;
             }
             
+            // 경계 제한
             player.x = Math.max(45 + player.radius, Math.min(canvas.width / 2 - player.radius, player.x));
             player.y = Math.max(39 + player.radius, Math.min(651 - player.radius, player.y));
             
@@ -513,7 +774,6 @@
                 const cooldownDuration = puckSpeed > 15 ? 300 : puckSpeed > 10 ? 350 : 400;
                 
                 if (cooldownTime > cooldownDuration) {
-                    // 쿨다운이 끝나면 바로 approach 모드로 전환하여 더 자연스럽게 동작
                     if (puck.x > canvas.width * 0.5) {
                         ai.mode = 'approach';
                     } else {
@@ -521,24 +781,20 @@
                     }
                 }
                 
-                // 쿨다운 중에는 자기 진영 중앙으로 이동
-                const centerX = canvas.width * 0.8; // AI 진영 중앙
+                const centerX = canvas.width * 0.8;
                 const centerY = canvas.height * 0.5;
                 
                 const dx = centerX - ai.x;
                 const dy = centerY - ai.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // 목표 위치에 더 가까이 있을 때는 더 정확한 정지
                 if (distance > 10) {
                     ai.x += (dx / distance) * ai.speed * 1.8;
                     ai.y += (dy / distance) * ai.speed * 1.8;
                 } else if (distance > 3) {
-                    // 가까이 있을 때는 더 부드럽게
                     ai.x += (dx / distance) * ai.speed * 0.8;
                     ai.y += (dy / distance) * ai.speed * 0.8;
                 } else {
-                    // 목표 위치에 도달했으면 정확히 위치 고정
                     ai.x = centerX;
                     ai.y = centerY;
                 }
@@ -559,8 +815,6 @@
                 ai.vx = (ai.vx / aiSpeed) * 15;
                 ai.vy = (ai.vy / aiSpeed) * 15;
             }
-            
-
         }
         
         function updatePuck() {
@@ -582,7 +836,7 @@
                 puck.trail = [];
             }
             
-            // 테두리 충돌 처리 (에너지 손실 포함)
+            // 테두리 충돌 처리
             if (puck.y - puck.radius <= 39) {
                 puck.vy = -puck.vy * 0.95;
                 puck.y = 39 + puck.radius;
@@ -606,23 +860,11 @@
                 }
             }
             
-            // 경계 벗어남 방지 (강제 보정)
+            // 경계 벗어남 방지
             if (puck.x < 45) puck.x = 45 + puck.radius;
             if (puck.x > 1060) puck.x = 1060 - puck.radius;
             if (puck.y < 39) puck.y = 39 + puck.radius;
             if (puck.y > 651) puck.y = 651 - puck.radius;
-            
-            // 골대 뒤쪽 영역 추가 충돌 처리
-            if (puck.x < 45 && puck.y > 410) {
-                if (puck.x < 45) {
-                    puck.vx = -puck.vx * 0.95;
-                    puck.x = 45 + puck.radius;
-                }
-                if (puck.y > 651) {
-                    puck.vy = -puck.vy * 0.95;
-                    puck.y = 651 - puck.radius;
-                }
-            }
             
             checkPuckCollision(player);
             checkPuckCollision(ai);
@@ -695,30 +937,23 @@
                     if (ai.mode === 'attack') {
                         totalPower = Math.min(totalPower * 1.8, 25);
                         
-                        // AI가 자기 골대 쪽으로 치는 것을 방지
-                        const aiGoalX = 1013.5; // AI 골대 중앙 X 좌표 (988~1039의 중앙)
-                        const aiGoalY = 345;    // AI 골대 중앙 Y 좌표 (280~410의 중앙)
+                        const aiGoalX = 1013.5;
+                        const aiGoalY = 345;
                         
-                        // 퍽에서 AI 골대까지의 방향 벡터
                         const toAiGoalDx = aiGoalX - puck.x;
                         const toAiGoalDy = aiGoalY - puck.y;
-                        const toAiGoalDistance = Math.sqrt(toAiGoalDx * toAiGoalDx + toAiGoalDy * toAiGoalDy);
                         
-                        // 현재 충돌 방향과 AI 골대 방향의 각도 차이 계산
                         const currentAngle = Math.atan2(dy, dx);
                         const toAiGoalAngle = Math.atan2(toAiGoalDy, toAiGoalDx);
                         let angleDiff = Math.abs(currentAngle - toAiGoalAngle);
                         
-                        // 각도 차이를 0~π 범위로 정규화
                         if (angleDiff > Math.PI) {
                             angleDiff = 2 * Math.PI - angleDiff;
                         }
                         
-                        // AI 골대 쪽으로 치는 경우 (각도 차이가 60도 이내)
                         if (angleDiff < Math.PI / 3) {
-                            // 수직 방향으로 힘을 조정하여 골대 쪽으로 가지 않도록 함
                             const safeAngle = puck.y > aiGoalY ? -Math.PI/2 : Math.PI/2;
-                            const adjustedAngle = safeAngle + (Math.random() - 0.5) * 0.5; // 약간의 랜덤성 추가
+                            const adjustedAngle = safeAngle + (Math.random() - 0.5) * 0.5;
                             
                             puck.vx = Math.cos(adjustedAngle) * totalPower;
                             puck.vy = Math.sin(adjustedAngle) * totalPower;

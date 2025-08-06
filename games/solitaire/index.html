@@ -3,1248 +3,685 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>솔리테어 클래식 - 웹게임 모음</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background: linear-gradient(135deg, #0f4c29 0%, #2d5a3d 50%, #1a4c37 100%);
-            min-height: 100vh;
-            color: white;
-            overflow-x: auto;
-            padding: 10px;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .game-header {
-            text-align: center;
-            padding: 20px 0;
-            margin-bottom: 20px;
-        }
-
-        .game-title {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            font-size: 1.1rem;
-            flex-wrap: wrap;
-        }
-        
-
-
-        .score, .time, .moves {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .score.score-update {
-            animation: scoreUpdate 0.5s ease-out;
-        }
-
-        @keyframes scoreUpdate {
-            0% { transform: scale(1); background: rgba(255, 255, 255, 0.1); }
-            50% { transform: scale(1.1); background: rgba(255, 215, 0, 0.3); }
-            100% { transform: scale(1); background: rgba(255, 255, 255, 0.1); }
-        }
-
-
-
-        .game-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            min-width: 1200px;
-        }
-
-        .top-area {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 50px;
-            height: 190px;
-            width: 1030px;
-            margin-left: auto;
-            margin-right: auto;
-            margin-bottom: 50px;
-        }
-
-        .deck-area {
-            display: flex;
-            gap: 20px;
-        }
-
-        .foundation-area {
-            display: flex;
-            gap: 20px;
-        }
-
-        .tableau-area {
-            display: flex;
-            gap: 20px;
-            justify-content: flex-start;
-            min-height: 500px;
-            width: 1030px;
-            margin: 0 auto;
-        }
-
-        .card-slot {
-            width: 130px;
-            height: 180px;
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        #waste {
-            width: 180px; /* 3장 겹쳐서 표시할 공간 확보 */
-        }
-
-        .card-slot:hover {
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        #stock:empty:hover {
-            border-color: rgba(255, 255, 255, 0.8);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .card-slot.highlight {
-            border-color: #ffd700;
-            background: rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-        }
-        
-        .foundation.drag-over {
-            border-color: #ffd700;
-            background: rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-        }
-
-        .column {
-            width: 130px;
-            min-height: 180px;
-            position: relative;
-        }
-        
-        .column.empty {
-            border: 2px dashed rgba(255, 255, 255, 0.4);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            height: 180px;
-            max-height: 180px;
-        }
-        
-        .column.empty:hover {
-            border-color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .column.empty.drag-over {
-            border-color: #ffd700;
-            background: rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-        }
-
-        .card {
-            width: 130px;
-            height: 180px;
-            border-radius: 12px;
-            position: absolute;
-            cursor: pointer;
-            transition: all 0.3s ease-out;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            border: none;
-            background: transparent;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0;
-            font-size: 1.2rem;
-            font-weight: bold;
-            user-select: none;
-        }
-
-        .card:hover:not(.face-down) {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            z-index: 100;
-        }
-
-        .card.dragging {
-            transform: rotate(5deg) scale(1.05);
-            z-index: 1000;
-            opacity: 0.8;
-            filter: brightness(1.1);
-        }
-
-        .card.animating {
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 200;
-        }
-
-        .card.flipping {
-            transform: rotateY(180deg);
-            transition: transform 0.3s;
-        }
-
-        .card.flipped {
-            transform: rotateY(0deg);
-            transition: transform 0.3s;
-        }
-
-        .card.auto-complete {
-            transition: all 0.3s ease-out;
-            z-index: 2000;
-        }
-
-        .card.winning {
-            animation: cardCelebration 2s ease-out;
-        }
-
-        @keyframes cardCelebration {
-            0% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(180deg); }
-            100% { transform: translateY(0) rotate(360deg); }
-        }
-
-        .card.score-popup {
-            animation: scoreFloatUp 1s ease-out forwards;
-        }
-
-        @keyframes scoreFloatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
-        }
-
-
-
-        .card-stack {
-            position: relative;
-        }
-
-        .card-stack .card {
-            transition: all 0.3s ease-out;
-        }
-
-        .card.move-animation-normal {
-            transition: all 0.4s ease-out;
-            z-index: 1000;
-        }
-
-        .card.move-animation-fast {
-            transition: all 0.15s ease-out;
-            z-index: 1000;
-        }
-
-        .card.face-down {
-            background: transparent;
-            color: white;
-            justify-content: center;
-            font-size: 2rem;
-        }
-
-        .card.red {
-            color: #d32f2f;
-        }
-
-        .card.black {
-            color: #000;
-        }
-
-        .card-number {
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .card-suit {
-            font-size: 1.2rem;
-        }
-
-        .card-center {
-            font-size: 2rem;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #9B59B6, #8E44AD);
-            border: none;
-            padding: 10px 15px;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
-        }
-
-        .win-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .win-content {
-            background: linear-gradient(135deg, #2d5a3d, #0f4c29);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            border: 2px solid #ffd700;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-        }
-
-        .win-title {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: #ffd700;
-        }
-
-        .win-stats {
-            font-size: 1.2rem;
-            margin: 20px 0;
-            line-height: 1.6;
-        }
-
-        /* 카드 이미지 지원 */
-        .card.with-image {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        
-        .card.with-image .card-content,
-        .card.with-image .rank,
-        .card.with-image .suit,
-        .card.with-image .card-suits {
-            display: none;
-        }
-
-        .card.face-down.with-image {
-            background-image: url('./cards/back.png');
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 1200px) {
-            .game-container {
-                min-width: 900px;
-            }
-            
-            .card, .card-slot, .column {
-                width: 95px;
-            }
-            
-            .card, .card-slot {
-                height: 132px;
-            }
-            
-            #waste {
-                width: 130px;
-            }
-            
-            .deck-area, .foundation-area {
-                gap: 18px;
-            }
-            
-            .tableau-area {
-                gap: 18px;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .game-container {
-                min-width: 800px;
-            }
-            
-            .card, .card-slot, .column {
-                width: 85px;
-            }
-            
-            .card, .card-slot {
-                height: 118px;
-            }
-            
-            #waste {
-                width: 120px;
-            }
-            
-            .deck-area, .foundation-area {
-                gap: 15px;
-            }
-            
-            .tableau-area {
-                gap: 15px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .game-container {
-                min-width: 700px;
-            }
-            
-            .card, .card-slot, .column {
-                width: 75px;
-            }
-            
-            .card, .card-slot {
-                height: 104px;
-            }
-            
-            #waste {
-                width: 110px;
-            }
-            
-            .game-title {
-                font-size: 2rem;
-            }
-            
-            .deck-area, .foundation-area {
-                gap: 12px;
-            }
-            
-            .tableau-area {
-                gap: 12px;
-            }
-        }
-    </style>
+    <title>솔리테어</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
-    
-    <div class="controls">
-        <button class="btn" onclick="newGame()">새 게임</button>
-    </div>
-
-    <div class="game-header">
-        <h1 class="game-title">🃏 솔리테어 클래식</h1>
-        <div class="game-info">
-            <div class="score">점수: <span id="score">0</span></div>
-            <div class="time">시간: <span id="time">00:00</span></div>
-            <div class="moves">움직임: <span id="moves">0</span></div>
+    <div class="mobile-landscape-notice">
+        <div class="notice-content">
+            <div class="rotate-icon">📱</div>
+            <p>모바일에서는 가로로 플레이해주세요!</p>
         </div>
-
     </div>
 
-    <div class="game-container">
-        <!-- 상단 영역: 덱과 파운데이션 -->
-        <div class="top-area">
-            <div class="deck-area">
-                <div class="card-slot" id="stock" onclick="drawCard()">
+    <div class="container">
+        <div class="game-header">
+            <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
+            
+            <div class="game-center">
+                <h1 class="game-title">🃏 솔리테어 클래식</h1>
+                <div class="game-info">
+                    <div class="score">점수: <span id="score">0</span></div>
+                    <div class="time">시간: <span id="time">00:00</span></div>
+                    <div class="moves">움직임: <span id="moves">0</span></div>
                 </div>
-                <div class="card-slot" id="waste"></div>
             </div>
             
-            <div class="foundation-area">
-                <div class="card-slot foundation" data-suit="hearts">
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♥</div>
-                </div>
-                <div class="card-slot foundation" data-suit="diamonds">
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♦</div>
-                </div>
-                <div class="card-slot foundation" data-suit="clubs">
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♣</div>
-                </div>
-                <div class="card-slot foundation" data-suit="spades">
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♠</div>
-                </div>
+            <div class="controls">
+                <button class="btn" onclick="newGame()">새 게임</button>
             </div>
         </div>
 
-        <!-- 하단 영역: 7개 컬럼 -->
-        <div class="tableau-area">
-            <div class="column" data-column="0"></div>
-            <div class="column" data-column="1"></div>
-            <div class="column" data-column="2"></div>
-            <div class="column" data-column="3"></div>
-            <div class="column" data-column="4"></div>
-            <div class="column" data-column="5"></div>
-            <div class="column" data-column="6"></div>
-        </div>
-    </div>
+        <div class="game-container">
+            <!-- 통합된 게임 영역 -->
+            <div class="game-area">
+                <!-- 상단 영역: 덱과 파운데이션 -->
+                <div class="top-area">
+                    <div class="deck-area">
+                        <div class="card-slot" id="stock" onclick="drawCard()">
+                        </div>
+                        <div class="card-slot" id="waste"></div>
+                    </div>
+                    
+                    <div class="foundation-area">
+                        <div class="card-slot foundation" data-suit="hearts">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♥</div>
+                        </div>
+                        <div class="card-slot foundation" data-suit="diamonds">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♦</div>
+                        </div>
+                        <div class="card-slot foundation" data-suit="clubs">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♣</div>
+                        </div>
+                        <div class="card-slot foundation" data-suit="spades">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">♠</div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- 승리 모달 -->
-    <div class="win-modal" id="winModal">
-        <div class="win-content">
-            <div class="win-title">🎉 축하합니다! 🎉</div>
-            <div class="win-stats">
-                <div>최종 점수: <span id="finalScore">0</span>점</div>
-                <div>플레이 시간: <span id="finalTime">00:00</span></div>
-                <div>총 움직임: <span id="finalMoves">0</span>번</div>
+                <!-- 하단 영역: 7개 컬럼 -->
+                <div class="tableau-area">
+                    <div class="column" data-column="0"></div>
+                    <div class="column" data-column="1"></div>
+                    <div class="column" data-column="2"></div>
+                    <div class="column" data-column="3"></div>
+                    <div class="column" data-column="4"></div>
+                    <div class="column" data-column="5"></div>
+                    <div class="column" data-column="6"></div>
+                </div>
             </div>
-            <button class="btn" onclick="closeWinModal()" style="margin: 10px; font-size: 1.1rem; padding: 12px 20px;">계속하기</button>
-            <button class="btn" onclick="newGame(); closeWinModal();" style="margin: 10px; font-size: 1.1rem; padding: 12px 20px;">새 게임</button>
         </div>
-    </div>
 
-    <script>
-        // 게임 상태
-        let deck = [];
-        let stock = [];
-        let waste = [];
-        let foundations = { hearts: [], diamonds: [], clubs: [], spades: [] };
-        let tableau = [[], [], [], [], [], [], []];
-        let score = 0;
-        let moves = 0;
-        let startTime = Date.now();
-        let gameWon = false;
-        let draggedCard = null;
-        let draggedFrom = null;
-        let drawCount = 0; // 뽑기 횟수 추적
-        
-        // 더블클릭 처리 중 플래그 (중복 방지)
-        let isProcessingDoubleClick = false;
-        
-        // 실행 취소 시스템
-        let gameHistory = [];
-        let maxHistorySize = 50;
-        
-        // 마우스 우클릭 방지
-        document.addEventListener('contextmenu', (e) => e.preventDefault());
-        
-        // 게임 상태 저장
-        function saveGameState() {
-            const gameState = {
-                stock: JSON.parse(JSON.stringify(stock)),
-                waste: JSON.parse(JSON.stringify(waste)),
-                foundations: JSON.parse(JSON.stringify(foundations)),
-                tableau: JSON.parse(JSON.stringify(tableau)),
-                score: score,
-                moves: moves,
-                drawCount: drawCount
-            };
-            
-            gameHistory.push(gameState);
-            
-            // 히스토리 크기 제한
-            if (gameHistory.length > maxHistorySize) {
-                gameHistory.shift();
-            }
-        }
-        
-        // 실행 취소
-        function undoMove() {
-            if (gameHistory.length === 0) return;
-            
-            const previousState = gameHistory.pop();
-            
-            stock = previousState.stock;
-            waste = previousState.waste;
-            foundations = previousState.foundations;
-            tableau = previousState.tableau;
-            score = previousState.score;
-            moves = previousState.moves;
-            drawCount = previousState.drawCount;
-            
-            isProcessingDoubleClick = false; // 더블클릭 플래그 초기화
-            
-            renderGame();
-        }
-        
-        // 키보드 단축키
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'z') {
-                e.preventDefault();
-                undoMove();
-            }
-            if (e.key === 'F2') {
-                e.preventDefault();
-                newGame();
-            }
-        });
-        
-        // 점수 증가 애니메이션
-        function animateScoreIncrease(points) {
-            const scoreEl = document.querySelector('.score');
-            scoreEl.classList.remove('score-update');
-            void scoreEl.offsetWidth; // 강제 리플로우
-            scoreEl.classList.add('score-update');
-        }
+        <!-- 승리 모달 -->
+        <div class="win-modal" id="winModal">
+            <div class="win-content">
+                <div class="win-title">🎉 축하합니다! 🎉</div>
+                <div class="win-stats">
+                    <div>최종 점수: <span id="finalScore">0</span>점</div>
+                    <div>플레이 시간: <span id="finalTime">00:00</span></div>
+                    <div>총 움직임: <span id="finalMoves">0</span>번</div>
+                </div>
+                <button class="btn" onclick="closeWinModal()" style="margin: 10px; font-size: 1.1rem; padding: 12px 20px;">계속하기</button>
+                <button class="btn" onclick="newGame(); closeWinModal();" style="margin: 10px; font-size: 1.1rem; padding: 12px 20px;">새 게임</button>
+            </div>
+        </div>
 
-        // 카드 생성
-        function createDeck() {
-            const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-            const ranks = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king'];
-            deck = [];
-
-            for (let suit of suits) {
-                for (let rank of ranks) {
-                    deck.push({
-                        suit: suit,
-                        rank: rank,
-                        value: rank === 'ace' ? 1 : 
-                               rank === 'jack' ? 11 : 
-                               rank === 'queen' ? 12 : 
-                               rank === 'king' ? 13 : 
-                               parseInt(rank),
-                        color: (suit === 'hearts' || suit === 'diamonds') ? 'red' : 'black',
-                        faceUp: false
-                    });
-                }
-            }
-        }
-
-        // 덱 섞기
-        function shuffleDeck() {
-            for (let i = deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deck[i], deck[j]] = [deck[j], deck[i]];
-            }
-        }
-
-        // 카드 요소 생성 (최적화)
-        function createCardElement(card) {
-            if (!card || !card.suit || !card.rank) return null;
+        <script>
+            // 게임 상태
+            let deck = [];
+            let stock = [];
+            let waste = [];
+            let foundations = { hearts: [], diamonds: [], clubs: [], spades: [] };
+            let tableau = [[], [], [], [], [], [], []];
+            let score = 0;
+            let moves = 0;
+            let startTime = Date.now();
+            let gameWon = false;
+            let draggedCard = null;
+            let draggedFrom = null;
+            let drawCount = 0; // 뽑기 횟수 추적
             
-            const cardEl = document.createElement('div');
-            cardEl.className = `card ${card.color}`;
-            cardEl.draggable = true;
+            // 더블클릭 처리 중 플래그 (중복 방지)
+            let isProcessingDoubleClick = false;
             
-            if (card.faceUp) {
-                const imagePath = `./cards/${card.suit}-${card.rank}.png`;
-                cardEl.style.backgroundImage = `url('${imagePath}')`;
-                cardEl.style.backgroundSize = 'cover';
-                cardEl.classList.add('with-image');
-                cardEl.innerHTML = '';
-            } else {
-                cardEl.classList.add('face-down', 'with-image');
-                cardEl.style.backgroundImage = `url('./cards/back.png')`;
-                cardEl.style.backgroundSize = 'cover';
-                cardEl.innerHTML = '';
-            }
-
-            cardEl.addEventListener('dragstart', handleDragStart);
-            cardEl.addEventListener('click', handleCardClick);
-            cardEl.addEventListener('mousedown', handleCardClick);
+            // 실행 취소 시스템
+            let gameHistory = [];
+            let maxHistorySize = 50;
             
-            return cardEl;
-        }
-
-        // 카드 표시 랭크
-        function getDisplayRank(rank) {
-            switch(rank) {
-                case 'ace': return 'A';
-                case 'jack': return 'J';
-                case 'queen': return 'Q';
-                case 'king': return 'K';
-                default: return rank;
-            }
-        }
-
-        // 수트 심볼
-        function getSuitSymbol(suit) {
-            switch(suit) {
-                case 'hearts': return '♥';
-                case 'diamonds': return '♦';
-                case 'clubs': return '♣';
-                case 'spades': return '♠';
-                default: return suit;
-            }
-        }
-
-
-
-        // 게임 해결 가능성 체크
-        function checkGameSolvability() {
-            let solvabilityScore = 0;
-            let issues = [];
+            // 마우스 우클릭 방지
+            document.addEventListener('contextmenu', (e) => e.preventDefault());
             
-            // 1. 에이스들의 접근성 체크
-            const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-            let accessibleAces = 0;
-            
-            suits.forEach(suit => {
-                // 타블로 맨 위 카드들에서 에이스 찾기
-                for (let col = 0; col < 7; col++) {
-                    if (tableau[col].length > 0) {
-                        const topCard = tableau[col][tableau[col].length - 1];
-                        if (topCard.rank === 'ace' && topCard.suit === suit) {
-                            accessibleAces++;
-                            solvabilityScore += 25;
-                        }
-                    }
-                }
+            // 게임 상태 저장
+            function saveGameState() {
+                const gameState = {
+                    stock: JSON.parse(JSON.stringify(stock)),
+                    waste: JSON.parse(JSON.stringify(waste)),
+                    foundations: JSON.parse(JSON.stringify(foundations)),
+                    tableau: JSON.parse(JSON.stringify(tableau)),
+                    score: score,
+                    moves: moves,
+                    drawCount: drawCount
+                };
                 
-                // 스톡/웨이스트에서 에이스 찾기 (추가 점수)
-                const stockHasAce = stock.some(card => card.rank === 'ace' && card.suit === suit);
-                const wasteHasAce = waste.some(card => card.rank === 'ace' && card.suit === suit);
-                if (stockHasAce || wasteHasAce) {
-                    solvabilityScore += 15;
+                gameHistory.push(gameState);
+                
+                // 히스토리 크기 제한
+                if (gameHistory.length > maxHistorySize) {
+                    gameHistory.shift();
+                }
+            }
+            
+            // 실행 취소
+            function undoMove() {
+                if (gameHistory.length === 0) return;
+                
+                const previousState = gameHistory.pop();
+                
+                stock = previousState.stock;
+                waste = previousState.waste;
+                foundations = previousState.foundations;
+                tableau = previousState.tableau;
+                score = previousState.score;
+                moves = previousState.moves;
+                drawCount = previousState.drawCount;
+                
+                isProcessingDoubleClick = false; // 더블클릭 플래그 초기화
+                
+                renderGame();
+            }
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undoMove();
+                }
+                if (e.key === 'F2') {
+                    e.preventDefault();
+                    newGame();
                 }
             });
             
-            // 2. 기본 이동 가능성 체크
-            let possibleMoves = 0;
-            
-            // 타블로 간 이동 가능성
-            for (let sourceCol = 0; sourceCol < 7; sourceCol++) {
-                if (tableau[sourceCol].length > 0) {
-                    const sourceCard = tableau[sourceCol][tableau[sourceCol].length - 1];
-                    if (sourceCard.faceUp) {
-                        for (let targetCol = 0; targetCol < 7; targetCol++) {
-                            if (sourceCol !== targetCol) {
-                                const targetCard = tableau[targetCol].length > 0 ? 
-                                    tableau[targetCol][tableau[targetCol].length - 1] : null;
-                                if (canPlaceOnTableau(sourceCard, targetCard)) {
-                                    possibleMoves++;
+            // 점수 증가 애니메이션
+            function animateScoreIncrease(points) {
+                const scoreEl = document.querySelector('.score');
+                scoreEl.classList.remove('score-update');
+                void scoreEl.offsetWidth; // 강제 리플로우
+                scoreEl.classList.add('score-update');
+            }
+
+            // 타블로 카드 더블클릭/더블탭 처리 함수
+            function handleTableauCardDoubleClick(card, col, index, cardEl) {
+                // 이미 처리 중이면 무시
+                if (isProcessingDoubleClick) {
+                    return;
+                }
+                
+                // 현재 카드가 여전히 해당 위치에 있는지 확인
+                if (tableau[col].length <= index || tableau[col][index] !== card) {
+                    return;
+                }
+                
+                // 맨 위 카드인지 다시 확인
+                if (index !== tableau[col].length - 1) {
+                    return;
+                }
+                
+                if (!card || !card.suit || !card.rank) {
+                    return;
+                }
+                
+                if (canPlaceOnFoundation(card, card.suit)) {
+                    isProcessingDoubleClick = true; // 처리 시작
+                    const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
+                    
+                    // 애니메이션과 함께 이동
+                    animateCardMove(cardEl, targetFoundation, () => {
+                        // 애니메이션 완료 시점에 다시 한 번 확인
+                        if (tableau[col].length > index && tableau[col][index] === card) {
+                            saveGameState();
+                            tableau[col].splice(index, 1);
+                            
+                            // 소스 컬럼의 마지막 카드 뒤집기
+                            if (tableau[col].length > 0) {
+                                const lastCard = tableau[col][tableau[col].length - 1];
+                                if (!lastCard.faceUp) {
+                                    lastCard.faceUp = true;
+                                    score += 5;
+                                }
+                            }
+                            
+                            foundations[card.suit].push(card);
+                            moves++;
+                            score += 10;
+                            animateScoreIncrease(10);
+                            renderGame();
+                            checkWin();
+                            checkAutoComplete();
+                        }
+                        isProcessingDoubleClick = false; // 처리 완료
+                    });
+                }
+            }
+
+            // 카드 생성
+            function createDeck() {
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                const ranks = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king'];
+                deck = [];
+
+                for (let suit of suits) {
+                    for (let rank of ranks) {
+                        deck.push({
+                            suit: suit,
+                            rank: rank,
+                            value: rank === 'ace' ? 1 : 
+                                   rank === 'jack' ? 11 : 
+                                   rank === 'queen' ? 12 : 
+                                   rank === 'king' ? 13 : 
+                                   parseInt(rank),
+                            color: (suit === 'hearts' || suit === 'diamonds') ? 'red' : 'black',
+                            faceUp: false
+                        });
+                    }
+                }
+            }
+
+            // 덱 섞기
+            function shuffleDeck() {
+                for (let i = deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [deck[i], deck[j]] = [deck[j], deck[i]];
+                }
+            }
+
+            // 카드 요소 생성 (최적화)
+            function createCardElement(card) {
+                if (!card || !card.suit || !card.rank) return null;
+                
+                const cardEl = document.createElement('div');
+                cardEl.className = `card ${card.color}`;
+                cardEl.draggable = true;
+                
+                if (card.faceUp) {
+                    const imagePath = `./cards/${card.suit}-${card.rank}.png`;
+                    cardEl.style.backgroundImage = `url('${imagePath}')`;
+                    cardEl.style.backgroundSize = 'cover';
+                    cardEl.classList.add('with-image');
+                    cardEl.innerHTML = '';
+                } else {
+                    cardEl.classList.add('face-down', 'with-image');
+                    cardEl.style.backgroundImage = `url('./cards/back.png')`;
+                    cardEl.style.backgroundSize = 'cover';
+                    cardEl.innerHTML = '';
+                }
+
+                cardEl.addEventListener('dragstart', handleDragStart);
+                cardEl.addEventListener('click', handleCardClick);
+                cardEl.addEventListener('mousedown', handleCardClick);
+                
+                return cardEl;
+            }
+
+            // 카드 표시 랭크
+            function getDisplayRank(rank) {
+                switch(rank) {
+                    case 'ace': return 'A';
+                    case 'jack': return 'J';
+                    case 'queen': return 'Q';
+                    case 'king': return 'K';
+                    default: return rank;
+                }
+            }
+
+            // 수트 심볼
+            function getSuitSymbol(suit) {
+                switch(suit) {
+                    case 'hearts': return '♥';
+                    case 'diamonds': return '♦';
+                    case 'clubs': return '♣';
+                    case 'spades': return '♠';
+                    default: return suit;
+                }
+            }
+
+            // 게임 해결 가능성 체크
+            function checkGameSolvability() {
+                let solvabilityScore = 0;
+                let issues = [];
+                
+                // 1. 에이스들의 접근성 체크
+                const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                let accessibleAces = 0;
+                
+                suits.forEach(suit => {
+                    // 타블로 맨 위 카드들에서 에이스 찾기
+                    for (let col = 0; col < 7; col++) {
+                        if (tableau[col].length > 0) {
+                            const topCard = tableau[col][tableau[col].length - 1];
+                            if (topCard.rank === 'ace' && topCard.suit === suit) {
+                                accessibleAces++;
+                                solvabilityScore += 25;
+                            }
+                        }
+                    }
+                    
+                    // 스톡/웨이스트에서 에이스 찾기 (추가 점수)
+                    const stockHasAce = stock.some(card => card.rank === 'ace' && card.suit === suit);
+                    const wasteHasAce = waste.some(card => card.rank === 'ace' && card.suit === suit);
+                    if (stockHasAce || wasteHasAce) {
+                        solvabilityScore += 15;
+                    }
+                });
+                
+                // 2. 기본 이동 가능성 체크
+                let possibleMoves = 0;
+                
+                // 타블로 간 이동 가능성
+                for (let sourceCol = 0; sourceCol < 7; sourceCol++) {
+                    if (tableau[sourceCol].length > 0) {
+                        const sourceCard = tableau[sourceCol][tableau[sourceCol].length - 1];
+                        if (sourceCard.faceUp) {
+                            for (let targetCol = 0; targetCol < 7; targetCol++) {
+                                if (sourceCol !== targetCol) {
+                                    const targetCard = tableau[targetCol].length > 0 ? 
+                                        tableau[targetCol][tableau[targetCol].length - 1] : null;
+                                    if (canPlaceOnTableau(sourceCard, targetCard)) {
+                                        possibleMoves++;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            
-            solvabilityScore += possibleMoves * 5;
-            
-            // 3. 킹들의 배치 상태 체크
-            let kingsInGoodPosition = 0;
-            for (let col = 0; col < 7; col++) {
-                if (tableau[col].length > 0) {
-                    const bottomCard = tableau[col][0];
-                    if (bottomCard.rank === 'king') {
-                        kingsInGoodPosition++;
-                        solvabilityScore += 10;
-                    }
-                }
-            }
-            
-            // 4. 뒤집어진 카드들의 상태 체크
-            let hiddenCardRatio = 0;
-            let totalCards = 0;
-            let hiddenCards = 0;
-            
-            for (let col = 0; col < 7; col++) {
-                totalCards += tableau[col].length;
-                hiddenCards += tableau[col].filter(card => !card.faceUp).length;
-            }
-            
-            hiddenCardRatio = totalCards > 0 ? hiddenCards / totalCards : 0;
-            solvabilityScore += (1 - hiddenCardRatio) * 20; // 적은 숨겨진 카드일수록 좋음
-            
-
-            
-            // 해결 불가능할 가능성이 높은 게임들 필터링
-            if (solvabilityScore < 30) {
-                issues.push('전체적으로 해결하기 매우 어려운 배치');
-            }
-            if (accessibleAces === 0) {
-                issues.push('즉시 접근 가능한 에이스가 없음');
-            }
-            if (possibleMoves === 0) {
-                issues.push('초기 이동 가능한 카드가 없음');
-            }
-            if (hiddenCardRatio > 0.8) {
-                issues.push('너무 많은 카드가 뒤집어져 있음');
-            }
-            
-            return {
-                score: solvabilityScore,
-                solvable: solvabilityScore >= 40 && possibleMoves > 0,
-                issues: issues
-            };
-        }
-
-        // 게임 초기화 (해결 가능한 게임만 생성)
-        function newGame() {
-            let attempts = 0;
-            const maxAttempts = 10; // 최대 10번 시도
-            
-            let gameAnalysis;
-            
-            do {
-                attempts++;
-                createDeck();
-                shuffleDeck();
                 
-                // 초기화
-                stock = [...deck];
-                waste = [];
-                foundations = { hearts: [], diamonds: [], clubs: [], spades: [] };
-                tableau = [[], [], [], [], [], [], []];
-                score = 0;
-                moves = 0;
-                startTime = Date.now();
-                gameWon = false;
-                drawCount = 0;
-                gameHistory = [];
-                isProcessingDoubleClick = false;
-
-                // 타블로 배치
-                let tableauCount = 0;
+                solvabilityScore += possibleMoves * 5;
+                
+                // 3. 킹들의 배치 상태 체크
+                let kingsInGoodPosition = 0;
                 for (let col = 0; col < 7; col++) {
-                    for (let row = 0; row <= col; row++) {
-                        if (stock.length === 0) break;
-                        const card = stock.pop();
-                        if (!card || !card.suit || !card.rank) continue;
-                        if (row === col) {
-                            card.faceUp = true;
+                    if (tableau[col].length > 0) {
+                        const bottomCard = tableau[col][0];
+                        if (bottomCard.rank === 'king') {
+                            kingsInGoodPosition++;
+                            solvabilityScore += 10;
                         }
-                        tableau[col].push(card);
-                        tableauCount++;
                     }
                 }
                 
-                // 해결 가능성 체크
-                gameAnalysis = checkGameSolvability();
+                // 4. 뒤집어진 카드들의 상태 체크
+                let hiddenCardRatio = 0;
+                let totalCards = 0;
+                let hiddenCards = 0;
                 
-                // 해결 불가능하면 다시 시도
-                
-            } while (!gameAnalysis.solvable && attempts < maxAttempts);
-            
-            // 게임 생성 완료
-            dealCardsWithAnimation();
-            updateTimer();
-        }
-
-        // 일반 게임 플레이용 카드 이동 애니메이션 (부드러운 속도)
-        function animateCardMove(cardElement, targetElement, onComplete) {
-            const startRect = cardElement.getBoundingClientRect();
-            const targetRect = targetElement.getBoundingClientRect();
-            
-            // 시작 위치와 목표 위치 계산
-            const deltaX = targetRect.left - startRect.left;
-            const deltaY = targetRect.top - startRect.top;
-            
-            // 일반 애니메이션 클래스 추가
-            cardElement.classList.add('move-animation-normal');
-            
-            // 목표 위치로 이동
-            cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-            
-            // 애니메이션 완료 후 콜백 실행 (부드러운 400ms)
-            setTimeout(() => {
-                cardElement.classList.remove('move-animation-normal');
-                cardElement.style.transform = '';
-                onComplete();
-            }, 400);
-        }
-
-        // 자동 완성용 빠른 연속 애니메이션 (카드들이 중복되며 이동)
-        function autoCompleteAnimateCardMove(cardElement, targetElement, onComplete) {
-            const startRect = cardElement.getBoundingClientRect();
-            const targetRect = targetElement.getBoundingClientRect();
-            
-            // 시작 위치와 목표 위치 계산
-            const deltaX = targetRect.left - startRect.left;
-            const deltaY = targetRect.top - startRect.top;
-            
-            // 빠른 애니메이션 클래스 추가
-            cardElement.classList.add('move-animation-fast');
-            
-            // 목표 위치로 이동
-            cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-            
-            // 빠른 완료 후 콜백 실행 (150ms)
-            setTimeout(() => {
-                cardElement.classList.remove('move-animation-fast');
-                cardElement.style.transform = '';
-                onComplete();
-            }, 150);
-        }
-
-        // 카드 뽑기 애니메이션 (원래 방식 + 마지막 1-2장 특별 애니메이션)
-        function animateCardDraw(drawnCards, isLastFewCards = false) {
-            // 기본 렌더링
-            renderGame();
-            
-            if (!drawnCards || drawnCards.length === 0) return;
-            
-            // 웨이스트 영역의 새로 추가된 카드들 찾기
-            const wasteEl = document.getElementById('waste');
-            const newCards = wasteEl.querySelectorAll('.card');
-            const startIndex = Math.max(0, newCards.length - drawnCards.length);
-            
-            // 반응형 오프셋 계산
-            let offset = 25;
-            if (window.innerWidth <= 768) {
-                offset = 20;
-            } else if (window.innerWidth <= 1024) {
-                offset = 22;
-            } else if (window.innerWidth <= 1200) {
-                offset = 23;
-            }
-            
-            // 마지막 1-2장일 때 특별한 슬라이드 애니메이션
-            if (isLastFewCards && startIndex > 0) {
-                const cardsToAdd = drawnCards.length;
-                
-                // 기본 애니메이션 스타일 제거 (간섭 방지, left는 유지)
-                for (let i = 0; i < newCards.length; i++) {
-                    newCards[i].style.position = '';
-                    // newCards[i].style.left = ''; // left는 유지!
-                    newCards[i].style.top = '';
-                    newCards[i].style.zIndex = '';
-                    newCards[i].style.transform = '';
-                    newCards[i].style.transition = '';
+                for (let col = 0; col < 7; col++) {
+                    totalCards += tableau[col].length;
+                    hiddenCards += tableau[col].filter(card => !card.faceUp).length;
                 }
                 
-                // 새 카드들 숨기기 (나중에 등장시키기 위해)
+                hiddenCardRatio = totalCards > 0 ? hiddenCards / totalCards : 0;
+                solvabilityScore += (1 - hiddenCardRatio) * 20; // 적은 숨겨진 카드일수록 좋음
+                
+
+                
+                // 해결 불가능할 가능성이 높은 게임들 필터링
+                if (solvabilityScore < 30) {
+                    issues.push('전체적으로 해결하기 매우 어려운 배치');
+                }
+                if (accessibleAces === 0) {
+                    issues.push('즉시 접근 가능한 에이스가 없음');
+                }
+                if (possibleMoves === 0) {
+                    issues.push('초기 이동 가능한 카드가 없음');
+                }
+                if (hiddenCardRatio > 0.8) {
+                    issues.push('너무 많은 카드가 뒤집어져 있음');
+                }
+                
+                return {
+                    score: solvabilityScore,
+                    solvable: solvabilityScore >= 40 && possibleMoves > 0,
+                    issues: issues
+                };
+            }
+
+            // 게임 초기화 (해결 가능한 게임만 생성)
+            function newGame() {
+                let attempts = 0;
+                const maxAttempts = 10; // 최대 10번 시도
+                
+                let gameAnalysis;
+                
+                do {
+                    attempts++;
+                    createDeck();
+                    shuffleDeck();
+                    
+                    // 초기화
+                    stock = [...deck];
+                    waste = [];
+                    foundations = { hearts: [], diamonds: [], clubs: [], spades: [] };
+                    tableau = [[], [], [], [], [], [], []];
+                    score = 0;
+                    moves = 0;
+                    startTime = Date.now();
+                    gameWon = false;
+                    drawCount = 0;
+                    gameHistory = [];
+                    isProcessingDoubleClick = false;
+
+                    // 타블로 배치
+                    let tableauCount = 0;
+                    for (let col = 0; col < 7; col++) {
+                        for (let row = 0; row <= col; row++) {
+                            if (stock.length === 0) break;
+                            const card = stock.pop();
+                            if (!card || !card.suit || !card.rank) continue;
+                            if (row === col) {
+                                card.faceUp = true;
+                            }
+                            tableau[col].push(card);
+                            tableauCount++;
+                        }
+                    }
+                    
+                    // 해결 가능성 체크
+                    gameAnalysis = checkGameSolvability();
+                    
+                    // 해결 불가능하면 다시 시도
+                    
+                } while (!gameAnalysis.solvable && attempts < maxAttempts);
+                
+                // 게임 생성 완료
+                dealCardsWithAnimation();
+                updateTimer();
+            }
+
+            // 일반 게임 플레이용 카드 이동 애니메이션 (부드러운 속도)
+            function animateCardMove(cardElement, targetElement, onComplete) {
+                const startRect = cardElement.getBoundingClientRect();
+                const targetRect = targetElement.getBoundingClientRect();
+                
+                // 시작 위치와 목표 위치 계산
+                const deltaX = targetRect.left - startRect.left;
+                const deltaY = targetRect.top - startRect.top;
+                
+                // 일반 애니메이션 클래스 추가
+                cardElement.classList.add('move-animation-normal');
+                
+                // 목표 위치로 이동
+                cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                
+                // 애니메이션 완료 후 콜백 실행 (부드러운 400ms)
+                setTimeout(() => {
+                    cardElement.classList.remove('move-animation-normal');
+                    cardElement.style.transform = '';
+                    onComplete();
+                }, 400);
+            }
+
+            // 자동 완성용 빠른 연속 애니메이션 (카드들이 중복되며 이동)
+            function autoCompleteAnimateCardMove(cardElement, targetElement, onComplete) {
+                const startRect = cardElement.getBoundingClientRect();
+                const targetRect = targetElement.getBoundingClientRect();
+                
+                // 시작 위치와 목표 위치 계산
+                const deltaX = targetRect.left - startRect.left;
+                const deltaY = targetRect.top - startRect.top;
+                
+                // 빠른 애니메이션 클래스 추가
+                cardElement.classList.add('move-animation-fast');
+                
+                // 목표 위치로 이동
+                cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                
+                // 빠른 완료 후 콜백 실행 (150ms)
+                setTimeout(() => {
+                    cardElement.classList.remove('move-animation-fast');
+                    cardElement.style.transform = '';
+                    onComplete();
+                }, 150);
+            }
+
+            // 카드 뽑기 애니메이션
+            function animateCardDraw(drawnCards) {
+                if (!drawnCards || drawnCards.length === 0) return;
+                
+                // 웨이스트 영역의 새로 추가된 카드들 찾기
+                const wasteEl = document.getElementById('waste');
+                const newCards = wasteEl.querySelectorAll('.card');
+                const startIndex = Math.max(0, newCards.length - drawnCards.length);
+                
+                // CSS 변수에서 고정된 offset 값 사용
+                const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--waste-card-offset'));
+                
+                // 새로운 카드들을 모두 왼쪽 끝에 겹쳐서 위치시키기
                 for (let i = startIndex; i < newCards.length; i++) {
-                    newCards[i].style.display = 'none';
-                }
-                
-                // 기존 카드들을 원래 위치로 되돌리기 (애니메이션 준비)
-                if (startIndex >= 1) {
-                    // 카드2 (현재 a자리) → 원래 b자리로
-                    newCards[0].style.transform = `translateX(${offset}px)`;
-                    newCards[0].style.transition = 'none';
-                }
-                if (startIndex >= 2) {
-                    // 카드3 (현재 b자리) → 원래 c자리로  
-                    newCards[1].style.transform = `translateX(${offset}px)`;
-                    newCards[1].style.transition = 'none';
-                }
-                
-                // 1단계: a자리 카드 즉시 사라짐
-                const originalACard = document.createElement('div');
-                originalACard.className = newCards[0].className;
-                originalACard.innerHTML = newCards[0].innerHTML;
-                originalACard.style.cssText = newCards[0].style.cssText;
-                originalACard.style.transform = 'translateX(0px)';
-                wasteEl.appendChild(originalACard);
-                
-                originalACard.style.display = 'none'; // 즉시 사라짐
-                
-                // 2단계: 기존 카드들 부드럽게 슬라이드 (100ms 후 시작)
-                setTimeout(() => {
-                    // 카드2: b자리 → a자리
-                    if (newCards[0]) {
-                        newCards[0].style.transition = 'transform 0.25s ease-out';
-                        newCards[0].style.transform = 'translateX(0px)';
-                    }
-                    // 카드3: c자리 → b자리 (startIndex=2일 때도 움직여야 함)
-                    if (newCards[1] && startIndex >= 2) {
-                        newCards[1].style.transition = 'transform 0.25s ease-out';
-                        newCards[1].style.transform = 'translateX(0px)';
-                    }
-                }, 100);
-                
-                // 3단계: 새 카드 등장 (기존 카드 이동 완료 후)
-                setTimeout(() => {
-                    for (let i = startIndex; i < newCards.length; i++) {
-                        const cardEl = newCards[i];
-                        cardEl.style.display = ''; // 카드 다시 표시
-                        cardEl.style.transform = `translateX(-${offset}px)`; // b자리에서 시작
-                        cardEl.style.transition = 'none';
-                        
-                        setTimeout(() => {
-                            cardEl.style.transition = 'transform 0.25s ease-out';
-                            cardEl.style.transform = `translateX(0px)`; // 최종 위치로
-                        }, 50);
-                    }
-                }, 400); // 2단계 완료 후 시작 (100ms + 250ms + 50ms 여유)
-                
-                // 애니메이션 완료 후 정리
-                setTimeout(() => {
-                    // 새 카드들만 transform 초기화 (기존 카드들은 이동 상태 유지)
-                    for (let i = startIndex; i < newCards.length; i++) {
-                        newCards[i].style.transform = '';
-                        newCards[i].style.transition = '';
-                    }
-                    // 모든 카드의 display와 transition 정리
-                    newCards.forEach(cardEl => {
-                        cardEl.style.display = '';
-                        cardEl.style.transition = '';
-                    });
-                    // 임시 카드 제거
-                    if (originalACard && originalACard.parentNode) {
-                        originalACard.remove();
-                    }
-                    renderGame();
-                }, 650); // 모든 애니메이션 완료 후 (100ms + 250ms + 50ms + 250ms)
-                
-                return;
-            }
-            
-            // 기본 애니메이션 (3장씩 뽑을 때) - 절대 건드리지 않음
-            // 새로운 카드들을 모두 왼쪽 끝에 겹쳐서 위치시키기
-            for (let i = startIndex; i < newCards.length; i++) {
-                const cardEl = newCards[i];
-                const cardOrder = i - startIndex;
-                
-                // 모든 카드를 왼쪽 끝에 겹쳐서 위치
-                cardEl.style.position = 'absolute';
-                cardEl.style.left = '0px';
-                cardEl.style.top = '0px';
-                cardEl.style.zIndex = cardOrder.toString();
-                cardEl.style.transition = 'transform 0.4s ease-out';
-                cardEl.style.transform = 'translateX(0)';
-            }
-            
-            // 맨 위 카드부터 시작해서 전체가 오른쪽으로 슬라이드하면서 펼쳐지기
-            setTimeout(() => {
-                // 맨 위 카드(마지막 카드)가 먼저 움직이기 시작
-                const topCardIndex = newCards.length - 1;
-                const topCardOrder = topCardIndex - startIndex;
-                const topCard = newCards[topCardIndex];
-                
-                if (topCard) {
-                    // 맨 위 카드를 최종 위치로 이동
-                    topCard.style.transform = `translateX(${topCardOrder * offset}px)`;
-                }
-                
-                // 나머지 카드들이 자연스럽게 따라가면서 펼쳐지기
-                for (let i = startIndex; i < newCards.length - 1; i++) {
                     const cardEl = newCards[i];
                     const cardOrder = i - startIndex;
                     
-                    setTimeout(() => {
-                        // 각 카드를 최종 위치로 슬라이드
-                        cardEl.style.transform = `translateX(${cardOrder * offset}px)`;
-                    }, cardOrder * 80);
+                    // 모든 카드를 왼쪽 끝에 겹쳐서 위치
+                    cardEl.style.position = 'absolute';
+                    cardEl.style.left = '0px';
+                    cardEl.style.top = '0px';
+                    cardEl.style.zIndex = cardOrder.toString();
+                    cardEl.style.transition = 'transform 0.4s ease-out';
+                    cardEl.style.transform = 'translateX(0)';
                 }
                 
-                // 애니메이션 완료 후 스타일 정리
+                // 맨 위 카드부터 시작해서 전체가 오른쪽으로 슬라이드하면서 펼쳐지기
                 setTimeout(() => {
-                    for (let i = startIndex; i < newCards.length; i++) {
+                    // 맨 위 카드(마지막 카드)가 먼저 움직이기 시작
+                    const topCardIndex = newCards.length - 1;
+                    const topCardOrder = topCardIndex - startIndex;
+                    const topCard = newCards[topCardIndex];
+                    
+                    if (topCard) {
+                        // 맨 위 카드를 최종 위치로 이동
+                        topCard.style.transform = `translateX(${topCardOrder * offset}px)`;
+                    }
+                    
+                    // 나머지 카드들이 자연스럽게 따라가면서 펼쳐지기
+                    for (let i = startIndex; i < newCards.length - 1; i++) {
                         const cardEl = newCards[i];
-                        cardEl.style.position = '';
-                        cardEl.style.transition = '';
-                        cardEl.style.transform = '';
-                        // left와 zIndex는 기본 렌더링에서 설정됨
-                    }
-                    // 최종 렌더링으로 정리
-                    renderGame();
-                }, 300 + (drawnCards.length - 1) * 60);
-            }, 100);
-        }
-
-        // 게임 시작시 카드 배치 애니메이션
-        function dealCardsWithAnimation() {
-            // 먼저 화면을 클리어하고 기본 렌더링
-            renderGame();
-            
-            // 잠시 후 애니메이션 시작 (렌더링 완료 대기)
-            setTimeout(() => {
-                // 스톡 위치 좌표 (기준점)
-                const stockEl = document.getElementById('stock');
-                const stockRect = stockEl.getBoundingClientRect();
-                
-                // 모든 타블로 카드들을 스톡 위치로 모으기
-                const allTableauCards = document.querySelectorAll('.column .card');
-                
-                // 카드들을 배치 순서대로 정렬 (뒷면부터 배치되도록)
-                const cardsToAnimate = [];
-                for (let col = 0; col < 7; col++) {
-                    for (let row = 0; row <= col; row++) {
-                        const card = document.querySelector(`.column[data-column="${col}"] .card:nth-child(${row + 1})`);
-                        if (card) {
-                            cardsToAnimate.push({ card, col, row, order: cardsToAnimate.length });
-                        }
-                    }
-                }
-                
-                // 모든 카드를 스톡 위치로 즉시 이동
-                cardsToAnimate.forEach((item, index) => {
-                    const cardRect = item.card.getBoundingClientRect();
-                    const deltaX = stockRect.left - cardRect.left;
-                    const deltaY = stockRect.top - cardRect.top;
-                    
-                    // 카드를 스톡 위치로 즉시 이동 (완전히 뭉쳐있게)
-                    item.card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                    item.card.style.transition = 'none';
-                    item.card.style.zIndex = (1000 + index).toString(); // 배치 순서대로 z-index
-                });
-                
-                // 카드 뒷면을 맨 위로 (스톡 카드)
-                const stockCard = stockEl.querySelector('.card');
-                if (stockCard) {
-                    stockCard.style.zIndex = '2000'; // 가장 위에
-                }
-                
-                // 순차적으로 카드 배치 애니메이션 시작 (뒷면부터 정돈되게)
-                setTimeout(() => {
-                    let delay = 0;
-                    
-                    // 배치 순서대로 카드들을 각자 원래 위치로 슬라이드
-                    cardsToAnimate.forEach((item, index) => {
+                        const cardOrder = i - startIndex;
+                        
                         setTimeout(() => {
-                            // 트랜지션 설정 (더 부드럽고 빠르게)
-                            item.card.style.transition = 'transform 0.4s ease-out';
-                            
-                            // 원래 위치로 되돌리기
-                            item.card.style.transform = 'translate(0, 0)';
-                            
-                            // 애니메이션 완료 후 스타일 제거
-                            setTimeout(() => {
-                                item.card.style.transform = '';
-                                item.card.style.transition = '';
-                                item.card.style.zIndex = '';
-                            }, 400);
-                        }, delay);
-                        delay += 40; // 각 카드마다 40ms 간격 (더 빠르고 매끄럽게)
-                    });
+                            // 각 카드를 최종 위치로 슬라이드
+                            cardEl.style.transform = `translateX(${cardOrder * offset}px)`;
+                        }, cardOrder * 80);
+                    }
                     
-                    // 모든 애니메이션 완료 후 스톡 카드 z-index 원복
+                    // 애니메이션 완료 후 스타일 정리
                     setTimeout(() => {
-                        if (stockCard) {
-                            stockCard.style.zIndex = '';
+                        for (let i = startIndex; i < newCards.length; i++) {
+                            const cardEl = newCards[i];
+                            cardEl.style.position = '';
+                            cardEl.style.transition = '';
+                            cardEl.style.transform = '';
+                            // left와 zIndex는 기본 렌더링에서 설정됨
                         }
-                    }, delay + 400);
-                }, 300); // 카드들이 뭉친 후 300ms 대기
-            }, 100); // 렌더링 완료 대기
-        }
-
-        // 게임 렌더링
-        function renderGame() {
-            // 스톡 렌더링
-            const stockEl = document.getElementById('stock');
-            stockEl.innerHTML = '';
-            
-            // 기존 클릭 이벤트 제거
-            stockEl.onclick = null;
-            
-            if (stock.length > 0) {
-                // 뒷면 카드 생성
-                const backCard = document.createElement('div');
-                backCard.className = 'card face-down with-image';
-                backCard.innerHTML = '';
-                backCard.style.backgroundImage = `url('./cards/back.png')`;
-                backCard.style.position = 'absolute';
-                backCard.style.top = '0';
-                backCard.style.left = '0';
-                backCard.style.cursor = 'pointer';
-                // 카드에만 클릭 이벤트 연결 (이벤트 버블링 방지)
-                backCard.onclick = function(e) {
-                    e.stopPropagation();
-                    drawCard();
-                };
-                stockEl.appendChild(backCard);
-            } else {
-                // 스톡이 비었을 때만 슬롯에 클릭 이벤트 연결
-                stockEl.onclick = function(e) {
-                    e.stopPropagation();
-                    drawCard();
-                };
-                stockEl.style.cursor = waste.length > 0 ? 'pointer' : 'default';
+                        // 최종 렌더링으로 정리
+                        renderGame();
+                    }, 300 + (drawnCards.length - 1) * 60);
+                }, 100);
             }
 
-            // 웨이스트 렌더링 (최대 3장 겹쳐서 표시)
-            const wasteEl = document.getElementById('waste');
-            wasteEl.innerHTML = '';
-            if (waste.length > 0) {
-                waste = waste.filter(card => card && card.suit && card.rank);
+            // 게임 시작시 카드 배치 애니메이션
+            function dealCardsWithAnimation() {
+                // 먼저 화면을 클리어하고 기본 렌더링
+                renderGame();
                 
-                if (waste.length > 0) {
-                    const visibleCount = Math.min(3, waste.length);
-                    const startIndex = waste.length - visibleCount;
-                    let renderedCount = 0;
+                // 잠시 후 애니메이션 시작 (렌더링 완료 대기)
+                setTimeout(() => {
+                    // 스톡 위치 좌표 (기준점)
+                    const stockEl = document.getElementById('stock');
+                    const stockRect = stockEl.getBoundingClientRect();
                     
-                    for (let i = 0; i < visibleCount; i++) {
-                        const cardIndex = startIndex + i;
-                        const card = waste[cardIndex];
-                        const cardEl = createCardElement(card);
-                        
-                        if (!cardEl) continue;
-                        
-                        cardEl.style.position = 'absolute';
-                        cardEl.style.top = '0';
-                        
-                        // 반응형 오프셋
-                        let offset = 25;
-                        if (window.innerWidth <= 768) {
-                            offset = 20;
-                        } else if (window.innerWidth <= 1024) {
-                            offset = 22;
-                        } else if (window.innerWidth <= 1200) {
-                            offset = 23;
+                    // 모든 타블로 카드들을 스톡 위치로 모으기
+                    const allTableauCards = document.querySelectorAll('.column .card');
+                    
+                    // 카드들을 배치 순서대로 정렬 (뒷면부터 배치되도록)
+                    const cardsToAnimate = [];
+                    for (let col = 0; col < 7; col++) {
+                        for (let row = 0; row <= col; row++) {
+                            const card = document.querySelector(`.column[data-column="${col}"] .card:nth-child(${row + 1})`);
+                            if (card) {
+                                cardsToAnimate.push({ card, col, row, order: cardsToAnimate.length });
+                            }
                         }
+                    }
+                    
+                    // 모든 카드를 스톡 위치로 즉시 이동
+                    cardsToAnimate.forEach((item, index) => {
+                        const cardRect = item.card.getBoundingClientRect();
+                        const deltaX = stockRect.left - cardRect.left;
+                        const deltaY = stockRect.top - cardRect.top;
                         
-                        cardEl.style.left = `${renderedCount * offset}px`;
-                        cardEl.style.zIndex = renderedCount + 1;
+                        // 카드를 스톡 위치로 즉시 이동 (완전히 뭉쳐있게)
+                        item.card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                        item.card.style.transition = 'none';
+                        item.card.style.zIndex = (1000 + index).toString(); // 배치 순서대로 z-index
+                    });
+                    
+                    // 카드 뒷면을 맨 위로 (스톡 카드)
+                    const stockCard = stockEl.querySelector('.card');
+                    if (stockCard) {
+                        stockCard.style.zIndex = '2000'; // 가장 위에
+                    }
+                    
+                    // 순차적으로 카드 배치 애니메이션 시작 (뒷면부터 정돈되게)
+                    setTimeout(() => {
+                        let delay = 0;
                         
-                        // 맨 위 카드(마지막 카드)만 드래그 가능하고 이벤트 추가
-                        if (i === visibleCount - 1) {
-                            cardEl.classList.add('waste-card');
-                            cardEl.dataset.wasteCard = 'true';
-                            cardEl.dataset.wasteIndex = cardIndex;
-                            cardEl.style.zIndex = 100;
-                            
-                            // 웨이스트 카드 전용 드래그 이벤트
-                            cardEl.addEventListener('dragstart', (e) => {
-                                document.querySelectorAll('.column, .foundation').forEach(el => {
-                                    el.classList.remove('drag-over');
-                                });
+                        // 배치 순서대로 카드들을 각자 원래 위치로 슬라이드
+                        cardsToAnimate.forEach((item, index) => {
+                            setTimeout(() => {
+                                // 트랜지션 설정 (더 부드럽고 빠르게)
+                                item.card.style.transition = 'transform 0.4s ease-out';
                                 
-                                draggedCard = { index: waste.length - 1 };
-                                draggedFrom = 'waste';
-                                cardEl.classList.add('dragging');
-                                e.dataTransfer.effectAllowed = 'move';
-                            });
-                            
-                            // 웨이스트 카드 더블클릭으로 자동 파운데이션 이동
-                            cardEl.addEventListener('dblclick', () => {
-                                if (isProcessingDoubleClick || waste.length === 0) return;
+                                // 원래 위치로 되돌리기
+                                item.card.style.transform = 'translate(0, 0)';
                                 
-                                const card = waste[waste.length - 1];
-                                if (!card || !card.suit || !card.rank) return;
+                                // 애니메이션 완료 후 스타일 제거
+                                setTimeout(() => {
+                                    item.card.style.transform = '';
+                                    item.card.style.transition = '';
+                                    item.card.style.zIndex = '';
+                                }, 400);
+                            }, delay);
+                            delay += 40; // 각 카드마다 40ms 간격 (더 빠르고 매끄럽게)
+                        });
+                        
+                        // 모든 애니메이션 완료 후 스톡 카드 z-index 원복
+                        setTimeout(() => {
+                            if (stockCard) {
+                                stockCard.style.zIndex = '';
+                            }
+                        }, delay + 400);
+                    }, 300); // 카드들이 뭉친 후 300ms 대기
+                }, 100); // 렌더링 완료 대기
+            }
+
+            // 게임 렌더링
+            function renderGame() {
+                // 스톡 렌더링
+                const stockEl = document.getElementById('stock');
+                stockEl.innerHTML = '';
+                
+                // 기존 클릭 이벤트 제거 (HTML의 onclick 속성은 유지)
+                stockEl.onclick = null;
+                
+                if (stock.length > 0) {
+                    // 뒷면 카드 생성
+                    const backCard = document.createElement('div');
+                    backCard.className = 'card face-down with-image';
+                    backCard.innerHTML = '';
+                    backCard.style.backgroundImage = `url('./cards/back.png')`;
+                    backCard.style.position = 'absolute';
+                    backCard.style.top = '0';
+                    backCard.style.left = '0';
+                    backCard.style.cursor = 'pointer';
+                    // 카드에만 클릭 이벤트 연결 (이벤트 버블링 방지)
+                    backCard.onclick = function(e) {
+                        e.stopPropagation();
+                        drawCard();
+                    };
+                    
+                    // 스톡 카드 더블클릭 이벤트 (자동 파운데이션 이동) - 이전 버전과 완전히 동일하게
+                    backCard.addEventListener('dblclick', function(e) {
+                        e.stopPropagation();
+                        if (waste.length > 0) {
+                            const card = waste[waste.length - 1];
+                            if (canPlaceOnFoundation(card, card.suit)) {
+                                const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
+                                // 웨이스트의 마지막 카드 요소를 찾기
+                                const wasteEl = document.getElementById('waste');
+                                const wasteCards = wasteEl.querySelectorAll('.card');
+                                const lastWasteCard = wasteCards[wasteCards.length - 1];
                                 
-                                if (canPlaceOnFoundation(card, card.suit)) {
-                                    isProcessingDoubleClick = true;
-                                    const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
-                                    
-                                    animateCardMove(cardEl, targetFoundation, () => {
+                                if (lastWasteCard) {
+                                    animateCardMove(lastWasteCard, targetFoundation, () => {
                                         if (waste.length > 0 && waste[waste.length - 1] === card) {
                                             saveGameState();
                                             waste.pop();
@@ -1256,580 +693,671 @@
                                             checkWin();
                                             checkAutoComplete();
                                         }
-                                        isProcessingDoubleClick = false;
                                     });
                                 }
-                            });
-                        } else {
-                            cardEl.draggable = false;
-                            cardEl.style.cursor = 'default';
+                            }
                         }
-                        
-                        wasteEl.appendChild(cardEl);
-                        renderedCount++;
-                    }
-                }
-            }
-
-            // 파운데이션 렌더링
-            for (let suit in foundations) {
-                const foundationEl = document.querySelector(`.foundation[data-suit="${suit}"]`);
-                foundationEl.innerHTML = `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">${getSuitSymbol(suit)}</div>`;
-                
-                if (foundations[suit].length > 0) {
-                    const topCard = foundations[suit][foundations[suit].length - 1];
-                    const cardEl = createCardElement(topCard);
-                    foundationEl.appendChild(cardEl);
-                }
-            }
-
-            // 타블로 렌더링
-            for (let col = 0; col < 7; col++) {
-                const columnEl = document.querySelector(`.column[data-column="${col}"]`);
-                columnEl.innerHTML = '';
-                
-                // 빈 컬럼 표시
-                if (tableau[col].length === 0) {
-                    columnEl.classList.add('empty');
+                    });
+                    
+                    // 스톡 카드 터치 이벤트
+                    backCard.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        drawCard();
+                    });
+                    stockEl.appendChild(backCard);
                 } else {
-                    columnEl.classList.remove('empty');
+                    // 스톡이 비었을 때만 슬롯에 클릭 이벤트 연결
+                    stockEl.onclick = function(e) {
+                        e.stopPropagation();
+                        drawCard();
+                    };
+                    
+                    // 빈 스톡 슬롯 터치 이벤트
+                    stockEl.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        drawCard();
+                    });
+                    stockEl.style.cursor = waste.length > 0 ? 'pointer' : 'default';
                 }
-                
-                tableau[col].forEach((card, index) => {
-                    const cardEl = createCardElement(card);
+
+                // 웨이스트 렌더링 (최대 3장 겹쳐서 표시)
+                const wasteEl = document.getElementById('waste');
+                wasteEl.innerHTML = '';
+                if (waste.length > 0) {
+                    waste = waste.filter(card => card && card.suit && card.rank);
                     
-                    // 반응형 카드 간격
-                    let cardOffset = 30;
-                    if (window.innerWidth <= 768) {
-                        cardOffset = 25;
-                    } else if (window.innerWidth <= 1024) {
-                        cardOffset = 27;
-                    } else if (window.innerWidth <= 1200) {
-                        cardOffset = 28;
-                    }
-                    
-                    cardEl.style.top = `${index * cardOffset}px`;
-                    cardEl.style.zIndex = index;
-                    cardEl.dataset.column = col;
-                    cardEl.dataset.index = index;
-                    
-                    // 타블로 카드 더블클릭으로 자동 파운데이션 이동 (맨 위 카드만, 안전장치 추가)
-                    if (card.faceUp && index === tableau[col].length - 1) {
-                        cardEl.addEventListener('dblclick', () => {
-                            // 이미 처리 중이면 무시
-                            if (isProcessingDoubleClick) {
-                                return;
-                            }
+                    if (waste.length > 0) {
+                        const visibleCount = Math.min(3, waste.length);
+                        const startIndex = waste.length - visibleCount;
+                        let renderedCount = 0;
+                        
+                        for (let i = 0; i < visibleCount; i++) {
+                            const cardIndex = startIndex + i;
+                            const card = waste[cardIndex];
+                            const cardEl = createCardElement(card);
                             
-                            // 현재 카드가 여전히 해당 위치에 있는지 확인
-                            if (tableau[col].length <= index || tableau[col][index] !== card) {
-                                return;
-                            }
+                            if (!cardEl) continue;
                             
-                            // 맨 위 카드인지 다시 확인
-                            if (index !== tableau[col].length - 1) {
-                                return;
-                            }
+                            cardEl.style.position = 'absolute';
+                            cardEl.style.top = '0';
                             
-                            if (!card || !card.suit || !card.rank) {
-                                return;
-                            }
+                            // CSS 변수에서 고정된 offset 값 사용
+                            const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--waste-card-offset'));
                             
-                            if (canPlaceOnFoundation(card, card.suit)) {
-                                isProcessingDoubleClick = true; // 처리 시작
-                                const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
+                            cardEl.style.left = `${renderedCount * offset}px`;
+                            cardEl.style.zIndex = renderedCount + 1;
+                            
+                            // 맨 위 카드(마지막 카드)만 드래그 가능하고 이벤트 추가
+                            if (i === visibleCount - 1) {
+                                cardEl.classList.add('waste-card');
+                                cardEl.dataset.wasteCard = 'true';
+                                cardEl.dataset.wasteIndex = cardIndex;
+                                cardEl.style.zIndex = 100;
                                 
-                                // 애니메이션과 함께 이동
-                                animateCardMove(cardEl, targetFoundation, () => {
-                                    // 애니메이션 완료 시점에 다시 한 번 확인
-                                    if (tableau[col].length > index && tableau[col][index] === card) {
-                                        saveGameState();
-                                        tableau[col].splice(index, 1);
+                                // 웨이스트 카드 전용 드래그 이벤트
+                                cardEl.addEventListener('dragstart', (e) => {
+                                    document.querySelectorAll('.column, .foundation').forEach(el => {
+                                        el.classList.remove('drag-over');
+                                    });
+                                    
+                                    draggedCard = { index: waste.length - 1 };
+                                    draggedFrom = 'waste';
+                                    cardEl.classList.add('dragging');
+                                    e.dataTransfer.effectAllowed = 'move';
+                                });
+                                
+                                // 웨이스트 카드 터치 이벤트
+                                cardEl.addEventListener('touchstart', (e) => {
+                                    e.preventDefault();
+                                    const touch = e.touches[0];
+                                    
+                                    touchStartTime = Date.now();
+                                    touchStartX = touch.clientX;
+                                    touchStartY = touch.clientY;
+                                    
+                                    draggedCard = { index: waste.length - 1 };
+                                    draggedFrom = 'waste';
+                                    cardEl.classList.add('dragging');
+                                    
+                                    // 드래그 프리뷰 생성
+                                    createDragPreview(cardEl, waste[waste.length - 1]);
+                                });
+                                
+                                cardEl.addEventListener('touchmove', (e) => {
+                                    e.preventDefault();
+                                    
+                                    if (!draggedCard || draggedFrom !== 'waste' || !dragPreview) return;
+                                    
+                                    const touch = e.touches[0];
+                                    const touchDistance = Math.sqrt(
+                                        Math.pow(touch.clientX - touchStartX, 2) + 
+                                        Math.pow(touch.clientY - touchStartY, 2)
+                                    );
+                                    
+                                    if (touchDistance > 10) {
+                                        isTouchDragging = true;
                                         
-                                        // 소스 컬럼의 마지막 카드 뒤집기
-                                        if (tableau[col].length > 0) {
-                                            const lastCard = tableau[col][tableau[col].length - 1];
-                                            if (!lastCard.faceUp) {
-                                                lastCard.faceUp = true;
-                                                score += 5;
+                                        // 드래그 프리뷰 위치 업데이트
+                                        dragPreview.style.left = (touch.clientX - dragPreview.offsetWidth / 2) + 'px';
+                                        dragPreview.style.top = (touch.clientY - dragPreview.offsetHeight / 2) + 'px';
+                                        
+                                        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                                        const dropTarget = elementBelow ? elementBelow.closest('.column, .foundation') : null;
+                                        
+                                        document.querySelectorAll('.column, .foundation').forEach(el => {
+                                            el.classList.remove('drag-over');
+                                        });
+                                        
+                                        if (dropTarget) {
+                                            if (dropTarget.classList.contains('column')) {
+                                                const targetCol = parseInt(dropTarget.dataset.column);
+                                                const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+                                                const card = waste[waste.length - 1];
+                                                
+                                                if (card && canPlaceOnTableau(card, targetCard)) {
+                                                    dropTarget.classList.add('drag-over');
+                                                }
+                                            } else if (dropTarget.classList.contains('foundation')) {
+                                                const targetSuit = dropTarget.dataset.suit;
+                                                const card = waste[waste.length - 1];
+                                                
+                                                if (card && canPlaceOnFoundation(card, targetSuit)) {
+                                                    dropTarget.classList.add('drag-over');
+                                                }
                                             }
                                         }
-                                        
-                                                                foundations[card.suit].push(card);
-                        moves++;
-                        score += 10;
-                        animateScoreIncrease(10);
-                        renderGame();
-                        checkWin();
-                        checkAutoComplete();
                                     }
-                                    isProcessingDoubleClick = false; // 처리 완료
                                 });
+                                
+                                // 웨이스트 카드 더블클릭으로 자동 파운데이션 이동
+                                cardEl.addEventListener('dblclick', () => {
+                                    if (isProcessingDoubleClick || waste.length === 0) return;
+                                    
+                                    const card = waste[waste.length - 1];
+                                    if (!card || !card.suit || !card.rank) return;
+                                    
+                                    if (canPlaceOnFoundation(card, card.suit)) {
+                                        isProcessingDoubleClick = true;
+                                        const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
+                                        
+                                        animateCardMove(cardEl, targetFoundation, () => {
+                                            if (waste.length > 0 && waste[waste.length - 1] === card) {
+                                                saveGameState();
+                                                waste.pop();
+                                                foundations[card.suit].push(card);
+                                                moves++;
+                                                score += 10;
+                                                animateScoreIncrease(10);
+                                                renderGame();
+                                                checkWin();
+                                                checkAutoComplete();
+                                            }
+                                            isProcessingDoubleClick = false;
+                                        });
+                                    }
+                                });
+                                
+                                // 웨이스트 카드 터치 이벤트 (드래그 + 더블탭)
+                                let lastWasteTapTime = 0;
+                                cardEl.addEventListener('touchend', (e) => {
+                                    e.preventDefault();
+                                    
+                                    const touch = e.changedTouches[0];
+                                    const touchEndTime = Date.now();
+                                    const touchDuration = touchEndTime - touchStartTime;
+                                    const touchDistance = Math.sqrt(
+                                        Math.pow(touch.clientX - touchStartX, 2) + 
+                                        Math.pow(touch.clientY - touchStartY, 2)
+                                    );
+                                    
+                                    // 드래그 프리뷰 제거
+                                    if (dragPreview) {
+                                        document.body.removeChild(dragPreview);
+                                        dragPreview = null;
+                                    }
+                                    
+                                    if (isTouchDragging && touchDistance > 10) {
+                                        // 드래그 처리
+                                        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                                        const dropTarget = elementBelow ? elementBelow.closest('.column, .foundation') : null;
+                                        
+                                        if (dropTarget) {
+                                            if (dropTarget.classList.contains('column')) {
+                                                const targetCol = parseInt(dropTarget.dataset.column);
+                                                handleTableauDrop(targetCol);
+                                            } else if (dropTarget.classList.contains('foundation')) {
+                                                const targetSuit = dropTarget.dataset.suit;
+                                                handleFoundationDrop(targetSuit);
+                                            }
+                                        }
+                                    } else if (touchDuration < 300 && touchDistance < 10) {
+                                        // 짧은 터치 - 더블탭 확인
+                                        const currentTime = new Date().getTime();
+                                        const tapLength = currentTime - lastWasteTapTime;
+                                        
+                                        if (tapLength < 500 && tapLength > 0) {
+                                            if (isProcessingDoubleClick || waste.length === 0) return;
+                                            
+                                            const card = waste[waste.length - 1];
+                                            if (!card || !card.suit || !card.rank) return;
+                                            
+                                            if (canPlaceOnFoundation(card, card.suit)) {
+                                                isProcessingDoubleClick = true;
+                                                const targetFoundation = document.querySelector(`.foundation[data-suit="${card.suit}"]`);
+                                                
+                                                animateCardMove(cardEl, targetFoundation, () => {
+                                                    if (waste.length > 0 && waste[waste.length - 1] === card) {
+                                                        saveGameState();
+                                                        waste.pop();
+                                                        foundations[card.suit].push(card);
+                                                        moves++;
+                                                        score += 10;
+                                                        animateScoreIncrease(10);
+                                                        renderGame();
+                                                        checkWin();
+                                                        checkAutoComplete();
+                                                    }
+                                                    isProcessingDoubleClick = false;
+                                                });
+                                            }
+                                        }
+                                        lastWasteTapTime = currentTime;
+                                    }
+                                    
+                                    cardEl.classList.remove('dragging');
+                                    draggedCard = null;
+                                    draggedFrom = null;
+                                    isTouchDragging = false;
+                                    
+                                    document.querySelectorAll('.column, .foundation').forEach(el => {
+                                        el.classList.remove('drag-over');
+                                    });
+                                });
+                            } else {
+                                cardEl.draggable = false;
+                                cardEl.style.cursor = 'default';
                             }
-                        });
+                            
+                            wasteEl.appendChild(cardEl);
+                            renderedCount++;
+                        }
+                    }
+                }
+
+                // 파운데이션 렌더링
+                for (let suit in foundations) {
+                    const foundationEl = document.querySelector(`.foundation[data-suit="${suit}"]`);
+                    foundationEl.innerHTML = `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.3;">${getSuitSymbol(suit)}</div>`;
+                    
+                    if (foundations[suit].length > 0) {
+                        const topCard = foundations[suit][foundations[suit].length - 1];
+                        const cardEl = createCardElement(topCard);
+                        foundationEl.appendChild(cardEl);
+                    }
+                }
+
+                // 타블로 렌더링
+                for (let col = 0; col < 7; col++) {
+                    const columnEl = document.querySelector(`.column[data-column="${col}"]`);
+                    columnEl.innerHTML = '';
+                    
+                    // 빈 컬럼 표시
+                    if (tableau[col].length === 0) {
+                        columnEl.classList.add('empty');
+                    } else {
+                        columnEl.classList.remove('empty');
                     }
                     
-                    columnEl.appendChild(cardEl);
+                    tableau[col].forEach((card, index) => {
+                        const cardEl = createCardElement(card);
+                        
+                        // 반응형 카드 간격 - CSS 브레이크포인트와 정확히 일치
+                        let cardOffset;
+                        if (window.innerWidth > 1200) {
+                            cardOffset = 25; // 기본 (180px 카드)
+                        } else if (window.innerWidth > 900) {
+                            cardOffset = 25; // 152px 카드
+                        } else if (window.innerWidth > 768) {
+                            cardOffset = 21; // 124px 카드
+                        } else if (window.innerWidth > 600) {
+                            cardOffset = 16; // 96px 카드
+                        } else {
+                            cardOffset = 14; // 82px 카드
+                        }
+                        
+                        cardEl.style.top = `${index * cardOffset}px`;
+                        cardEl.style.zIndex = index;
+                        cardEl.dataset.column = col;
+                        cardEl.dataset.index = index;
+                        
+                        // 타블로 카드 더블클릭으로 자동 파운데이션 이동 (맨 위 카드만, 안전장치 추가)
+                        if (card.faceUp && index === tableau[col].length - 1) {
+                            // 더블클릭 이벤트 (PC용)
+                            cardEl.addEventListener('dblclick', () => {
+                                handleTableauCardDoubleClick(card, col, index, cardEl);
+                            });
+                            
+                            // 더블탭 이벤트 (모바일용)
+                            let lastTapTime = 0;
+                            cardEl.addEventListener('touchend', (e) => {
+                                const currentTime = new Date().getTime();
+                                const tapLength = currentTime - lastTapTime;
+                                
+                                if (tapLength < 500 && tapLength > 0) {
+                                    e.preventDefault();
+                                    handleTableauCardDoubleClick(card, col, index, cardEl);
+                                }
+                                lastTapTime = currentTime;
+                            });
+                        }
+                        
+                        // 타블로 카드 터치 이벤트 (faceUp 카드만)
+                        if (card.faceUp) {
+                            cardEl.addEventListener('touchstart', handleTouchStart);
+                            cardEl.addEventListener('touchmove', handleTouchMove);
+                            cardEl.addEventListener('touchend', handleTouchEnd);
+                        }
+                        
+                        columnEl.appendChild(cardEl);
+                    });
+                }
+
+                // 드롭 존 추가
+                addDropListeners();
+                updateScore();
+            }
+
+            // 드롭 리스너 추가
+            function addDropListeners() {
+                // 타블로 드롭
+                document.querySelectorAll('.column').forEach(col => {
+                    col.addEventListener('dragover', handleDragOver);
+                    col.addEventListener('drop', handleDrop);
+                    col.addEventListener('dragleave', handleDragLeave);
+                });
+
+                // 파운데이션 드롭
+                document.querySelectorAll('.foundation').forEach(foundation => {
+                    foundation.addEventListener('dragover', handleDragOver);
+                    foundation.addEventListener('drop', handleDrop);
+                    foundation.addEventListener('dragleave', handleDragLeave);
                 });
             }
 
-            // 드롭 존 추가
-            addDropListeners();
-            updateScore();
-        }
 
-        // 드롭 리스너 추가
-        function addDropListeners() {
-            // 타블로 드롭
-            document.querySelectorAll('.column').forEach(col => {
-                col.addEventListener('dragover', handleDragOver);
-                col.addEventListener('drop', handleDrop);
-                col.addEventListener('dragleave', handleDragLeave);
-            });
-
-            // 파운데이션 드롭
-            document.querySelectorAll('.foundation').forEach(foundation => {
-                foundation.addEventListener('dragover', handleDragOver);
-                foundation.addEventListener('drop', handleDrop);
-                foundation.addEventListener('dragleave', handleDragLeave);
-            });
-        }
-        
-        // 드래그 리브
-        function handleDragLeave(e) {
-            // 컨테이너를 완전히 벗어났을 때만 하이라이트 제거
-            if (!e.currentTarget.contains(e.relatedTarget)) {
-                e.currentTarget.classList.remove('drag-over');
-            }
-        }
-
-        // 드래그 시작
-        function handleDragStart(e) {
-            const cardEl = e.target;
-            const col = parseInt(cardEl.dataset.column);
-            const index = parseInt(cardEl.dataset.index);
             
-            // 기존 하이라이트 제거
-            document.querySelectorAll('.column, .foundation').forEach(el => {
-                el.classList.remove('drag-over');
-            });
-            
-            // 타블로 카드 드래그만 처리 (웨이스트는 전용 리스너 사용)
-            if (col !== undefined && index !== undefined) {
-                const card = tableau[col][index];
-                if (card && card.faceUp) {
-                    draggedCard = { col, index };
-                    draggedFrom = 'tableau';
-                    cardEl.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
+            // 드래그 리브
+            function handleDragLeave(e) {
+                // 컨테이너를 완전히 벗어났을 때만 하이라이트 제거
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                    e.currentTarget.classList.remove('drag-over');
                 }
             }
-        }
 
-        // 드래그 오버
-        function handleDragOver(e) {
-            e.preventDefault();
-            
-            if (!draggedCard) return;
-            
-            const dropTarget = e.target.closest('.column, .foundation');
-            if (!dropTarget) return;
-            
-            // 모든 하이라이트 제거
-            document.querySelectorAll('.column, .foundation').forEach(el => {
-                el.classList.remove('drag-over');
-            });
-            
-            // 유효한 드롭 위치인지 확인하고 하이라이트
-            if (dropTarget.classList.contains('column')) {
-                const targetCol = parseInt(dropTarget.dataset.column);
-                const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+            // 드래그 시작
+            function handleDragStart(e) {
+                const cardEl = e.target;
+                const col = parseInt(cardEl.dataset.column);
+                const index = parseInt(cardEl.dataset.index);
                 
-                let card = null;
+                // 기존 하이라이트 제거
+                document.querySelectorAll('.column, .foundation').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                // 타블로 카드 드래그만 처리 (웨이스트는 전용 리스너 사용)
+                if (col !== undefined && index !== undefined) {
+                    const card = tableau[col][index];
+                    if (card && card.faceUp) {
+                        draggedCard = { col, index };
+                        draggedFrom = 'tableau';
+                        cardEl.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    }
+                }
+            }
+
+            // 드래그 오버
+            function handleDragOver(e) {
+                e.preventDefault();
+                
+                if (!draggedCard) return;
+                
+                const dropTarget = e.target.closest('.column, .foundation');
+                if (!dropTarget) return;
+                
+                // 모든 하이라이트 제거
+                document.querySelectorAll('.column, .foundation').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                // 유효한 드롭 위치인지 확인하고 하이라이트
+                if (dropTarget.classList.contains('column')) {
+                    const targetCol = parseInt(dropTarget.dataset.column);
+                    const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+                    
+                    let card = null;
+                    if (draggedFrom === 'tableau') {
+                        const { col: sourceCol, index } = draggedCard;
+                        if (sourceCol !== targetCol) {
+                            card = tableau[sourceCol][index];
+                        }
+                    } else if (draggedFrom === 'waste') {
+                        card = waste[draggedCard.index];
+                    }
+                    
+                    if (card && canPlaceOnTableau(card, targetCard)) {
+                        dropTarget.classList.add('drag-over');
+                    }
+                } else if (dropTarget.classList.contains('foundation')) {
+                    const targetSuit = dropTarget.dataset.suit;
+                    
+                    let card = null;
+                    if (draggedFrom === 'tableau') {
+                        const { col, index } = draggedCard;
+                        if (index === tableau[col].length - 1) {
+                            card = tableau[col][index];
+                        }
+                    } else if (draggedFrom === 'waste') {
+                        card = waste[draggedCard.index];
+                    }
+                    
+                    if (card && canPlaceOnFoundation(card, targetSuit)) {
+                        dropTarget.classList.add('drag-over');
+                    }
+                }
+            }
+
+            // 드롭 처리
+            function handleDrop(e) {
+                e.preventDefault();
+                
+                if (!draggedCard) return;
+
+                const dropTarget = e.target.closest('.column, .foundation');
+                if (!dropTarget) return;
+
+                if (dropTarget.classList.contains('column')) {
+                    const targetCol = parseInt(dropTarget.dataset.column);
+                    handleTableauDrop(targetCol);
+                } else if (dropTarget.classList.contains('foundation')) {
+                    const targetSuit = dropTarget.dataset.suit;
+                    handleFoundationDrop(targetSuit);
+                }
+
+                // 드래그 상태 초기화
+                document.querySelectorAll('.card.dragging').forEach(card => {
+                    card.classList.remove('dragging');
+                });
+                
+                // 모든 하이라이트 제거
+                document.querySelectorAll('.column, .foundation').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                draggedCard = null;
+                draggedFrom = null;
+            }
+
+            // 타블로 드롭 처리
+            function handleTableauDrop(targetCol) {
                 if (draggedFrom === 'tableau') {
                     const { col: sourceCol, index } = draggedCard;
-                    if (sourceCol !== targetCol) {
-                        card = tableau[sourceCol][index];
-                    }
-                } else if (draggedFrom === 'waste') {
-                    card = waste[draggedCard.index];
-                }
-                
-                if (card && canPlaceOnTableau(card, targetCard)) {
-                    dropTarget.classList.add('drag-over');
-                }
-            } else if (dropTarget.classList.contains('foundation')) {
-                const targetSuit = dropTarget.dataset.suit;
-                
-                let card = null;
-                if (draggedFrom === 'tableau') {
-                    const { col, index } = draggedCard;
-                    if (index === tableau[col].length - 1) {
-                        card = tableau[col][index];
-                    }
-                } else if (draggedFrom === 'waste') {
-                    card = waste[draggedCard.index];
-                }
-                
-                if (card && canPlaceOnFoundation(card, targetSuit)) {
-                    dropTarget.classList.add('drag-over');
-                }
-            }
-        }
-
-        // 드롭 처리
-        function handleDrop(e) {
-            e.preventDefault();
-            
-            if (!draggedCard) return;
-
-            const dropTarget = e.target.closest('.column, .foundation');
-            if (!dropTarget) return;
-
-            if (dropTarget.classList.contains('column')) {
-                const targetCol = parseInt(dropTarget.dataset.column);
-                handleTableauDrop(targetCol);
-            } else if (dropTarget.classList.contains('foundation')) {
-                const targetSuit = dropTarget.dataset.suit;
-                handleFoundationDrop(targetSuit);
-            }
-
-            // 드래그 상태 초기화
-            document.querySelectorAll('.card.dragging').forEach(card => {
-                card.classList.remove('dragging');
-            });
-            
-            // 모든 하이라이트 제거
-            document.querySelectorAll('.column, .foundation').forEach(el => {
-                el.classList.remove('drag-over');
-            });
-            
-            draggedCard = null;
-            draggedFrom = null;
-        }
-
-        // 타블로 드롭 처리
-        function handleTableauDrop(targetCol) {
-            if (draggedFrom === 'tableau') {
-                const { col: sourceCol, index } = draggedCard;
-                
-                // 같은 컬럼으로 이동하는 경우 무시
-                if (sourceCol === targetCol) return;
-                
-                const cardsToMove = tableau[sourceCol].slice(index);
-                const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
-
-                if (canPlaceOnTableau(cardsToMove[0], targetCard)) {
-                    saveGameState();
                     
-                    // 카드 이동
-                    tableau[sourceCol].splice(index);
-                    tableau[targetCol].push(...cardsToMove);
+                    // 같은 컬럼으로 이동하는 경우 무시
+                    if (sourceCol === targetCol) return;
                     
-                    // 소스 컬럼의 마지막 카드 뒤집기
-                    if (tableau[sourceCol].length > 0) {
-                        const lastCard = tableau[sourceCol][tableau[sourceCol].length - 1];
-                        if (!lastCard.faceUp) {
-                            lastCard.faceUp = true;
-                            score += 5;
-                        }
-                    }
-                    
-                    moves++;
-                    score += 5;
-                    animateScoreIncrease(5);
-                    renderGame();
-                    checkWin();
-                }
-            } else if (draggedFrom === 'waste') {
-                const card = waste[draggedCard.index];
-                const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+                    const cardsToMove = tableau[sourceCol].slice(index);
+                    const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
 
-                if (canPlaceOnTableau(card, targetCard)) {
-                    saveGameState();
-                    waste.pop();
-                    tableau[targetCol].push(card);
-                    moves++;
-                    score += 5;
-                    animateScoreIncrease(5);
-                    renderGame();
-                    checkWin();
-                }
-            }
-        }
-
-        // 파운데이션 드롭 처리
-        function handleFoundationDrop(targetSuit) {
-            let card = null;
-            
-            if (draggedFrom === 'tableau') {
-                const { col, index } = draggedCard;
-                if (index !== tableau[col].length - 1) return; // 맨 위 카드만 가능
-                card = tableau[col][index];
-            } else if (draggedFrom === 'waste') {
-                card = waste[draggedCard.index];
-            }
-
-            if (card && canPlaceOnFoundation(card, targetSuit)) {
-                saveGameState();
-                
-                // 카드 이동
-                if (draggedFrom === 'tableau') {
-                    const { col, index } = draggedCard;
-                    tableau[col].splice(index, 1);
-                    
-                    // 소스 컬럼의 마지막 카드 뒤집기
-                    if (tableau[col].length > 0) {
-                        const lastCard = tableau[col][tableau[col].length - 1];
-                        if (!lastCard.faceUp) {
-                            lastCard.faceUp = true;
-                            score += 5;
-                        }
-                    }
-                } else if (draggedFrom === 'waste') {
-                    waste.pop();
-                }
-                
-                foundations[targetSuit].push(card);
-                moves++;
-                score += 10;
-                animateScoreIncrease(10);
-                renderGame();
-                checkWin();
-                checkAutoComplete();
-            }
-        }
-
-        // 타블로 배치 가능 확인
-        function canPlaceOnTableau(card, targetCard) {
-            if (!targetCard) {
-                // 빈 칸에는 킹만 놓을 수 있음
-                return card.rank === 'king';
-            }
-            // 기존 카드 위에는 색이 다르고 값이 1 작은 카드만 가능
-            return card.color !== targetCard.color && card.value === targetCard.value - 1;
-        }
-
-        // 파운데이션 배치 가능 확인
-        function canPlaceOnFoundation(card, targetSuit) {
-            if (card.suit !== targetSuit) return false;
-            const foundation = foundations[targetSuit];
-            if (foundation.length === 0) return card.value === 1; // 에이스
-            return card.value === foundation[foundation.length - 1].value + 1;
-        }
-
-        // 카드 클릭 처리
-        function handleCardClick(e) {
-            const cardEl = e.target;
-            const col = parseInt(cardEl.dataset.column);
-            const index = parseInt(cardEl.dataset.index);
-
-            // 우클릭 - 자동으로 파운데이션에 이동
-            if (e.button === 2) {
-                e.preventDefault();
-                tryAutoMoveToFoundation(cardEl, col, index);
-                return;
-            }
-
-            // 더블클릭 - 자동으로 파운데이션에 이동
-            if (e.detail === 2) {
-                tryAutoMoveToFoundation(cardEl, col, index);
-                return;
-            }
-
-            // 뒤집힌 카드 클릭시 앞면으로 (웨이스트 카드는 제외)
-            if (!isNaN(col) && !isNaN(index) && col !== undefined && index !== undefined && 
-                tableau[col] && tableau[col][index] && 
-                !tableau[col][index].faceUp && index === tableau[col].length - 1) {
-                saveGameState();
-                
-                // 카드 뒤집기 애니메이션
-                cardEl.classList.add('flipping');
-                setTimeout(() => {
-                    tableau[col][index].faceUp = true;
-                    score += 5;
-                    moves++;
-                    animateScoreIncrease(5);
-                    cardEl.classList.remove('flipping');
-                    cardEl.classList.add('flipped');
-                    renderGame();
-                    setTimeout(() => {
-                        cardEl.classList.remove('flipped');
-                    }, 300);
-                }, 150);
-            }
-        }
-        
-        // 자동 파운데이션 이동 시도 (안전장치 추가)
-        function tryAutoMoveToFoundation(cardEl, col, index) {
-            // 이미 처리 중이면 무시
-            if (isProcessingDoubleClick) {
-                return;
-            }
-            
-            let card = null;
-            let fromWaste = false;
-            
-            // 웨이스트에서 온 카드인지 확인
-            if (cardEl.classList.contains('waste-card')) {
-                if (waste.length > 0) {
-                    card = waste[waste.length - 1];
-                    fromWaste = true;
-                }
-            } 
-            // 타블로에서 온 카드인지 확인
-            else if (col !== undefined && index !== undefined) {
-                if (tableau[col].length > index && index === tableau[col].length - 1) {
-                    card = tableau[col][index];
-                }
-            }
-            
-            if (!card || !card.faceUp || !card.suit || !card.rank) {
-                return;
-            }
-            
-            // 파운데이션에 놓을 수 있는지 확인
-            const targetSuit = card.suit;
-            if (canPlaceOnFoundation(card, targetSuit)) {
-                isProcessingDoubleClick = true; // 처리 시작
-                const targetFoundation = document.querySelector(`.foundation[data-suit="${targetSuit}"]`);
-                
-                // 애니메이션과 함께 이동
-                animateCardMove(cardEl, targetFoundation, () => {
-                    // 애니메이션 완료 시점에 다시 한 번 확인
-                    let cardStillExists = false;
-                    
-                    if (fromWaste) {
-                        cardStillExists = waste.length > 0 && waste[waste.length - 1] === card;
-                    } else {
-                        cardStillExists = tableau[col].length > index && tableau[col][index] === card;
-                    }
-                    
-                    if (cardStillExists) {
+                    if (canPlaceOnTableau(cardsToMove[0], targetCard)) {
                         saveGameState();
                         
                         // 카드 이동
-                        if (fromWaste) {
-                            waste.pop();
-                        } else {
-                            tableau[col].splice(index, 1);
-                            
-                            // 소스 컬럼의 마지막 카드 뒤집기
-                            if (tableau[col].length > 0) {
-                                const lastCard = tableau[col][tableau[col].length - 1];
-                                if (!lastCard.faceUp) {
-                                    lastCard.faceUp = true;
-                                    score += 5;
-                                }
+                        tableau[sourceCol].splice(index);
+                        tableau[targetCol].push(...cardsToMove);
+                        
+                        // 소스 컬럼의 마지막 카드 뒤집기
+                        if (tableau[sourceCol].length > 0) {
+                            const lastCard = tableau[sourceCol][tableau[sourceCol].length - 1];
+                            if (!lastCard.faceUp) {
+                                lastCard.faceUp = true;
+                                score += 5;
                             }
                         }
                         
-                        foundations[targetSuit].push(card);
                         moves++;
-                        score += 10;
-                        animateScoreIncrease(10);
+                        score += 5;
+                        animateScoreIncrease(5);
                         renderGame();
                         checkWin();
+                    }
+                } else if (draggedFrom === 'waste') {
+                    const card = waste[draggedCard.index];
+                    const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+
+                    if (canPlaceOnTableau(card, targetCard)) {
+                        saveGameState();
+                        waste.pop();
+                        tableau[targetCol].push(card);
+                        moves++;
+                        score += 5;
+                        animateScoreIncrease(5);
+                        renderGame();
+                        checkWin();
+                    }
+                }
+            }
+
+            // 파운데이션 드롭 처리
+            function handleFoundationDrop(targetSuit) {
+                let card = null;
+                
+                if (draggedFrom === 'tableau') {
+                    const { col, index } = draggedCard;
+                    if (index !== tableau[col].length - 1) return; // 맨 위 카드만 가능
+                    card = tableau[col][index];
+                } else if (draggedFrom === 'waste') {
+                    card = waste[draggedCard.index];
+                }
+
+                if (card && canPlaceOnFoundation(card, targetSuit)) {
+                    saveGameState();
+                    
+                    // 카드 이동
+                    if (draggedFrom === 'tableau') {
+                        const { col, index } = draggedCard;
+                        tableau[col].splice(index, 1);
                         
-                        // 연속 자동 이동 체크
-                        checkAutoComplete();
+                        // 소스 컬럼의 마지막 카드 뒤집기
+                        if (tableau[col].length > 0) {
+                            const lastCard = tableau[col][tableau[col].length - 1];
+                            if (!lastCard.faceUp) {
+                                lastCard.faceUp = true;
+                                score += 5;
+                            }
+                        }
+                    } else if (draggedFrom === 'waste') {
+                        waste.pop();
                     }
                     
-                    isProcessingDoubleClick = false; // 처리 완료
-                });
-            }
-        }
-        
-        // 자동 완성 체크 (모든 카드가 오픈되었을 때)
-        function checkAutoComplete() {
-            if (stock.length > 0) return;
-            
-            let allOpen = true;
-            let hasTableauCards = false;
-            
-            for (let col = 0; col < tableau.length; col++) {
-                for (let card of tableau[col]) {
-                    hasTableauCards = true;
-                    if (!card.faceUp) {
-                        allOpen = false;
-                        break;
-                    }
-                }
-                if (!allOpen) break;
-            }
-            
-            if (allOpen && (hasTableauCards || waste.length > 0)) {
-                autoCompleteGame();
-            }
-        }
-        
-        // 자동 완성 실행 (초고속 애니메이션)
-        function autoCompleteGame() {
-            let autoMoveCount = 0;
-            const maxAutoMoves = 500;
-            
-            const ultraFastAutoMove = () => {
-                autoMoveCount++;
-                if (autoMoveCount > maxAutoMoves) {
+                    foundations[targetSuit].push(card);
+                    moves++;
+                    score += 10;
+                    animateScoreIncrease(10);
+                    renderGame();
                     checkWin();
-                    return;
+                    checkAutoComplete();
                 }
-                
-                const totalFoundationCards = Object.values(foundations).reduce((sum, pile) => sum + pile.length, 0);
-                if (totalFoundationCards === 52) {
-                    checkWin();
-                    return;
+            }
+
+            // 타블로 배치 가능 확인
+            function canPlaceOnTableau(card, targetCard) {
+                if (!targetCard) {
+                    // 빈 칸에는 킹만 놓을 수 있음
+                    return card.rank === 'king';
                 }
+                // 기존 카드 위에는 색이 다르고 값이 1 작은 카드만 가능
+                return card.color !== targetCard.color && card.value === targetCard.value - 1;
+            }
+
+            // 파운데이션 배치 가능 확인
+            function canPlaceOnFoundation(card, targetSuit) {
+                if (card.suit !== targetSuit) return false;
+                const foundation = foundations[targetSuit];
+                if (foundation.length === 0) return card.value === 1; // 에이스
+                return card.value === foundation[foundation.length - 1].value + 1;
+            }
+
+            // 카드 클릭 처리
+            function handleCardClick(e) {
+                const cardEl = e.target;
+                const col = parseInt(cardEl.dataset.column);
+                const index = parseInt(cardEl.dataset.index);
+
+                // 뒤집힌 카드 클릭시 앞면으로 (웨이스트 카드는 제외)
+                if (!isNaN(col) && !isNaN(index) && col !== undefined && index !== undefined && 
+                    tableau[col] && tableau[col][index] && 
+                    !tableau[col][index].faceUp && index === tableau[col].length - 1) {
+                    saveGameState();
+                    
+                    // 카드 뒤집기 애니메이션
+                    cardEl.classList.add('flipping');
+                    setTimeout(() => {
+                        tableau[col][index].faceUp = true;
+                        score += 5;
+                        moves++;
+                        animateScoreIncrease(5);
+                        cardEl.classList.remove('flipping');
+                        cardEl.classList.add('flipped');
+                        renderGame();
+                        setTimeout(() => {
+                            cardEl.classList.remove('flipped');
+                        }, 300);
+                    }, 150);
+                }
+            }
+            
+
+            
+            // 자동 완성 체크 (모든 카드가 오픈되었을 때)
+            function checkAutoComplete() {
+                if (stock.length > 0) return;
                 
-                // 웨이스트에서 파운데이션으로 이동 시도
-                if (waste.length > 0) {
-                    const wasteCard = waste[waste.length - 1];
-                    if (canPlaceOnFoundation(wasteCard, wasteCard.suit)) {
-                        // 현재 웨이스트 카드 요소 찾기
-                        const wasteCardEl = document.querySelector('#waste .card:last-child');
-                        const targetFoundation = document.querySelector(`.foundation[data-suit="${wasteCard.suit}"]`);
-                        
-                        if (wasteCardEl && targetFoundation) {
-                            waste.pop();
-                            foundations[wasteCard.suit].push(wasteCard);
-                            score += 10;
-                            moves++;
-                            
-                                                            autoCompleteAnimateCardMove(wasteCardEl, targetFoundation, () => {
-                                renderGame();
-                            });
-                            // 중복 타이밍으로 다음 카드 이동 (애니메이션이 끝나기 전에 시작)
-                            setTimeout(ultraFastAutoMove, 80);
-                            return;
+                let allOpen = true;
+                let hasTableauCards = false;
+                
+                for (let col = 0; col < tableau.length; col++) {
+                    for (let card of tableau[col]) {
+                        hasTableauCards = true;
+                        if (!card.faceUp) {
+                            allOpen = false;
+                            break;
                         }
                     }
+                    if (!allOpen) break;
                 }
                 
-                // 타블로에서 파운데이션으로 이동 시도
-                for (let col = 0; col < tableau.length; col++) {
-                    if (tableau[col].length > 0) {
-                        const topCard = tableau[col][tableau[col].length - 1];
-                        if (topCard.faceUp && canPlaceOnFoundation(topCard, topCard.suit)) {
-                            // 현재 타블로 카드 요소 찾기
-                            const cardEl = document.querySelector(`.column[data-column="${col}"] .card:last-child`);
-                            const targetFoundation = document.querySelector(`.foundation[data-suit="${topCard.suit}"]`);
+                if (allOpen && (hasTableauCards || waste.length > 0)) {
+                    autoCompleteGame();
+                }
+            }
+            
+            // 자동 완성 실행 (초고속 애니메이션)
+            function autoCompleteGame() {
+                let autoMoveCount = 0;
+                const maxAutoMoves = 500;
+                
+                const ultraFastAutoMove = () => {
+                    autoMoveCount++;
+                    if (autoMoveCount > maxAutoMoves) {
+                        checkWin();
+                        return;
+                    }
+                    
+                    const totalFoundationCards = Object.values(foundations).reduce((sum, pile) => sum + pile.length, 0);
+                    if (totalFoundationCards === 52) {
+                        checkWin();
+                        return;
+                    }
+                    
+                    // 웨이스트에서 파운데이션으로 이동 시도
+                    if (waste.length > 0) {
+                        const wasteCard = waste[waste.length - 1];
+                        if (canPlaceOnFoundation(wasteCard, wasteCard.suit)) {
+                            // 현재 웨이스트 카드 요소 찾기
+                            const wasteCardEl = document.querySelector('#waste .card:last-child');
+                            const targetFoundation = document.querySelector(`.foundation[data-suit="${wasteCard.suit}"]`);
                             
-                            if (cardEl && targetFoundation) {
-                                tableau[col].pop();
-                                
-                                if (tableau[col].length > 0) {
-                                    const lastCard = tableau[col][tableau[col].length - 1];
-                                    if (!lastCard.faceUp) {
-                                        lastCard.faceUp = true;
-                                        score += 5;
-                                    }
-                                }
-                                
-                                foundations[topCard.suit].push(topCard);
+                            if (wasteCardEl && targetFoundation) {
+                                waste.pop();
+                                foundations[wasteCard.suit].push(wasteCard);
                                 score += 10;
                                 moves++;
                                 
-                                autoCompleteAnimateCardMove(cardEl, targetFoundation, () => {
+                                                                  autoCompleteAnimateCardMove(wasteCardEl, targetFoundation, () => {
                                     renderGame();
                                 });
                                 // 중복 타이밍으로 다음 카드 이동 (애니메이션이 끝나기 전에 시작)
@@ -1838,149 +1366,348 @@
                             }
                         }
                     }
-                }
-                
-                checkWin();
-            };
-            
+                    
+                    // 타블로에서 파운데이션으로 이동 시도
+                    for (let col = 0; col < tableau.length; col++) {
+                        if (tableau[col].length > 0) {
+                            const topCard = tableau[col][tableau[col].length - 1];
+                            if (topCard.faceUp && canPlaceOnFoundation(topCard, topCard.suit)) {
+                                // 현재 타블로 카드 요소 찾기
+                                const cardEl = document.querySelector(`.column[data-column="${col}"] .card:last-child`);
+                                const targetFoundation = document.querySelector(`.foundation[data-suit="${topCard.suit}"]`);
+                                
+                                if (cardEl && targetFoundation) {
+                                    tableau[col].pop();
+                                    
+                                    if (tableau[col].length > 0) {
+                                        const lastCard = tableau[col][tableau[col].length - 1];
+                                        if (!lastCard.faceUp) {
+                                            lastCard.faceUp = true;
+                                            score += 5;
+                                        }
+                                    }
+                                    
+                                    foundations[topCard.suit].push(topCard);
+                                    score += 10;
+                                    moves++;
+                                    
+                                    autoCompleteAnimateCardMove(cardEl, targetFoundation, () => {
+                                        renderGame();
+                                    });
+                                    // 중복 타이밍으로 다음 카드 이동 (애니메이션이 끝나기 전에 시작)
+                                    setTimeout(ultraFastAutoMove, 80);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    
+                    checkWin();
+                };
 
             // 렌더링 완료 후 자동 완성 시작
             renderGame();
             setTimeout(ultraFastAutoMove, 5);
-        }
+            }
 
-        // 스톡에서 카드 뽑기 (3장씩) - 중복 방지 개선
-        function drawCard() {
-            saveGameState();
-            
-            if (stock.length > 0) {
-                drawCount++;
-                const cardsToDraw = Math.min(3, stock.length);
-                const drawnCards = [];
+            // 스톡에서 카드 뽑기 (3장씩)
+            function drawCard() {
+                saveGameState();
                 
-                // 마지막 1-2장인지 체크
-                const isLastFewCards = stock.length <= 2;
-                
-                for (let i = 0; i < cardsToDraw; i++) {
-                    if (stock.length === 0) break;
-                    const card = stock.pop();
+                if (stock.length > 0) {
+                    drawCount++;
+                    const cardsToDraw = Math.min(3, stock.length);
+                    const drawnCards = [];
                     
-                    if (!card || !card.suit || !card.rank) {
-                        i--;
-                        continue;
+                    for (let i = 0; i < cardsToDraw; i++) {
+                        if (stock.length === 0) break;
+                        const card = stock.pop();
+                        
+                        if (!card || !card.suit || !card.rank) {
+                            i--;
+                            continue;
+                        }
+                        
+                        card.faceUp = true;
+                        drawnCards.push(card);
                     }
                     
-                    card.faceUp = true;
-                    card.drawId = Date.now() + '_' + i;
-                    drawnCards.push(card);
+                    waste.push(...drawnCards);
+                    renderGame();
+                    animateCardDraw(drawnCards);
+                    
+                } else if (waste.length > 0) {
+                    const validWasteCards = waste.filter(c => c && c.suit && c.rank);
+                    
+                    validWasteCards.forEach(card => {
+                        card.faceUp = false;
+                    });
+                    
+                    stock = [...validWasteCards].reverse();
+                    waste = [];
+                    renderGame();
+                }
+            }
+
+
+
+            // 승리 확인
+            function checkWin() {
+                const totalFoundationCards = Object.values(foundations).reduce((sum, pile) => sum + pile.length, 0);
+                if (totalFoundationCards === 52) {
+                    gameWon = true;
+                    score += 100;
+                    playWinAnimation();
+                    setTimeout(() => showWinModal(), 2000);
+                }
+            }
+            
+            // 승리 애니메이션
+            function playWinAnimation() {
+                const foundationCards = [];
+                
+                Object.keys(foundations).forEach(suit => {
+                    const foundationEl = document.querySelector(`.foundation[data-suit="${suit}"]`);
+                    const cards = foundationEl.querySelectorAll('.card');
+                    cards.forEach(card => foundationCards.push(card));
+                });
+                
+                foundationCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('winning');
+                    }, index * 50);
+                });
+                
+                animateScoreIncrease(100);
+            }
+
+            // 승리 모달 표시
+            function showWinModal() {
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('finalTime').textContent = document.getElementById('time').textContent;
+                document.getElementById('finalMoves').textContent = moves;
+                document.getElementById('winModal').style.display = 'flex';
+            }
+
+            // 승리 모달 닫기
+            function closeWinModal() {
+                document.getElementById('winModal').style.display = 'none';
+            }
+
+            // 점수 업데이트
+            function updateScore() {
+                document.getElementById('score').textContent = score;
+                document.getElementById('moves').textContent = moves;
+            }
+
+            // 타이머 업데이트
+            function updateTimer() {
+                if (gameWon) return;
+                
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('time').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                setTimeout(updateTimer, 1000);
+            }
+
+            // 리사이즈 이벤트 리스너
+            let resizeTimeout;
+            let currentBreakpoint = getCurrentBreakpoint();
+            
+            function getCurrentBreakpoint() {
+                if (window.innerWidth > 1200) return 'large';
+                if (window.innerWidth > 900) return 'medium';
+                if (window.innerWidth > 768) return 'small';
+                if (window.innerWidth > 600) return 'xsmall';
+                return 'xxsmall';
+            }
+            
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    const newBreakpoint = getCurrentBreakpoint();
+                    if (newBreakpoint !== currentBreakpoint) {
+                        currentBreakpoint = newBreakpoint;
+                        renderGame();
+                    }
+                }, 100);
+            });
+
+            // Touch event variables
+            let touchStartTime = 0;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let isTouchDragging = false;
+            let dragPreview = null; // 드래그 프리뷰 요소
+
+            // 터치 시작
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const cardEl = e.target;
+                const touch = e.touches[0];
+                
+                touchStartTime = Date.now();
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                
+                const col = parseInt(cardEl.dataset.column);
+                const index = parseInt(cardEl.dataset.index);
+                
+                if (col !== undefined && index !== undefined) {
+                    const card = tableau[col][index];
+                    if (card && card.faceUp) {
+                        draggedCard = { col, index };
+                        draggedFrom = 'tableau';
+                        cardEl.classList.add('dragging');
+                        
+                        // 드래그 프리뷰 생성
+                        createDragPreview(cardEl, card);
+                    }
+                }
+            }
+
+            // 드래그 프리뷰 생성
+            function createDragPreview(originalCard, cardData) {
+                // 기존 프리뷰 제거
+                if (dragPreview) {
+                    document.body.removeChild(dragPreview);
                 }
                 
-                drawnCards.forEach(card => {
-                    const alreadyExists = waste.some(w => w.drawId === card.drawId);
-                    if (!alreadyExists) {
-                        waste.push(card);
-                    }
-                });
+                // 새로운 프리뷰 생성
+                dragPreview = originalCard.cloneNode(true);
+                dragPreview.style.position = 'fixed';
+                dragPreview.style.pointerEvents = 'none';
+                dragPreview.style.zIndex = '10000';
+                dragPreview.style.opacity = '0.8';
+                dragPreview.style.transform = 'rotate(5deg) scale(1.05)';
+                dragPreview.style.transition = 'none';
+                dragPreview.classList.add('drag-preview');
                 
-                animateCardDraw(drawnCards, isLastFewCards);
+                // 원본 카드의 위치를 기준으로 초기 위치 설정
+                const rect = originalCard.getBoundingClientRect();
+                dragPreview.style.left = rect.left + 'px';
+                dragPreview.style.top = rect.top + 'px';
                 
-            } else if (waste.length > 0) {
-                const validWasteCards = waste.filter(c => c && c.suit && c.rank);
-                const uniqueWasteCards = [];
-                const seenCards = new Set();
-                
-                validWasteCards.forEach(card => {
-                    const cardKey = `${card.suit}-${card.rank}`;
-                    if (!seenCards.has(cardKey)) {
-                        seenCards.add(cardKey);
-                        uniqueWasteCards.push(card);
-                    }
-                });
-                
-                uniqueWasteCards.forEach(card => {
-                    card.faceUp = false;
-                    delete card.drawId;
-                });
-                
-                stock = [...uniqueWasteCards].reverse();
-                waste = [];
-                
-                renderGame();
+                document.body.appendChild(dragPreview);
             }
-        }
 
-
-
-        // 승리 확인
-        function checkWin() {
-            const totalFoundationCards = Object.values(foundations).reduce((sum, pile) => sum + pile.length, 0);
-            if (totalFoundationCards === 52) {
-                gameWon = true;
-                score += 100; // 보너스 점수
-                playWinAnimation();
-                setTimeout(() => showWinModal(), 2000);
+            // 터치 이동
+            function handleTouchMove(e) {
+                e.preventDefault();
+                
+                if (!draggedCard || !dragPreview) return;
+                
+                const touch = e.touches[0];
+                const touchDistance = Math.sqrt(
+                    Math.pow(touch.clientX - touchStartX, 2) + 
+                    Math.pow(touch.clientY - touchStartY, 2)
+                );
+                
+                // 최소 드래그 거리 확인
+                if (touchDistance > 10) {
+                    isTouchDragging = true;
+                    
+                    // 드래그 프리뷰 위치 업데이트
+                    dragPreview.style.left = (touch.clientX - dragPreview.offsetWidth / 2) + 'px';
+                    dragPreview.style.top = (touch.clientY - dragPreview.offsetHeight / 2) + 'px';
+                    
+                    // 터치 위치의 요소 찾기
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const dropTarget = elementBelow ? elementBelow.closest('.column, .foundation') : null;
+                    
+                    // 모든 하이라이트 제거
+                    document.querySelectorAll('.column, .foundation').forEach(el => {
+                        el.classList.remove('drag-over');
+                    });
+                    
+                    // 유효한 드롭 위치인지 확인하고 하이라이트
+                    if (dropTarget) {
+                        if (dropTarget.classList.contains('column')) {
+                            const targetCol = parseInt(dropTarget.dataset.column);
+                            const targetCard = tableau[targetCol].length > 0 ? tableau[targetCol][tableau[targetCol].length - 1] : null;
+                            
+                            const { col: sourceCol, index } = draggedCard;
+                            if (sourceCol !== targetCol) {
+                                const card = tableau[sourceCol][index];
+                                if (card && canPlaceOnTableau(card, targetCard)) {
+                                    dropTarget.classList.add('drag-over');
+                                }
+                            }
+                        } else if (dropTarget.classList.contains('foundation')) {
+                            const targetSuit = dropTarget.dataset.suit;
+                            const { col, index } = draggedCard;
+                            
+                            if (index === tableau[col].length - 1) {
+                                const card = tableau[col][index];
+                                if (card && canPlaceOnFoundation(card, targetSuit)) {
+                                    dropTarget.classList.add('drag-over');
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        }
-        
-        // 승리 애니메이션
-        function playWinAnimation() {
-            // 파운데이션의 모든 카드들을 순차적으로 위로 올리기
-            const foundationCards = [];
-            
-            // 각 파운데이션에서 카드들 수집
-            Object.keys(foundations).forEach(suit => {
-                const foundationEl = document.querySelector(`.foundation[data-suit="${suit}"]`);
-                const cards = foundationEl.querySelectorAll('.card');
-                cards.forEach(card => foundationCards.push(card));
-            });
-            
-            // 순차적으로 승리 애니메이션 적용
-            foundationCards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.classList.add('winning');
-                }, index * 50);
-            });
-            
-            // 점수 증가 애니메이션
-            animateScoreIncrease(100);
-        }
 
-        // 승리 모달 표시
-        function showWinModal() {
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalTime').textContent = document.getElementById('time').textContent;
-            document.getElementById('finalMoves').textContent = moves;
-            document.getElementById('winModal').style.display = 'flex';
-        }
+            // 터치 종료
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                
+                if (!draggedCard) return;
+                
+                const touch = e.changedTouches[0];
+                const touchEndTime = Date.now();
+                const touchDuration = touchEndTime - touchStartTime;
+                const touchDistance = Math.sqrt(
+                    Math.pow(touch.clientX - touchStartX, 2) + 
+                    Math.pow(touch.clientY - touchStartY, 2)
+                );
+                
+                // 드래그 프리뷰 제거
+                if (dragPreview) {
+                    document.body.removeChild(dragPreview);
+                    dragPreview = null;
+                }
+                
+                // 드래그 중이었다면 드롭 처리
+                if (isTouchDragging && touchDistance > 10) {
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const dropTarget = elementBelow ? elementBelow.closest('.column, .foundation') : null;
+                    
+                    if (dropTarget) {
+                        if (dropTarget.classList.contains('column')) {
+                            const targetCol = parseInt(dropTarget.dataset.column);
+                            handleTableauDrop(targetCol);
+                        } else if (dropTarget.classList.contains('foundation')) {
+                            const targetSuit = dropTarget.dataset.suit;
+                            handleFoundationDrop(targetSuit);
+                        }
+                    }
+                } else if (touchDuration < 300 && touchDistance < 10) {
+                    // 짧은 터치 (클릭으로 처리)
+                    handleCardClick(e);
+                }
+                
+                // 드래그 상태 초기화
+                const cardEl = e.target;
+                if (cardEl) {
+                    cardEl.classList.remove('dragging');
+                }
+                draggedCard = null;
+                draggedFrom = null;
+                isTouchDragging = false;
+                
+                // 모든 하이라이트 제거
+                document.querySelectorAll('.column, .foundation').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+            }
 
-        // 승리 모달 닫기
-        function closeWinModal() {
-            document.getElementById('winModal').style.display = 'none';
-        }
-
-        // 점수 업데이트
-        function updateScore() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('moves').textContent = moves;
-        }
-
-        // 타이머 업데이트
-        function updateTimer() {
-            if (gameWon) return;
-            
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            document.getElementById('time').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            setTimeout(updateTimer, 1000);
-        }
-
-
-
-        // 게임 시작
-        newGame();
-    </script>
+            // 게임 시작
+            newGame();
+        </script>
+    </div>
 </body>
 </html> 

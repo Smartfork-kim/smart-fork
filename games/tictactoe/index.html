@@ -9,18 +9,20 @@
 <body>
     <!-- 게임 컨테이너 -->
     <div class="game-container">
-        <!-- 게임 제목 -->
-        <h1>틱택토 게임</h1>
+        <!-- 게임 헤더 -->
+        <div class="game-header">
+            <h1>틱택토 게임</h1>
+        </div>
+        
+        <!-- 게임 모드 선택 -->
+        <div class="game-mode-selector">
+            <button id="computer-mode-btn" class="mode-btn active">컴퓨터 vs 플레이어</button>
+            <button id="pvp-mode-btn" class="mode-btn">1 vs 1</button>
+        </div>
         
         <!-- 현재 플레이어 표시 -->
         <div class="status" id="status">
             <span id="current-player">X</span>의 차례입니다
-        </div>
-        
-        <!-- 게임 모드 표시 -->
-        <div class="game-mode" id="game-mode">
-            <span class="mode-label">게임 모드:</span>
-            <span class="mode-value">플레이어 vs 컴퓨터</span>
         </div>
         
         <!-- 점수 표시 영역 -->
@@ -37,13 +39,16 @@
         
         <!-- 게임 보드 (3x3 그리드) -->
         <div class="game-board" id="game-board">
-            <!-- 각 셀은 JavaScript로 동적 생성됩니다 -->
+            <div class="game-board-grid">
+                <!-- 각 셀은 JavaScript로 동적 생성됩니다 -->
+            </div>
         </div>
         
         <!-- 게임 컨트롤 버튼들 -->
         <div class="game-controls">
-            <button id="restart-btn" class="btn">게임 재시작</button>
-            <button id="reset-score-btn" class="btn">점수 초기화</button>
+            <button id="main-menu-btn" class="control-btn">메인으로 가기</button>
+            <button id="restart-btn" class="control-btn">게임 재시작</button>
+            <button id="reset-score-btn" class="control-btn">점수 초기화</button>
         </div>
     </div>
     

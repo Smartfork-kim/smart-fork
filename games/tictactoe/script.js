@@ -1,25 +1,18 @@
 // ========================================
-// 틱택토 게임 JavaScript 로직
+// 틱택토 게임 JavaScript 로직 (최적화 버전)
 // ========================================
 
-// 게임 상태를 관리하는 클래스
 class TicTacToe {
     constructor() {
-        // 게임 보드 상태 (3x3 배열)
-        // null: 빈 셀, 'X': 플레이어, 'O': 컴퓨터
-        this.board = [
-            [null, null, null],
-            [null, null, null],
-            [null, null, null]
-        ];
-        
-        // 현재 플레이어 ('X': 플레이어, 'O': 컴퓨터)
+        // 게임 상태 초기화
+        this.board = Array(3).fill(null).map(() => Array(3).fill(null));
         this.currentPlayer = 'X';
-        
-        // 게임이 진행 중인지 여부
         this.gameActive = true;
+        this.scores = { X: 0, O: 0 };
+        this.lastWinner = null;
+        this.gameMode = 'computer';
         
-        // 플레이어 정보 ('X': 플레이어, 'O': 컴퓨터)
+        // 플레이어 정보
         this.playerInfo = {
             'X': '플레이어',
             'O': '컴퓨터'
@@ -27,503 +20,306 @@ class TicTacToe {
         
         // 승리 조건 조합들 (가로, 세로, 대각선)
         this.winningCombinations = [
-            // 가로 승리 조건
-            [[0, 0], [0, 1], [0, 2]],
-            [[1, 0], [1, 1], [1, 2]],
-            [[2, 0], [2, 1], [2, 2]],
-            
-            // 세로 승리 조건
-            [[0, 0], [1, 0], [2, 0]],
-            [[0, 1], [1, 1], [2, 1]],
-            [[0, 2], [1, 2], [2, 2]],
-            
-            // 대각선 승리 조건
-            [[0, 0], [1, 1], [2, 2]],
-            [[0, 2], [1, 1], [2, 0]]
+            // 가로
+            [[0, 0], [0, 1], [0, 2]], [[1, 0], [1, 1], [1, 2]], [[2, 0], [2, 1], [2, 2]],
+            // 세로
+            [[0, 0], [1, 0], [2, 0]], [[0, 1], [1, 1], [2, 1]], [[0, 2], [1, 2], [2, 2]],
+            // 대각선
+            [[0, 0], [1, 1], [2, 2]], [[0, 2], [1, 1], [2, 0]]
         ];
         
-        // 점수 저장소 (localStorage에서 불러오거나 기본값 사용)
-        this.scores = this.loadScores();
+        // DOM 요소 캐싱
+        this.elements = {
+            gameBoard: document.getElementById('game-board'),
+            status: document.getElementById('status'),
+            currentPlayer: document.getElementById('current-player'),
+            scoreX: document.getElementById('score-x'),
+            scoreO: document.getElementById('score-o'),
+            restartBtn: document.getElementById('restart-btn'),
+            resetScoreBtn: document.getElementById('reset-score-btn'),
+            computerModeBtn: document.getElementById('computer-mode-btn'),
+            pvpModeBtn: document.getElementById('pvp-mode-btn'),
+            mainMenuBtn: document.getElementById('main-menu-btn')
+        };
         
-        // 마지막 승자 (다음 게임 선공 결정용)
-        this.lastWinner = null;
-        
-        // DOM 요소들
-        this.gameBoard = document.getElementById('game-board');
-        this.statusElement = document.getElementById('status');
-        this.currentPlayerElement = document.getElementById('current-player');
-        this.scoreXElement = document.getElementById('score-x');
-        this.scoreOElement = document.getElementById('score-o');
-        this.restartBtn = document.getElementById('restart-btn');
-        this.resetScoreBtn = document.getElementById('reset-score-btn');
-        
-        // 게임 초기화
         this.initializeGame();
-        
-        // 창 크기 변경 시 셀 위치 재계산
-        window.addEventListener('resize', () => {
-            this.updateCellPositions();
-        });
     }
     
-    // 게임 초기화 함수
     initializeGame() {
-        // 게임 보드 생성
         this.createBoard();
-        
-        // 이벤트 리스너 등록
         this.addEventListeners();
-        
-        // 점수 표시 업데이트
+        this.updateScoreboardLabels();
         this.updateScoreDisplay();
-        
-        // 상태 메시지 업데이트
         this.updateStatus();
     }
     
-    // 게임 보드 생성 함수
     createBoard() {
-        // 기존 보드 내용 제거
-        this.gameBoard.innerHTML = '';
+        this.elements.gameBoard.innerHTML = '';
         
-        // 3x3 그리드 생성
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 3; col++) {
-                // 각 셀을 위한 버튼 요소 생성
-                const cell = document.createElement('button');
-                cell.className = 'cell';
-                cell.dataset.row = row;
-                cell.dataset.col = col;
-                
-                // 셀 위치 설정 (절대 위치로 배치)
-                cell.style.position = 'absolute';
-                
-                // 셀 클릭 이벤트 추가
-                cell.addEventListener('click', (e) => this.handleCellClick(e));
-                
-                // 게임 보드에 셀 추가
-                this.gameBoard.appendChild(cell);
-            }
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'game-board-grid';
+        
+        // 3x3 그리드 생성 (최적화된 루프)
+        for (let i = 0; i < 9; i++) {
+            const row = Math.floor(i / 3);
+            const col = i % 3;
+            
+            const cell = document.createElement('button');
+            cell.className = 'cell';
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+            cell.addEventListener('click', (e) => this.handleCellClick(e));
+            
+            gridContainer.appendChild(cell);
         }
         
-        // 셀 위치 업데이트
-        this.updateCellPositions();
+        this.elements.gameBoard.appendChild(gridContainer);
     }
     
-    // 셀 위치 업데이트 함수
-    updateCellPositions() {
-        const cells = this.gameBoard.querySelectorAll('.cell');
-        const isMobile = window.innerWidth <= 600;
-        const cellSize = isMobile ? 80 : 100;
+    addEventListeners() {
+        // 버튼 이벤트 리스너
+        this.elements.restartBtn.addEventListener('click', () => this.restartGame());
+        this.elements.resetScoreBtn.addEventListener('click', () => this.resetScores());
+        this.elements.computerModeBtn.addEventListener('click', () => this.setGameMode('computer'));
+        this.elements.pvpModeBtn.addEventListener('click', () => this.setGameMode('pvp'));
         
-        cells.forEach(cell => {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
-            cell.style.left = `${col * cellSize}px`;
-            cell.style.top = `${row * cellSize}px`;
+        // 메인 메뉴 버튼
+        if (this.elements.mainMenuBtn) {
+            this.elements.mainMenuBtn.addEventListener('click', () => {
+                window.location.href = '../../index.html';
+            });
+        }
+        
+        // 키보드 단축키
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'r') this.restartGame();
+            if (key === 's') this.resetScores();
         });
     }
     
-    // 이벤트 리스너 등록 함수
-    addEventListeners() {
-        // 재시작 버튼 이벤트
-        this.restartBtn.addEventListener('click', () => this.restartGame());
-        
-        // 점수 초기화 버튼 이벤트
-        this.resetScoreBtn.addEventListener('click', () => this.resetScores());
-    }
-    
-    // 셀 클릭 처리 함수
     handleCellClick(event) {
-        // 게임이 비활성화되어 있으면 클릭 무시
-        if (!this.gameActive) {
+        if (!this.gameActive || (this.gameMode === 'computer' && this.currentPlayer === 'O')) {
             return;
         }
         
-        // 컴퓨터 턴이면 플레이어 클릭 무시
-        if (this.currentPlayer === 'O') {
-            return;
-        }
-        
-        // 클릭된 셀의 위치 정보 가져오기
         const row = parseInt(event.target.dataset.row);
         const col = parseInt(event.target.dataset.col);
         
-        // 이미 채워진 셀이면 클릭 무시
-        if (this.board[row][col] !== null) {
-            return;
-        }
+        if (this.board[row][col] !== null) return;
         
-        // 플레이어의 표시를 보드에 기록
+        this.makeMove(row, col);
+    }
+    
+    makeMove(row, col) {
+        // 보드에 표시 기록
         this.board[row][col] = this.currentPlayer;
         
-        // 클릭된 셀에 플레이어 표시 업데이트
-        event.target.textContent = this.currentPlayer;
-        event.target.classList.add(this.currentPlayer.toLowerCase());
+        // UI 업데이트
+        const cell = this.elements.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        cell.textContent = this.currentPlayer;
+        cell.classList.add(this.currentPlayer.toLowerCase());
         
-        // 승리 조건 확인
+        // 게임 상태 확인
         if (this.checkWin(row, col)) {
-            // 승리한 경우
             this.handleWin();
         } else if (this.checkDraw()) {
-            // 무승부인 경우
             this.handleDraw();
         } else {
-            // 게임 계속 진행 - 컴퓨터 턴으로 전환
             this.switchPlayer();
             
-            // 컴퓨터 턴 시작 (약간의 지연을 두어 자연스럽게)
-            setTimeout(() => {
-                this.makeComputerMove();
-            }, 500);
+            // 컴퓨터 턴 처리
+            if (this.gameMode === 'computer' && this.currentPlayer === 'O') {
+                setTimeout(() => this.makeComputerMove(), 500);
+            }
         }
     }
     
-    // 승리 조건 확인 함수
     checkWin(row, col) {
         const player = this.board[row][col];
         
-        // 모든 승리 조합을 확인
-        for (const combination of this.winningCombinations) {
-            // 현재 조합이 승리 조건을 만족하는지 확인
-            const isWinning = combination.every(([r, c]) => {
-                return this.board[r][c] === player;
-            });
-            
+        return this.winningCombinations.some(combination => {
+            const isWinning = combination.every(([r, c]) => this.board[r][c] === player);
             if (isWinning) {
-                // 승리한 셀들을 하이라이트
                 this.highlightWinningCells(combination);
                 return true;
             }
-        }
-        
-        return false;
+            return false;
+        });
     }
     
-    // 승리한 셀들 하이라이트 함수
     highlightWinningCells(combination) {
         combination.forEach(([row, col]) => {
-            const cell = this.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const cell = this.elements.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
             cell.classList.add('winner');
         });
     }
     
-    // 무승부 확인 함수
     checkDraw() {
-        // 모든 셀이 채워졌는지 확인
         return this.board.every(row => row.every(cell => cell !== null));
     }
     
-    // 승리 처리 함수
     handleWin() {
-        // 게임 상태를 비활성화
         this.gameActive = false;
-        
-        // 승리한 플레이어의 점수 증가
         this.scores[this.currentPlayer]++;
-        
-        // 마지막 승자 기록 (다음 게임 선공 결정용)
         this.lastWinner = this.currentPlayer;
         
-        // 점수 저장
-        this.saveScores();
-        
-        // 점수 표시 업데이트
         this.updateScoreDisplay();
-        
-        // 승리 메시지 표시
-        const winnerName = this.playerInfo[this.currentPlayer];
-        this.statusElement.innerHTML = `<span style="color: #22543d; font-weight: bold;">${winnerName}</span>가 승리했습니다!`;
-        
-        // 게임 보드 비활성화
-        this.gameBoard.classList.add('game-over');
+        this.elements.status.innerHTML = `<span style="color: #22543d; font-weight: bold;">${this.playerInfo[this.currentPlayer]}</span>가 승리했습니다!`;
+        this.elements.gameBoard.classList.add('game-over');
     }
     
-    // 무승부 처리 함수
     handleDraw() {
-        // 게임 상태를 비활성화
         this.gameActive = false;
-        
-        // 무승부 메시지 표시
-        this.statusElement.innerHTML = '<span style="color: #744210; font-weight: bold;">무승부입니다!</span>';
-        
-        // 게임 보드 비활성화
-        this.gameBoard.classList.add('game-over');
+        this.elements.status.innerHTML = '<span style="color: #744210; font-weight: bold;">무승부입니다!</span>';
+        this.elements.gameBoard.classList.add('game-over');
     }
     
-    // 플레이어 전환 함수
     switchPlayer() {
-        // X와 O를 번갈아가며 전환
         this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
-        
-        // 상태 메시지 업데이트
         this.updateStatus();
     }
     
-    // 상태 메시지 업데이트 함수
     updateStatus() {
-        const playerName = this.playerInfo[this.currentPlayer];
-        this.currentPlayerElement.textContent = playerName;
-        this.currentPlayerElement.className = this.currentPlayer.toLowerCase();
+        this.elements.currentPlayer.textContent = this.playerInfo[this.currentPlayer];
+        this.elements.currentPlayer.className = this.currentPlayer.toLowerCase();
     }
     
-    // 점수 표시 업데이트 함수
     updateScoreDisplay() {
-        this.scoreXElement.textContent = this.scores.X;
-        this.scoreOElement.textContent = this.scores.O;
+        this.elements.scoreX.textContent = this.scores.X;
+        this.elements.scoreO.textContent = this.scores.O;
     }
     
-    // 게임 재시작 함수
     restartGame() {
-        // 보드 상태 초기화
-        this.board = [
-            [null, null, null],
-            [null, null, null],
-            [null, null, null]
-        ];
+        // 보드 초기화
+        this.board = Array(3).fill(null).map(() => Array(3).fill(null));
         
-        // 게임 상태 초기화 (첫 게임이거나 플레이어가 이겼으면 플레이어가 선공)
-        // 컴퓨터가 이겼으면 컴퓨터가 선공
-        if (this.lastWinner === 'O') {
-            this.currentPlayer = 'O'; // 컴퓨터가 선공
-        } else {
-            this.currentPlayer = 'X'; // 플레이어가 선공
-        }
-        
+        // 선공 결정
+        this.currentPlayer = this.lastWinner === 'O' ? 'O' : 'X';
         this.gameActive = true;
         
-        // 게임 보드 재생성
         this.createBoard();
-        
-        // 상태 메시지 초기화
         this.updateStatus();
+        this.elements.gameBoard.classList.remove('game-over');
         
-        // 게임 보드 활성화
-        this.gameBoard.classList.remove('game-over');
-        
-        // 컴퓨터가 선공이면 컴퓨터 턴 시작
+        // 컴퓨터 선공 처리
         if (this.currentPlayer === 'O') {
-            setTimeout(() => {
-                this.makeComputerMove();
-            }, 500);
+            setTimeout(() => this.makeComputerMove(), 500);
         }
     }
     
-    // 점수 초기화 함수
     resetScores() {
-        // 점수 초기화
         this.scores = { X: 0, O: 0 };
-        
-        // 마지막 승자도 초기화 (다음 게임은 플레이어가 선공)
         this.lastWinner = null;
-        
-        // localStorage에서 점수 삭제
-        localStorage.removeItem('tictactoe-scores');
-        
-        // 점수 표시 업데이트
         this.updateScoreDisplay();
     }
     
-    // 점수 저장 함수 (localStorage 사용)
-    saveScores() {
-        try {
-            localStorage.setItem('tictactoe-scores', JSON.stringify(this.scores));
-        } catch (error) {
-            console.error('점수 저장 중 오류 발생:', error);
-        }
-    }
-    
-    // 점수 불러오기 함수 (localStorage에서)
-    loadScores() {
-        try {
-            const savedScores = localStorage.getItem('tictactoe-scores');
-            if (savedScores) {
-                return JSON.parse(savedScores);
-            }
-        } catch (error) {
-            console.error('점수 불러오기 중 오류 발생:', error);
-        }
-        
-        // 기본 점수 반환
-        return { X: 0, O: 0 };
-    }
-    
-    // ========================================
-    // 컴퓨터 AI 로직
-    // ========================================
-    
-    // 컴퓨터 턴 처리 함수
     makeComputerMove() {
-        // 게임이 비활성화되어 있으면 무시
-        if (!this.gameActive || this.currentPlayer !== 'O') {
+        if (!this.gameActive || this.currentPlayer !== 'O') return;
+        
+        const emptyCells = this.getEmptyCells();
+        if (emptyCells.length === 0) {
+            this.handleDraw();
             return;
         }
         
-        // 최적의 수를 찾기
-        const bestMove = this.findBestMove();
-        
-        if (bestMove) {
-            const { row, col } = bestMove;
-            
-            // 컴퓨터의 수를 보드에 기록
-            this.board[row][col] = 'O';
-            
-            // 해당 셀에 컴퓨터 표시 업데이트
-            const cell = this.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-            cell.textContent = 'O';
-            cell.classList.add('o');
-            
-            // 승리 조건 확인
-            if (this.checkWin(row, col)) {
-                // 승리한 경우
-                this.handleWin();
-            } else if (this.checkDraw()) {
-                // 무승부인 경우
-                this.handleDraw();
-            } else {
-                // 게임 계속 진행 - 플레이어 턴으로 전환
-                this.switchPlayer();
-            }
-        }
+        const selectedCell = this.selectComputerMove(emptyCells);
+        this.makeMove(selectedCell.row, selectedCell.col);
     }
     
-    // 최적의 수 찾기 함수 (미니맥스 알고리즘)
-    findBestMove() {
-        let bestScore = -Infinity;
-        let bestMove = null;
-        
-        // 모든 빈 셀을 확인
+    getEmptyCells() {
+        const emptyCells = [];
         for (let row = 0; row < 3; row++) {
             for (let col = 0; col < 3; col++) {
                 if (this.board[row][col] === null) {
-                    // 이 위치에 컴퓨터가 수를 둬봄
-                    this.board[row][col] = 'O';
-                    
-                    // 미니맥스 알고리즘으로 점수 계산
-                    const score = this.minimax(this.board, 0, false);
-                    
-                    // 수를 되돌림
-                    this.board[row][col] = null;
-                    
-                    // 더 좋은 점수를 찾으면 업데이트
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestMove = { row, col };
-                    }
+                    emptyCells.push({ row, col });
                 }
             }
         }
-        
-        return bestMove;
+        return emptyCells;
     }
     
-    // 미니맥스 알고리즘 (재귀적)
-    minimax(board, depth, isMaximizing) {
-        // 승리 조건 확인
-        const winner = this.checkWinner(board);
-        if (winner === 'O') {
-            return 10 - depth; // 컴퓨터 승리 (깊이를 고려하여 빠른 승리 선호)
-        } else if (winner === 'X') {
-            return depth - 10; // 플레이어 승리 (깊이를 고려하여 늦은 패배 선호)
-        } else if (this.isBoardFull(board)) {
-            return 0; // 무승부
-        }
+    selectComputerMove(emptyCells) {
+        // X의 개수 계산
+        const xCount = this.board.flat().filter(cell => cell === 'X').length;
         
-        if (isMaximizing) {
-            // 컴퓨터 턴 (최대화)
-            let bestScore = -Infinity;
-            for (let row = 0; row < 3; row++) {
-                for (let col = 0; col < 3; col++) {
-                    if (board[row][col] === null) {
-                        board[row][col] = 'O';
-                        const score = this.minimax(board, depth + 1, false);
-                        board[row][col] = null;
-                        bestScore = Math.max(score, bestScore);
-                    }
-                }
-            }
-            return bestScore;
-        } else {
-            // 플레이어 턴 (최소화)
-            let bestScore = Infinity;
-            for (let row = 0; row < 3; row++) {
-                for (let col = 0; col < 3; col++) {
-                    if (board[row][col] === null) {
-                        board[row][col] = 'X';
-                        const score = this.minimax(board, depth + 1, true);
-                        board[row][col] = null;
-                        bestScore = Math.min(score, bestScore);
-                    }
-                }
-            }
-            return bestScore;
-        }
+        // 처음 2번째 수까지만 막기
+        const blockingMove = xCount <= 2 ? this.findBlockingMove() : null;
+        
+        return blockingMove || emptyCells[Math.floor(Math.random() * emptyCells.length)];
     }
     
-    // 보드에서 승자 확인 함수 (미니맥스용)
-    checkWinner(board) {
-        // 모든 승리 조합 확인
+    findBlockingMove() {
         for (const combination of this.winningCombinations) {
             const [a, b, c] = combination;
-            const [rowA, colA] = a;
-            const [rowB, colB] = b;
-            const [rowC, colC] = c;
+            const cells = [
+                this.board[a[0]][a[1]],
+                this.board[b[0]][b[1]],
+                this.board[c[0]][c[1]]
+            ];
             
-            if (board[rowA][colA] && 
-                board[rowA][colA] === board[rowB][colB] && 
-                board[rowA][colA] === board[rowC][colC]) {
-                return board[rowA][colA];
+            const xCount = cells.filter(cell => cell === 'X').length;
+            const emptyCount = cells.filter(cell => cell === null).length;
+            
+            if (xCount === 2 && emptyCount === 1) {
+                // 빈 셀 위치 찾기
+                for (let i = 0; i < 3; i++) {
+                    if (cells[i] === null) {
+                        return { row: combination[i][0], col: combination[i][1] };
+                    }
+                }
             }
         }
         return null;
     }
     
-    // 보드가 가득 찼는지 확인 함수 (미니맥스용)
-    isBoardFull(board) {
-        return board.every(row => row.every(cell => cell !== null));
+    setGameMode(mode) {
+        this.gameMode = mode;
+        
+        // 버튼 상태 업데이트
+        this.elements.computerModeBtn.classList.toggle('active', mode === 'computer');
+        this.elements.pvpModeBtn.classList.toggle('active', mode === 'pvp');
+        
+        // 플레이어 정보 업데이트
+        this.playerInfo = mode === 'pvp' 
+            ? { 'X': '플레이어 1', 'O': '플레이어 2' }
+            : { 'X': '플레이어', 'O': '컴퓨터' };
+        
+        // 점수 초기화
+        this.scores = { X: 0, O: 0 };
+        this.lastWinner = null;
+        
+        this.updateScoreboardLabels();
+        this.updateScoreDisplay();
+        this.updateStatus();
+        this.restartGame();
+    }
+    
+    updateScoreboardLabels() {
+        const player1Label = document.querySelector('.score-item:first-child .player');
+        const player2Label = document.querySelector('.score-item:last-child .player');
+        
+        if (this.gameMode === 'pvp') {
+            player1Label.textContent = '플레이어 1';
+            player2Label.textContent = '플레이어 2';
+        } else {
+            player1Label.textContent = '플레이어';
+            player2Label.textContent = '컴퓨터';
+        }
     }
 }
 
 // ========================================
-// 게임 시작
+// 게임 시작 및 전역 함수
 // ========================================
 
-// DOM이 완전히 로드된 후 게임 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    // 새로운 틱택토 게임 인스턴스 생성
-    const game = new TicTacToe();
-    
-    // 전역 변수로 게임 인스턴스 저장 (디버깅용)
-    window.tictactoeGame = game;
-    
+    window.tictactoeGame = new TicTacToe();
     console.log('틱택토 게임이 성공적으로 시작되었습니다!');
-    console.log('게임 인스턴스:', game);
 });
 
-// ========================================
-// 추가 기능 및 유틸리티
-// ========================================
-
-// 키보드 단축키 지원
-document.addEventListener('keydown', (event) => {
-    // R 키: 게임 재시작
-    if (event.key.toLowerCase() === 'r') {
-        if (window.tictactoeGame) {
-            window.tictactoeGame.restartGame();
-        }
-    }
-    
-    // S 키: 점수 초기화
-    if (event.key.toLowerCase() === 's') {
-        if (window.tictactoeGame) {
-            window.tictactoeGame.resetScores();
-        }
-    }
-});
-
-// 게임 통계 함수 (디버깅용)
-function getGameStats() {
+// 디버깅용 전역 함수
+window.getGameStats = function() {
     if (window.tictactoeGame) {
         return {
             currentPlayer: window.tictactoeGame.currentPlayer,
@@ -533,7 +329,4 @@ function getGameStats() {
         };
     }
     return null;
-}
-
-// 전역 함수로 노출 (콘솔에서 사용 가능)
-window.getGameStats = getGameStats; 
+}; 

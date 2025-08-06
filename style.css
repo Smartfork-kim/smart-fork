@@ -53,9 +53,10 @@ body {
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+    width: 100% !important;
 }
 
 /* 헤더 네비게이션 */
@@ -99,6 +100,11 @@ body {
     align-items: center;
 }
 
+/* PC에서 모바일용 테마 토글 숨기기 */
+.logo .theme-toggle {
+    display: none;
+}
+
 .logo-link {
     display: flex;
     align-items: center;
@@ -137,6 +143,8 @@ body {
     align-items: center;
     flex: 1;
     justify-content: center;
+    position: relative;
+    z-index: 1001; /* 헤더보다 위에 표시 */
 }
 
 .nav-list {
@@ -189,6 +197,7 @@ body {
 /* 히어로/광고 섹션 */
 .hero {
     margin-bottom: 40px;
+    margin-top: 10px;
 }
 
 .hero-content {
@@ -227,6 +236,26 @@ body {
     opacity: 1;
 }
 
+/* 기본적으로 데스크톱 광고만 표시 */
+.mobile-portrait-ad,
+.mobile-landscape-ad {
+    display: none;
+}
+
+.desktop-ad {
+    display: block;
+}
+
+/* 모바일 GIF 로딩 최적화 */
+.ad-image[src*=".gif"] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ad-image[src*=".gif"].loaded {
+    opacity: 1;
+}
+
 .ad-image {
     width: 100%;
     height: 100%;
@@ -236,6 +265,10 @@ body {
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     filter: contrast(1.05) brightness(1.02);
+    /* 모바일 GIF 최적화 */
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .ad-link {
@@ -319,11 +352,11 @@ body {
 
 .games-container {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 20px;
     background: var(--bg-container);
     backdrop-filter: blur(10px);
-    padding: 30px;
+    padding: 20px;
     box-shadow: var(--shadow-primary);
     border: 1px solid var(--border-light);
     transition: all 0.3s ease;
@@ -332,7 +365,9 @@ body {
 .games-slider {
     position: relative;
     width: 100%;
-    height: 600px;
+    height: 520px;
+    min-height: 520px;
+    overflow: hidden;
 }
 
 .game-slide {
@@ -340,10 +375,11 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 520px;
     opacity: 0;
     transform: translateX(100%);
-    transition: all 0.5s ease-in-out;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform, opacity;
 }
 
 .game-slide.active {
@@ -353,87 +389,58 @@ body {
 
 .game-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    height: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    height: 520px;
+    align-items: stretch;
+    justify-items: center;
 }
 
-/* 카테고리 모드용 그리드 스타일 */
-.category-mode {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
+/* 카테고리 그리드 스타일 */
 .category-grid {
-    height: auto !important;
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 20px 0;
-    grid-template-rows: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 1200px !important;
-    margin: 0 auto !important;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    height: auto;
+    overflow: visible;
+    justify-items: center;
 }
 
-/* 카테고리 모드에서 큰 컨테이너 박스 완전 제거 */
-.category-mode .games-container {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    backdrop-filter: none !important;
-    overflow: visible !important;
-    position: static !important;
-}
-
-.category-mode .games-slider {
-    height: auto !important;
-    position: relative !important;
-    width: 100% !important;
-}
-
-/* 카테고리 모드에서 games-section도 수정 */
-.category-mode .games-section {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-}
-
-/* 카테고리 모드에서 container도 수정 */
-.category-mode .container {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: none !important;
-}
-
-/* body 클래스를 사용한 더 강력한 컨테이너 제거 */
-body.category-mode-active .games-container {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    backdrop-filter: none !important;
-    overflow: visible !important;
-    position: static !important;
-}
-
+/* 카테고리 모드에서 games-section 스타일 */
 body.category-mode-active .games-section {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    position: relative;
+    overflow: visible;
+    height: auto;
 }
 
+/* 카테고리 모드에서 container 스타일 */
 body.category-mode-active .container {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: none !important;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+/* 카테고리 모드에서 hero 섹션 여백 유지 */
+body.category-mode-active .hero {
+    margin-bottom: 40px;
+    margin-top: 10px;
+}
+
+body.category-mode-active .hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    height: 200px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-primary);
+    padding: 0;
 }
 
 .category-grid::-webkit-scrollbar {
@@ -465,6 +472,10 @@ body.category-mode-active .container {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border-light);
+    width: 100%;
+    max-width: 350px;
+    min-width: 280px;
+    margin: 0 auto; /* 중앙 정렬 */
 }
 
 .game-card:hover {
@@ -474,7 +485,9 @@ body.category-mode-active .container {
 
 .game-image {
     position: relative;
-    height: 200px;
+    width: 100%; /* 게임 카드 너비에 맞춤 */
+    height: 0;
+    padding-bottom: 75%; /* 4:3 비율 유지 */
     overflow: hidden;
     background: var(--bg-card);
     border-radius: 15px 15px 0 0;
@@ -482,7 +495,16 @@ body.category-mode-active .container {
 
 /* 모든게임 모드에서 이미지 비율 조정 (4:3 비율) */
 .game-cards:not(.category-grid) .game-image {
-    height: 225px; /* 300px * 0.75 = 225px (4:3 비율) */
+    width: 100%; /* 게임 카드 너비에 맞춤 */
+    height: 262.5px; /* 4:3 비율 (350px * 0.75 = 262.5px) */
+}
+
+/* 메인페이지 게임 카드 이미지 4:3 비율 강제 */
+.game-cards:not(.category-grid) .game-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 /* 카테고리 모드 전용 게임 카드 디자인 */
@@ -507,15 +529,17 @@ body.category-mode-active .container {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* 카테고리 모드 이미지 (400:300 비율) */
+/* 카테고리 모드 이미지 (4:3 비율) */
 .category-grid .game-image {
     width: 100% !important;
-    height: 262.5px !important; /* 350px * 0.75 = 262.5px (4:3 비율) */
+    height: 0 !important;
+    padding-bottom: 75% !important; /* 4:3 비율 유지 */
     border-radius: 0 !important;
     overflow: hidden !important;
     background: var(--bg-card) !important;
     transition: all 0.3s ease !important;
     cursor: pointer !important;
+    position: relative !important;
 }
 
 .category-grid .game-image img {
@@ -586,6 +610,9 @@ body.category-mode-active .container {
 }
 
 .game-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -681,6 +708,8 @@ body.category-mode-active .container {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 200px;
+    justify-content: space-between;
 }
 
 .game-title {
@@ -697,6 +726,11 @@ body.category-mode-active .container {
     margin-bottom: 15px;
     flex: 1;
     transition: color 0.3s ease;
+    min-height: 60px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .game-meta {
@@ -792,7 +826,7 @@ body.category-mode-active .container {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 30px;
+    margin-top: 30px; /* PC 기본값 */
 }
 
 .indicator {
@@ -809,6 +843,28 @@ body.category-mode-active .container {
     transform: scale(1.2);
 }
 
+/* 모바일에서 슬라이더 버튼 숨기기 */
+@media (max-width: 768px), (max-height: 500px) {
+    .slider-controls {
+        display: none !important;
+    }
+}
+
+/* 모바일에서 슬라이더 스와이프 가능하도록 설정 */
+@media (max-width: 768px), (max-height: 500px) {
+    .games-slider {
+        overflow: hidden;
+        touch-action: pan-y pinch-zoom;
+    }
+    
+    .game-slide {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+}
+
 /* 푸터 */
 .footer {
     background: var(--bg-header);
@@ -816,7 +872,7 @@ body.category-mode-active .container {
     box-shadow: var(--shadow-primary);
     border-top: 1px solid var(--border-light);
     width: 100%;
-    margin-top: 40px;
+    margin-top: 60px;
     transition: all 0.3s ease;
 }
 
@@ -824,7 +880,7 @@ body.category-mode-active .container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 30px;
+    padding: 8px 30px;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -841,7 +897,7 @@ body.category-mode-active .container {
 .footer-center p {
     margin: 0;
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     transition: color 0.3s ease;
 }
 
@@ -969,6 +1025,117 @@ body.category-mode-active .container {
 }
 
 /* 반응형 디자인 */
+@media (max-width: 1100px) and (min-width: 890px) {
+    /* 890~1100px 구간에서 3개 게임이 한 줄에 들어가도록 조정 */
+    .games-slider .game-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+        gap: 20px !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-card {
+        width: 100% !important;
+        max-width: 250px !important;
+        margin: 0 !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-image {
+        height: 0 !important;
+        padding-bottom: 75% !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-image img {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    /* 게임 정보 텍스트 크기 조정 */
+    .games-slider .game-cards:not(.category-grid) .game-info {
+        padding: 14px !important;
+        min-height: 130px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-title {
+        font-size: 1.2rem !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
+        min-height: 26px !important;
+        overflow: visible !important;
+        display: block !important;
+        color: var(--text-card) !important;
+        font-weight: 600 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-description {
+        font-size: 0.85rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+        min-height: 42px !important;
+        overflow: hidden !important;
+        flex: 1 !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-meta {
+        font-size: 0.75rem !important;
+        margin-bottom: 8px !important;
+        min-height: 18px !important;
+        overflow: hidden !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .play-btn {
+        font-size: 0.85rem !important;
+        padding: 8px 16px !important;
+        height: 32px !important;
+        margin-top: auto !important;
+    }
+
+    /* 슬라이더 높이 조정 */
+    .games-slider {
+        height: 450px !important;
+        min-height: 450px !important;
+    }
+
+    .game-slide {
+        height: 450px !important;
+    }
+
+    .games-slider .game-cards {
+        height: 410px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    /* 인디케이터 마진 조정 */
+    .slide-indicators {
+        margin-top: 20px !important;
+    }
+
+    /* 컨테이너 패딩 조정 */
+    .games-container {
+        padding: 25px !important;
+        max-width: 100% !important;
+    }
+}
+
 @media (max-width: 1024px) {
     .game-cards {
         grid-template-columns: repeat(2, 1fr);
@@ -986,18 +1153,114 @@ body.category-mode-active .container {
 
     .header-container {
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
         padding: 15px 20px;
+        align-items: center;
+    }
+
+    /* Hide theme toggle in original position on mobile */
+    .theme-toggle {
+        display: none;
+    }
+
+    /* 로고와 테마 토글을 가로로 배치 */
+    .logo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .logo-link {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Show theme toggle inside logo container on mobile */
+    .logo .theme-toggle {
+        display: block;
+        margin-left: 10px;
+    }
+
+    .nav-menu {
+        display: flex; /* 모바일에서도 네비게이션 표시 */
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+        position: relative;
+        z-index: 1001; /* 헤더보다 위에 표시 */
     }
 
     body {
-        padding-top: 120px; /* 모바일에서 헤더 높이 증가 */
+        padding-top: 100px; /* 헤더 높이 증가 (카테고리 메뉴 추가) */
+    }
+
+    /* 모바일에서 카테고리 모드일 때 푸터 자동 바닥 배치 */
+    body.category-mode-active {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    body.category-mode-active .container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 5px;
+    }
+
+    body.category-mode-active .games-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body.category-mode-active .category-grid {
+        flex: 1;
+        max-height: none !important;
+        min-height: 0;
+    }
+
+    body.category-mode-active .footer {
+        margin-top: auto;
+        flex-shrink: 0;
+    }
+
+    /* 모바일에서 카테고리 링크 터치 영역 개선 */
+    .nav-link {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        min-height: 44px; /* 터치 영역 확대 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        position: relative; /* z-index를 위한 position 설정 */
+        z-index: 100; /* 다른 요소들보다 위에 표시 */
+        cursor: pointer; /* 커서 포인터 추가 */
+        user-select: none; /* 텍스트 선택 방지 */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        pointer-events: auto; /* 클릭 이벤트 명시적 활성화 */
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .nav-link:active {
+        transform: translateY(0);
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .footer-container {
         flex-direction: column;
-        gap: 10px;
-        padding: 15px 20px;
+        gap: 8px;
+        padding: 10px 20px;
         text-align: center;
     }
 
@@ -1006,30 +1269,111 @@ body.category-mode-active .container {
         gap: 15px;
     }
 
+    /* 모바일 네비게이션 개선 */
     .nav-list {
-        gap: 15px;
+        gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
-    }
-
-    .nav-link {
-        font-size: 0.9rem;
-        padding: 8px 12px;
     }
 
     .hero-content {
         height: 200px;
     }
 
-    .game-cards {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    /* 모바일 세로모드에서 카테고리 모드 hero 여백 줄이기 */
+    body.category-mode-active .hero {
+        margin-bottom: 10px !important;
+    }
+
+    /* 모바일 세로모드에서 카테고리 모드 hero-content 높이 줄이기 */
+    body.category-mode-active .hero-content {
+        height: 150px !important;
+        margin-top: 10px !important;
+    }
+
+    /* 메인 페이지 슬라이더의 게임 카드들을 모바일에서 동적으로 배치 */
+    /* 모바일 세로 모드에서 1개씩만 표시되도록 강제 설정 */
+    @media (max-width: 768px) and (orientation: portrait) {
+        .games-slider .game-cards {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+        }
+        
+        /* 모바일 세로 모드에서 게임 카드 크기 강제 조정 */
+        .games-slider .game-cards .game-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+    }
+    
+    /* 모바일 가로 모드에서만 2개씩 표시 */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .games-slider .game-cards {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+            gap: 15px;
+        }
+    }
+
+    /* 모바일 세로모드에서 메인 페이지 게임 카드 크기 조정 */
+    .game-cards:not(.category-grid) .game-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .game-cards:not(.category-grid) .game-image {
+        height: 0 !important;
+        padding-bottom: 75% !important; /* 4:3 비율 유지 */
+        width: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+
+    /* 모바일 세로모드에서 게임 정보 텍스트 크기 조정 */
+    .game-cards:not(.category-grid) .game-title {
+        font-size: 1.2rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .game-cards:not(.category-grid) .game-description {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 12px !important;
+        min-height: 40px !important;
+    }
+
+    .game-cards:not(.category-grid) .game-meta {
+        font-size: 0.8rem !important;
+        margin-bottom: 15px !important;
+    }
+
+    .game-cards:not(.category-grid) .play-btn {
+        font-size: 0.9rem !important;
+        padding: 10px 20px !important;
+        min-height: 40px !important;
     }
 
     .category-grid {
         max-height: 60vh;
-        gap: 20px;
-        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        padding: 5px;
+    }
+
+    /* 모바일 세로 모드에서 카테고리 그리드 1개씩 배치 */
+    @media (max-width: 768px) and (orientation: portrait) {
+        .category-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+            max-height: none;
+            overflow-y: auto;
+        }
+        
+        .category-grid .game-card {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
     }
 
     .category-grid .game-card {
@@ -1037,7 +1381,9 @@ body.category-mode-active .container {
     }
 
     .category-grid .game-image {
-        height: 210px !important; /* 280px * 0.75 = 210px */
+        height: 0 !important;
+        padding-bottom: 75% !important; /* 4:3 비율 유지 */
+        position: relative !important;
     }
 
     .category-grid .game-title {
@@ -1048,44 +1394,252 @@ body.category-mode-active .container {
         font-size: 0.85rem !important;
     }
 
+    /* 모바일 세로모드에서 슬라이더 높이 조정 */
     .games-slider {
-        height: auto;
+        height: 520px !important; /* 카드 높이(481px) + 인디케이터 마진(15px) + 인디케이터 높이(12px) + 여유공간(12px) */
+        min-height: 520px !important;
+    }
+    
+    .game-slide {
+        height: 520px !important;
+    }
+    
+    .games-slider .game-cards {
+        height: 493px !important; /* 카드 높이(481px) + 여유공간(12px) */
+    }
+
+    /* 모바일 세로모드에서 인디케이터 마진 줄이기 */
+    .slide-indicators {
+        margin-top: 15px !important;
     }
 
     .games-container {
-        padding: 20px;
+        padding: 10px;
     }
 
     .game-image {
-        height: 250px; /* 모바일에서 이미지 높이 증가 */
+        height: 0;
+        padding-bottom: 75%; /* 4:3 비율 유지 */
+        position: relative;
     }
 
     /* 모든게임 모드 반응형 이미지 비율 */
     .game-cards:not(.category-grid) .game-image {
-        height: 281px; /* 375px * 0.75 = 281px (4:3 비율) */
+        height: 0 !important;
+        padding-bottom: 75% !important; /* 4:3 비율 유지 */
+        width: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+    
+    .game-cards:not(.category-grid) .game-image img {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
     }
 
+    /* 슬라이더 버튼 터치 영역 확대 */
     .slider-btn {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
+        min-height: 44px;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .prev-btn {
-        left: -20px;
+        left: -25px;
     }
 
     .next-btn {
-        right: -20px;
+        right: -25px;
+    }
+
+    /* 게임 카드 터치 영역 개선 */
+    .play-btn {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 12px 20px;
+        border-radius: 8px;
+    }
+
+    /* 모바일 세로 모드에서 모바일 광고 표시 */
+    .desktop-ad,
+    .mobile-landscape-ad {
+        display: none !important;
+    }
+    
+    .mobile-portrait-ad {
+        display: block !important;
+    }
+    
+    /* 광고 슬라이더 모바일 최적화 */
+    .ad-image {
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        /* 모바일 GIF 최적화 */
+        will-change: transform;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        /* 모바일에서 GIF 성능 향상 */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+    }
+
+    /* 푸터 링크 터치 영역 확대 */
+    .footer-link {
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* 모바일 가로모드 (landscape) */
+@media (max-width: 900px) and (orientation: landscape) {
+    /* 모바일 가로 모드에서 모바일 가로 광고 표시 */
+    .desktop-ad,
+    .mobile-portrait-ad {
+        display: none !important;
+    }
+    
+    .mobile-landscape-ad {
+        display: block !important;
+    }
+    
+    /* 모바일 가로 모드 GIF 최적화 */
+    .mobile-landscape-ad .ad-image {
+        will-change: transform;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+    }
+    
+    /* 모바일 가로모드에서 동적 레이아웃 */
+    .games-slider .game-cards {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 15px !important; /* gap을 줄여서 공간 확보 */
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-card {
+        width: 100% !important;
+        max-width: 200px !important; /* 카드 너비 줄임 */
+        margin: 0 !important;
+        height: 100% !important;
+        min-width: 0 !important; /* 최소 너비 제거 */
+        flex-shrink: 1 !important; /* 카드가 축소될 수 있도록 */
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-image {
+        height: 0 !important;
+        padding-bottom: 75% !important; /* 4:3 비율 유지 */
+        width: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-image img {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    /* 모바일 가로모드에서 게임 정보 텍스트 크기 조정 */
+    .games-slider .game-cards:not(.category-grid) .game-info {
+        padding: 12px !important; /* 패딩 줄임 */
+        min-height: 120px !important; /* 텍스트 영역 높이 조정 */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 6px !important;
+        line-height: 1.3 !important;
+        min-height: 24px !important; /* 최소 높이 조정 */
+        overflow: visible !important; /* overflow 제거하여 제목이 보이도록 */
+        display: block !important;
+        color: var(--text-card) !important; /* 텍스트 색상 명시적 설정 */
+        font-weight: 600 !important; /* 제목 굵기 증가 */
+        visibility: visible !important; /* 가시성 명시적 설정 */
+        opacity: 1 !important; /* 투명도 명시적 설정 */
+        position: relative !important; /* 위치 명시적 설정 */
+        z-index: 1 !important; /* z-index 설정 */
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-description {
+        font-size: 0.8rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 6px !important;
+        min-height: 38px !important; /* 최소 높이 조정 */
+        overflow: hidden !important;
+        flex: 1 !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .game-meta {
+        font-size: 0.7rem !important;
+        margin-bottom: 6px !important;
+        min-height: 16px !important; /* 최소 높이 조정 */
+        overflow: hidden !important;
+    }
+
+    .games-slider .game-cards:not(.category-grid) .play-btn {
+        font-size: 0.8rem !important;
+        padding: 6px 12px !important;
+        height: 28px !important; /* 높이 조정 */
+        margin-top: auto !important;
+    }
+
+    /* 가로모드에서 슬라이더 높이 조정 */
+    .games-slider {
+        height: 400px !important; /* 게임카드 높이 조정 */
+        min-height: 400px !important;
+    }
+
+    .game-slide {
+        height: 400px !important;
+    }
+
+    .games-slider .game-cards {
+        height: 360px !important; /* 게임 카드만의 높이 조정 */
+        display: flex !important;
+        justify-content: center !important; /* 가운데 정렬 */
+        align-items: center !important;
+    }
+
+    /* 가로모드에서만 인디케이터 마진 줄이기 */
+    .slide-indicators {
+        margin-top: 0px !important;
+    }
+
+    /* 가로모드에서 컨테이너 패딩 조정 */
+    .games-container {
+        padding: 20px !important; /* 컨테이너 패딩 증가 */
+        max-width: 100% !important;
     }
 }
 
 @media (max-width: 480px) {
     .header-container {
         padding: 10px 15px;
+        align-items: center;
+        gap: 8px;
+        flex-direction: column;
     }
 
     body {
-        padding-top: 140px; /* 모바일에서 헤더 높이 더 증가 */
+        padding-top: 90px; /* 헤더 높이 증가 (카테고리 메뉴 추가) */
     }
 
     .logo-image {
@@ -1097,17 +1651,45 @@ body.category-mode-active .container {
         font-size: 1.2rem;
     }
 
-    .nav-list {
-        gap: 10px;
+    /* 로고와 테마 토글을 가로로 배치 */
+    .logo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .logo-link {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Show theme toggle inside logo container on mobile */
+    .logo .theme-toggle {
+        display: block;
+        margin-left: 8px;
+    }
+
+    /* 작은 화면에서도 네비게이션 표시 */
+    .nav-menu {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+        position: relative;
+        z-index: 1001; /* 헤더보다 위에 표시 */
     }
 
     .nav-link {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         padding: 6px 10px;
+        min-height: 32px;
+        border-radius: 5px;
     }
 
     .hero {
-        padding: 40px 0;
+        padding: 0;
     }
 
     .hero-content {
@@ -1115,20 +1697,23 @@ body.category-mode-active .container {
     }
 
     .games-container {
-        padding: 15px;
+        padding: 12px;
     }
 
     .category-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        padding: 8px;
     }
 
     .category-grid .game-card {
-        max-width: 320px !important;
+        max-width: 280px !important;
     }
 
     .category-grid .game-image {
-        height: 240px !important; /* 320px * 0.75 = 240px */
+        height: 0 !important;
+        padding-bottom: 75% !important; /* 4:3 비율 유지 */
+        position: relative !important;
     }
 
     .category-grid .game-title {
@@ -1148,7 +1733,45 @@ body.category-mode-active .container {
         padding: 15px;
     }
 
+    /* 작은 화면에서 슬라이더 버튼 숨김 */
     .slider-controls {
         display: none;
+    }
+
+    /* 터치 제스처를 위한 스와이프 힌트 */
+    .games-slider {
+        position: relative;
+    }
+
+    .games-slider::after {
+        content: '← 스와이프 →';
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: var(--text-secondary);
+        opacity: 0.7;
+    }
+
+    /* 게임 카드 터치 피드백 */
+    .game-card {
+        transition: transform 0.2s ease;
+    }
+
+    .game-card:active {
+        transform: scale(0.98);
+    }
+
+    /* 버튼 터치 피드백 */
+    .play-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* 터치 영역 확대 */
+    .play-btn {
+        min-height: 48px;
+        font-size: 16px;
+        padding: 14px 24px;
     }
 } 

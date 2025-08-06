@@ -1,3 +1,134 @@
+// PC 반응형 게임 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 초기 CSS 변수 설정
+    setupInitialCSS();
+    
+    // 반응형 CSS 변수 설정
+    setupResponsiveCSS();
+    
+    // 게임 시작
+    new PuzzleGame();
+});
+
+// 초기 CSS 변수 설정 함수
+function setupInitialCSS() {
+    // 초기값 설정 (최대 크기 기준)
+    document.documentElement.style.setProperty('--base-padding', '40px');
+    document.documentElement.style.setProperty('--base-gap', '35px');
+    document.documentElement.style.setProperty('--grid-cell-size', '80px');
+    document.documentElement.style.setProperty('--piece-cell-size', '70px');
+    document.documentElement.style.setProperty('--font-size-large', '3em');
+    document.documentElement.style.setProperty('--font-size-medium', '18px');
+    document.documentElement.style.setProperty('--font-size-small', '14px');
+    document.documentElement.style.setProperty('--body-padding', '2vw');
+    document.documentElement.style.setProperty('--btn-padding-x', '24px');
+    document.documentElement.style.setProperty('--btn-padding-y', '12px');
+    document.documentElement.style.setProperty('--btn-font-size', '16px');
+    document.documentElement.style.setProperty('--btn-gap', '20px');
+    document.documentElement.style.setProperty('--grid-gap', '2px');
+    document.documentElement.style.setProperty('--grid-border-width', '2px');
+    document.documentElement.style.setProperty('--grid-border-width-hover', '3px');
+    document.documentElement.style.setProperty('--puzzle-area-min-width', '250px');
+    document.documentElement.style.setProperty('--puzzle-area-h3-margin', '20px');
+    document.documentElement.style.setProperty('--puzzle-area-h3-font-size', '1.5em');
+    document.documentElement.style.setProperty('--game-info-min-width', '340px');
+    document.documentElement.style.setProperty('--center-info-gap', '20px');
+    document.documentElement.style.setProperty('--mobile-grid-cell-size', '60px');
+    document.documentElement.style.setProperty('--mobile-piece-cell-size', '55px');
+    
+    // 새로운 gap 변수들 초기 설정
+    document.documentElement.style.setProperty('--game-board-gap', '20px');
+    document.documentElement.style.setProperty('--puzzle-pieces-gap', '15px');
+    document.documentElement.style.setProperty('--puzzle-area-gap', '20px');
+    document.documentElement.style.setProperty('--piece-grid-gap', '2px');
+    document.documentElement.style.setProperty('--popup-stats-gap', '15px');
+    document.documentElement.style.setProperty('--popup-buttons-gap', '10px');
+}
+
+// 반응형 CSS 변수 설정 함수
+function setupResponsiveCSS() {
+    const updateCSSVariables = () => {
+        const container = document.querySelector('.container');
+        if (!container) return;
+        
+        const containerWidth = container.offsetWidth;
+        const maxWidth = 1780; // 최대 컨테이너 너비
+        
+        // 순수 비례 스케일 계산 (사용자가 원하는 대로 완전한 비례)
+        const scale = containerWidth / maxWidth;
+        
+        // 스케일에 따른 값 계산 (순수 비례)
+        const basePadding = 40 * scale;
+        const baseGap = 35 * scale;
+        const gridCellSize = 80 * scale;
+        const pieceCellSize = 70 * scale; // 원래 크기로 복원
+        const fontSizeLarge = 3 * scale;
+        const fontSizeMedium = 18 * scale;
+        const fontSizeSmall = 14 * scale;
+        const bodyPadding = 2 * scale;
+        const btnPaddingX = 24 * scale;
+        const btnPaddingY = 12 * scale;
+        const btnFontSize = 16 * scale;
+        const btnGap = 20 * scale;
+        const gridGap = 2 * scale;
+        const gridBorderWidth = 2 * scale;
+        const gridBorderWidthHover = 3 * scale;
+        const puzzleAreaWidth = 250 * scale;
+        const puzzleAreaH3Margin = 20 * scale;
+        const puzzleAreaH3FontSize = 1.5 * scale;
+        const gameInfoMinWidth = 340 * scale;
+        const centerInfoGap = 20 * scale;
+        const mobileGridCellSize = 60 * scale;
+        const mobilePieceCellSize = 55 * scale; // 원래 크기로 복원
+        
+        // 새로운 gap 변수들 추가
+        const gameBoardGap = 20 * scale;
+        const puzzlePiecesGap = 15 * scale;
+        const puzzleAreaGap = 20 * scale;
+        const pieceGridGap = 2 * scale;
+        const popupStatsGap = 15 * scale;
+        const popupButtonsGap = 10 * scale;
+        
+        // CSS 변수 설정
+        document.documentElement.style.setProperty('--base-padding', `${basePadding}px`);
+        document.documentElement.style.setProperty('--base-gap', `${baseGap}px`);
+        document.documentElement.style.setProperty('--grid-cell-size', `${gridCellSize}px`);
+        document.documentElement.style.setProperty('--piece-cell-size', `${pieceCellSize}px`);
+        document.documentElement.style.setProperty('--font-size-large', `${fontSizeLarge}em`);
+        document.documentElement.style.setProperty('--font-size-medium', `${fontSizeMedium}px`);
+        document.documentElement.style.setProperty('--font-size-small', `${fontSizeSmall}px`);
+        document.documentElement.style.setProperty('--body-padding', `${bodyPadding}vw`);
+        document.documentElement.style.setProperty('--btn-padding-x', `${btnPaddingX}px`);
+        document.documentElement.style.setProperty('--btn-padding-y', `${btnPaddingY}px`);
+        document.documentElement.style.setProperty('--btn-font-size', `${btnFontSize}px`);
+        document.documentElement.style.setProperty('--btn-gap', `${btnGap}px`);
+        document.documentElement.style.setProperty('--grid-gap', `${gridGap}px`);
+        document.documentElement.style.setProperty('--grid-border-width', `${gridBorderWidth}px`);
+        document.documentElement.style.setProperty('--grid-border-width-hover', `${gridBorderWidthHover}px`);
+        document.documentElement.style.setProperty('--puzzle-area-min-width', `${puzzleAreaWidth}px`);
+        document.documentElement.style.setProperty('--puzzle-area-h3-margin', `${puzzleAreaH3Margin}px`);
+        document.documentElement.style.setProperty('--puzzle-area-h3-font-size', `${puzzleAreaH3FontSize}em`);
+        document.documentElement.style.setProperty('--game-info-min-width', `${gameInfoMinWidth}px`);
+        document.documentElement.style.setProperty('--center-info-gap', `${centerInfoGap}px`);
+        document.documentElement.style.setProperty('--mobile-grid-cell-size', `${mobileGridCellSize}px`);
+        document.documentElement.style.setProperty('--mobile-piece-cell-size', `${mobilePieceCellSize}px`);
+        
+        // 새로운 gap 변수들 설정
+        document.documentElement.style.setProperty('--game-board-gap', `${gameBoardGap}px`);
+        document.documentElement.style.setProperty('--puzzle-pieces-gap', `${puzzlePiecesGap}px`);
+        document.documentElement.style.setProperty('--puzzle-area-gap', `${puzzleAreaGap}px`);
+        document.documentElement.style.setProperty('--piece-grid-gap', `${pieceGridGap}px`);
+        document.documentElement.style.setProperty('--popup-stats-gap', `${popupStatsGap}px`);
+        document.documentElement.style.setProperty('--popup-buttons-gap', `${popupButtonsGap}px`);
+    };
+    
+    // 초기 설정
+    updateCSSVariables();
+    
+    // 리사이즈 이벤트 리스너
+    window.addEventListener('resize', updateCSSVariables);
+}
+
 class PuzzleGame {
     constructor() {
         this.grid = Array(16).fill(null);
@@ -21,6 +152,8 @@ class PuzzleGame {
 
         // 이전 스테이지 퍼즐 조합 기억 (중복 방지용)
         this.previousPuzzleCombinations = new Set();
+
+
 
         this.init();
     }
@@ -59,6 +192,14 @@ class PuzzleGame {
             });
         }
 
+        // 메인으로 가기 버튼
+        const mainMenuBtn = this.getElement('main-menu-btn');
+        if (mainMenuBtn) {
+            mainMenuBtn.addEventListener('click', () => {
+                this.goToMainPage();
+            });
+        }
+
         // 전역 드래그 이벤트들
         document.addEventListener('dragstart', (e) => this.onDragStart(e));
         document.addEventListener('dragover', (e) => this.onDragOver(e));
@@ -66,6 +207,12 @@ class PuzzleGame {
         document.addEventListener('dragleave', (e) => this.onDragLeave(e));
         document.addEventListener('drop', (e) => this.onDrop(e));
         document.addEventListener('dragend', (e) => this.onDragEnd(e));
+
+        // 터치 이벤트들 (모바일 지원) - 전체 문서에 바인딩
+        document.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+        document.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+        document.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: false });
+        document.addEventListener('touchcancel', (e) => this.onTouchCancel(e), { passive: false });
     }
 
     setupPopupEventListeners() {
@@ -122,7 +269,7 @@ class PuzzleGame {
         label.style.display = 'none'; // 라벨 숨김
         label.draggable = false;
 
-        // 퍼즐 그리드
+        // 퍼즐 그리드 - 동적으로 설정
         const pieceGrid = document.createElement('div');
         pieceGrid.className = 'piece-grid';
         pieceGrid.style.display = 'grid';
@@ -149,34 +296,8 @@ class PuzzleGame {
                     const cellIndexInPuzzle = puzzle.shape.findIndex(([r, c]) => r === row && c === col);
                     cell.dataset.cellIndex = cellIndexInPuzzle;
                     
-                    // 셀 드래그 이벤트
-                    cell.addEventListener('dragstart', (e) => {
-                        e.stopPropagation();
-                        this.currentDragging = id;
-                        this.grabbedCellIndex = cellIndexInPuzzle;
-                        container.classList.add('dragging');
-                        
-                        // 클릭한 정확한 위치 계산 (셀 내에서의 상대 위치)
-                        const cellRect = cell.getBoundingClientRect();
-                        this.clickOffsetX = e.clientX - cellRect.left;
-                        this.clickOffsetY = e.clientY - cellRect.top;
-                        
-                        this.createDragPreview(puzzle, id, pieceColor, e);
-                        
-                        const emptyImg = new Image();
-                        emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
-                        e.dataTransfer.setDragImage(emptyImg, 0, 0);
-                        
-                        e.dataTransfer.setData('text/plain', id);
-                        e.dataTransfer.effectAllowed = 'move';
-                    });
-                    
-                    cell.addEventListener('dragend', (e) => {
-                        e.stopPropagation();
-                        container.classList.remove('dragging');
-                        this.currentDragging = null;
-                        this.removeDragPreview();
-                    });
+                    // 셀 드래그 이벤트 제거 - 전체 문서 이벤트 리스너만 사용
+                    // 개별 셀 이벤트 리스너가 터치 이벤트와 충돌하여 0번 퍼즐 문제 발생
                 } else {
                     cell.style.opacity = '0';
                     cell.style.background = 'transparent';
@@ -867,6 +988,39 @@ class PuzzleGame {
                     e.preventDefault();
                     this.startGridDrag(e, cell, index, pieceId, puzzle);
                 });
+                
+                // 터치로 드래그 시작 (모바일 지원)
+                cell.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // 이벤트 전파 중단으로 중복 호출 방지
+                    const touch = e.touches[0];
+                    // 터치 이벤트를 마우스 이벤트처럼 변환
+                    const mouseEvent = {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        preventDefault: () => e.preventDefault()
+                    };
+                    this.startGridDrag(mouseEvent, cell, index, pieceId, puzzle);
+                }, { passive: false });
+                
+                // 터치 이동 이벤트 (모바일 드래그 프리뷰용)
+                cell.addEventListener('touchmove', (e) => {
+                    if (this.currentDragging === pieceId) {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        if (this.updateDragPreviewPosition) {
+                            this.updateDragPreviewPosition(e);
+                        }
+                    }
+                }, { passive: false });
+                
+                // 터치 종료 이벤트 (모바일 드롭 처리용)
+                cell.addEventListener('touchend', (e) => {
+                    if (this.currentDragging === pieceId) {
+                        e.preventDefault();
+                        this.handleMouseUp(e);
+                    }
+                }, { passive: false });
             }
         });
     }
@@ -933,8 +1087,21 @@ class PuzzleGame {
             }
         };
         
+        // 터치 이벤트 (모바일 지원) - 그리드 셀 드래그를 위해 다시 활성화
+        this.touchMoveHandler = (e) => {
+            if (this.updateDragPreviewPosition) {
+                this.updateDragPreviewPosition(e);
+            }
+        };
+        
+        this.touchEndHandler = (e) => {
+            this.handleMouseUp(e);
+        };
+        
         document.addEventListener('mouseup', this.mouseUpHandler);
         document.addEventListener('mousemove', this.mouseMoveHandler);
+        document.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', this.touchEndHandler, { passive: false });
     }
 
     // 마우스 드래그 이벤트 해제
@@ -947,10 +1114,23 @@ class PuzzleGame {
             document.removeEventListener('mousemove', this.mouseMoveHandler);
             this.mouseMoveHandler = null;
         }
+        if (this.touchMoveHandler) {
+            document.removeEventListener('touchmove', this.touchMoveHandler);
+            this.touchMoveHandler = null;
+        }
+        if (this.touchEndHandler) {
+            document.removeEventListener('touchend', this.touchEndHandler);
+            this.touchEndHandler = null;
+        }
     }
 
     // 마우스 업 처리
     handleMouseUp(e) {
+        // currentDragging이 null이면 처리하지 않음 (중복 이벤트 방지)
+        if (this.currentDragging === null || this.currentDragging === undefined) {
+            return;
+        }
+        
         // 커서 복원
         document.body.style.cursor = '';
         
@@ -959,8 +1139,30 @@ class PuzzleGame {
             return; // 게임이 비활성화되면 처리 중단
         }
         
+        // 터치 이벤트와 마우스 이벤트 모두 대응
+        let clientX, clientY;
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            // 터치 이벤트
+            clientX = e.changedTouches[0].clientX;
+            clientY = e.changedTouches[0].clientY;
+        } else if (e.touches && e.touches.length > 0) {
+            // 터치 이벤트 (touchend에서)
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            // 마우스 이벤트
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        // 유효한 좌표인지 확인
+        if (isNaN(clientX) || isNaN(clientY) || !isFinite(clientX) || !isFinite(clientY)) {
+            this.finishDrag();
+            return;
+        }
+        
         // 드롭할 위치 찾기
-        const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+        const elementBelow = document.elementFromPoint(clientX, clientY);
         
         let targetCell = null;
         if (elementBelow && elementBelow.classList.contains('grid-cell')) {
@@ -999,7 +1201,22 @@ class PuzzleGame {
     // 드래그 완료 정리
     finishDrag() {
         this.removeDragPreview();
-        this.unbindMouseDragEvents();
+        
+        // 마우스 이벤트 언바인딩 (PC에서만 필요)
+        if (this.updateDragPreviewPosition) {
+            this.unbindMouseDragEvents();
+        }
+        
+        // 터치용 업데이트 함수 정리
+        this.updateTouchDragPreviewPosition = null;
+        
+        // dragging 클래스 제거
+        if (this.currentDragging !== null) {
+            const puzzleElement = document.querySelector(`[data-puzzle-id="${this.currentDragging}"]`);
+            if (puzzleElement) {
+                puzzleElement.classList.remove('dragging');
+            }
+        }
         
         this.currentDragging = null;
         this.dragFromGrid = false;
@@ -1035,10 +1252,18 @@ class PuzzleGame {
                 this.clickOffsetY = e.clientY - cellRect.top;
             } else {
                 // piece-cell이 아닌 경우 (라벨 등) 기본값 설정
-                const cellSize = window.innerWidth <= 768 ? 55 : 70;
+                // CSS 변수에서 실제 셀 크기 가져오기
+                const computedStyle = getComputedStyle(document.documentElement);
+                const cellSize = parseFloat(computedStyle.getPropertyValue('--piece-cell-size')) || 70;
                 this.clickOffsetX = cellSize / 2;
                 this.clickOffsetY = cellSize / 2;
             }
+            
+            // 드래그 프리뷰 생성 (PC용)
+            const puzzle = this.puzzlePieces[this.currentDragging];
+            const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
+            const pieceColor = colors[this.currentDragging % colors.length];
+            this.createDragPreview(puzzle, this.currentDragging, pieceColor, e);
             
             const emptyImg = new Image();
             emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
@@ -1060,9 +1285,13 @@ class PuzzleGame {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         
-        const cellSize = window.innerWidth <= 768 ? 55 : 70;
-        const col = Math.floor(x / cellSize);
-        const row = Math.floor(y / cellSize);
+        // 실제 셀 크기 계산 (CSS 변수 대신 실제 DOM 크기 사용)
+        const gridRect = pieceGrid.getBoundingClientRect();
+        const cellWidth = gridRect.width / (bounds.maxCol - bounds.minCol + 1);
+        const cellHeight = gridRect.height / (bounds.maxRow - bounds.minRow + 1);
+        
+        const col = Math.floor(x / cellWidth);
+        const row = Math.floor(y / cellHeight);
         
         const absoluteRow = bounds.minRow + row;
         const absoluteCol = bounds.minCol + col;
@@ -1132,10 +1361,6 @@ class PuzzleGame {
 
             this.placePuzzle(puzzle, cellIndex);
             
-            if (!this.dragFromGrid) {
-                this.showPuzzlePieceAsPlaced(puzzleId);
-            }
-            
             // 성공적으로 배치된 경우 플래그 설정 및 드래그 상태 완전 초기화
             this.dropSuccessful = true;
             this.removeDragPreview();
@@ -1162,22 +1387,28 @@ class PuzzleGame {
     }
 
     onDragEnd(e) {
-
-        
-        if (e.target.classList.contains('puzzle-piece')) {
-            e.target.classList.remove('dragging');
+        // 정확한 퍼즐 조각에서 dragging 클래스 제거 (모바일과 동일)
+        if (this.currentDragging !== null) {
+            const puzzleElement = document.querySelector(`[data-puzzle-id="${this.currentDragging}"]`);
+            if (puzzleElement) {
+                puzzleElement.classList.remove('dragging');
+            }
         }
         
         // 드래그 프리뷰 강제 제거
         this.removeDragPreview();
         
         // 성공적으로 배치된 경우는 복원하지 않음
-        if (!this.dropSuccessful && this.dragFromGrid && this.currentDragging !== null) {
-            
-            this.restoreOriginalPosition();
-            this.updateStatus('퍼즐 조각이 원래 위치로 되돌아갔습니다.');
-        } else if (this.dropSuccessful) {
-
+        if (!this.dropSuccessful && this.currentDragging !== null) {
+            if (this.dragFromGrid) {
+                // 그리드에서 드래그한 경우 원래 위치로 복원
+                this.restoreOriginalPosition();
+                this.updateStatus('퍼즐 조각이 원래 위치로 되돌아갔습니다.');
+            } else {
+                // 퍼즐 영역에서 드래그했는데 실패한 경우, 퍼즐 조각을 원래 상태로 복원 (모바일과 동일)
+                this.showPuzzlePieceAsAvailable(this.currentDragging);
+                this.updateStatus('퍼즐 조각이 원래 위치로 되돌아갔습니다.');
+            }
         }
         
         // 모든 드래그 상태 초기화
@@ -1193,9 +1424,17 @@ class PuzzleGame {
 
     // 드래그 프리뷰 생성 (클릭한 정확한 위치 반영)
     createDragPreview(puzzle, id, color, mouseEvent) {
+        // 이미 프리뷰가 생성 중이면 중복 호출 방지
+        if (this.previewCells) {
+            return;
+        }
+        
         this.removeDragPreview();
         
-        const cellSize = window.innerWidth <= 768 ? 55 : 70;
+        // CSS 변수에서 현재 셀 크기 가져오기
+        const computedStyle = getComputedStyle(document.documentElement);
+        const cellSize = parseFloat(computedStyle.getPropertyValue('--piece-cell-size')) || 70;
+        
         const grabbedCell = puzzle.shape[this.grabbedCellIndex];
         const [grabbedRow, grabbedCol] = grabbedCell;
         
@@ -1205,6 +1444,12 @@ class PuzzleGame {
         puzzle.shape.forEach(([row, col], shapeIndex) => {
             const cell = document.createElement('div');
             cell.className = 'preview-cell';
+            
+            // 모바일에서 애니메이션 클래스 추가
+            if (window.innerWidth <= 768) {
+                cell.classList.add('mobile');
+            }
+            
             cell.style.position = 'fixed';
             cell.style.width = `${cellSize}px`;
             cell.style.height = `${cellSize}px`;
@@ -1262,8 +1507,41 @@ class PuzzleGame {
                     const offsetX = parseFloat(cell.dataset.offsetX);
                     const offsetY = parseFloat(cell.dataset.offsetY);
                     
-                    const cellX = e.clientX + offsetX;
-                    const cellY = e.clientY + offsetY;
+                    // 터치 이벤트와 마우스 이벤트 모두 대응
+                    let clientX, clientY;
+                    if (e.touches && e.touches.length > 0) {
+                        // 터치 이벤트
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        // 마우스 이벤트
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
+                    // 유효한 좌표인지 확인
+                    if (isNaN(clientX) || isNaN(clientY) || !isFinite(clientX) || !isFinite(clientY)) {
+                        return;
+                    }
+                    
+                    const cellX = clientX + offsetX;
+                    const cellY = clientY + offsetY;
+                    
+                    cell.style.left = `${cellX}px`;
+                    cell.style.top = `${cellY}px`;
+                });
+            }
+        };
+        
+        // 터치 이벤트용 업데이트 함수 추가
+        this.updateTouchDragPreviewPosition = (clientX, clientY) => {
+            if (this.previewCells) {
+                this.previewCells.forEach(cell => {
+                    const offsetX = parseFloat(cell.dataset.offsetX);
+                    const offsetY = parseFloat(cell.dataset.offsetY);
+                    
+                    const cellX = clientX + offsetX;
+                    const cellY = clientY + offsetY;
                     
                     cell.style.left = `${cellX}px`;
                     cell.style.top = `${cellY}px`;
@@ -1274,6 +1552,8 @@ class PuzzleGame {
         // 마우스 이벤트와 드래그 이벤트 모두에 대응
         document.addEventListener('mousemove', this.updateDragPreviewPosition);
         document.addEventListener('dragover', this.updateDragPreviewPosition);
+        // 터치 이벤트도 추가
+        document.addEventListener('touchmove', this.updateDragPreviewPosition, { passive: false });
     }
 
     // 드래그 프리뷰 제거
@@ -1304,12 +1584,16 @@ class PuzzleGame {
         if (this.updateDragPreviewPosition) {
             document.removeEventListener('mousemove', this.updateDragPreviewPosition);
             document.removeEventListener('dragover', this.updateDragPreviewPosition);
+            document.removeEventListener('touchmove', this.updateDragPreviewPosition);
             this.updateDragPreviewPosition = null;
         }
     }
 
     // 퍼즐 배치 가능 여부 확인
     canPlacePuzzle(puzzle, dropIndex) {
+        if (!puzzle) {
+            return false;
+        }
         const positions = this.getPuzzlePositions(dropIndex, puzzle);
         return positions.every(pos => {
             return pos !== -1 && this.grid[pos] === null;
@@ -1356,6 +1640,7 @@ class PuzzleGame {
         puzzle.position = dropIndex;
         
         this.updateGridDisplay();
+        this.showPuzzlePieceAsPlaced(puzzle.id); // 퍼즐 비활성화 추가
     }
 
     // 그리드 표시 업데이트
@@ -1407,6 +1692,7 @@ class PuzzleGame {
             pieceElement.style.transform = 'scale(1)';
             pieceElement.style.pointerEvents = 'auto';
             pieceElement.classList.remove('placed');
+            pieceElement.classList.remove('dragging'); // dragging 클래스도 제거
         }
     }
 
@@ -1644,9 +1930,249 @@ class PuzzleGame {
     clearElementCache() {
         this._elementCache = {};
     }
-}
 
-// 게임 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    new PuzzleGame();
-}); 
+               // 터치 이벤트 처리 (모바일 지원)
+                   onTouchStart(e) {
+            if (e.touches.length === 1 && this.gameActive) {
+                const touch = e.touches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                // 버튼이나 링크 클릭은 방해하지 않음
+                if (element && (element.tagName === 'BUTTON' || element.tagName === 'A' || element.closest('button') || element.closest('a'))) {
+                    return;
+                }
+                
+                // 이미 드래그 중인 퍼즐이 있으면 무시 (0도 유효한 값이므로 정확히 체크)
+                if (this.currentDragging !== null && this.currentDragging !== undefined) {
+                    return;
+                }
+            
+                                               // 그리드 셀에서 드래그 시작 (PC의 startGridDrag와 동일)
+                if (element && element.classList.contains('grid-cell') && this.grid[parseInt(element.dataset.index)] !== null) {
+                    e.preventDefault();
+                    const cellIndex = parseInt(element.dataset.index);
+                    const pieceId = this.grid[cellIndex];
+                    const puzzle = this.puzzlePieces[pieceId];
+                
+                    // PC의 startGridDrag와 동일한 로직
+                    this.currentDragging = pieceId;
+                    this.dragFromGrid = true;
+                    this.dropSuccessful = false;
+                    this.originalGridState = [...this.grid];
+                    
+                    // grabbedCellIndex 계산
+                    this.calculateGridGrabbedCell(cellIndex, pieceId);
+                    
+                    // 클릭한 정확한 위치 계산 (셀 내에서의 상대 위치)
+                    const cellRect = element.getBoundingClientRect();
+                    this.clickOffsetX = touch.clientX - cellRect.left;
+                    this.clickOffsetY = touch.clientY - cellRect.top;
+                    
+                    // 그리드에서 임시 제거
+                    this.temporarilyRemoveFromGrid(pieceId);
+                    
+                    // 프리뷰 생성 (grabbedCellIndex가 설정된 후 호출)
+                    const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
+                    const pieceColor = colors[pieceId % colors.length];
+                    this.createDragPreview(puzzle, pieceId, pieceColor, { clientX: touch.clientX, clientY: touch.clientY, type: 'touch' });
+                    
+                    // 마우스 커서 변경
+                    element.style.cursor = 'grabbing';
+                    document.body.style.cursor = 'grabbing';
+                    
+                    this.updateStatus('퍼즐 조각을 새로운 위치에 놓으세요!');
+                    
+                    // 모바일에서는 마우스 이벤트 바인딩 제거 (터치 이벤트만 사용)
+                }
+                               // 퍼즐 조각에서 드래그 시작 (PC의 onDragStart와 동일)
+                                   else if (element && (element.classList.contains('piece-cell') || element.classList.contains('puzzle-piece'))) {
+                    e.preventDefault();
+                    let puzzleElement = element;
+                    if (element.classList.contains('piece-cell')) {
+                        puzzleElement = element.closest('.puzzle-piece');
+                    }
+                    
+                    // 터치 이벤트 전파 중단 (컨테이너로 전파되지 않도록)
+                    e.stopPropagation();
+                    
+                    // 이미 dragging 상태인 퍼즐은 무시 (클래스와 상태 모두 체크)
+                    if (puzzleElement.classList.contains('dragging') || this.currentDragging !== null) {
+                        return;
+                    }
+                    
+                    // 비활성화된 퍼즐(placed)은 드래그하지 않음
+                    if (puzzleElement.classList.contains('placed')) {
+                        return;
+                    }
+                
+                this.currentDragging = parseInt(puzzleElement.dataset.puzzleId);
+                this.dragFromGrid = false;
+                this.dropSuccessful = false;
+                puzzleElement.classList.add('dragging');
+                
+                // 클릭 오프셋 계산 (PC와 동일)
+                if (element.classList.contains('piece-cell')) {
+                    const cellRect = element.getBoundingClientRect();
+                    this.clickOffsetX = touch.clientX - cellRect.left;
+                    this.clickOffsetY = touch.clientY - cellRect.top;
+                } else {
+                    // CSS 변수에서 실제 셀 크기 가져오기
+                    const computedStyle = getComputedStyle(document.documentElement);
+                    const cellSize = parseFloat(computedStyle.getPropertyValue('--piece-cell-size')) || 70;
+                    this.clickOffsetX = cellSize / 2;
+                    this.clickOffsetY = cellSize / 2;
+                }
+                
+                this.grabbedCellIndex = this.calculateGrabbedCell({ clientX: touch.clientX, clientY: touch.clientY }, puzzleElement);
+                
+                // 드래그 프리뷰 생성 (PC와 동일)
+                const puzzle = this.puzzlePieces[this.currentDragging];
+                const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
+                const pieceColor = colors[this.currentDragging % colors.length];
+                this.createDragPreview(puzzle, this.currentDragging, pieceColor, { clientX: touch.clientX, clientY: touch.clientY });
+                
+                this.updateStatus('퍼즐 조각을 새로운 위치에 놓으세요!');
+            }
+                            // 퍼즐 조각을 찾지 못한 경우, 더 넓은 범위에서 검색
+                else {
+                    // 터치 지점 주변에서 퍼즐 조각 찾기 (비활성화된 퍼즐 제외)
+                    const puzzleElements = document.querySelectorAll('.puzzle-piece:not(.dragging):not(.placed)');
+                    for (let puzzleEl of puzzleElements) {
+                        const rect = puzzleEl.getBoundingClientRect();
+                        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                            
+                            e.preventDefault();
+                            this.currentDragging = parseInt(puzzleEl.dataset.puzzleId);
+                            this.dragFromGrid = false;
+                            this.dropSuccessful = false;
+                            puzzleEl.classList.add('dragging');
+                            
+                            // 클릭 오프셋 계산
+                            // CSS 변수에서 실제 셀 크기 가져오기
+                            const computedStyle = getComputedStyle(document.documentElement);
+                            const cellSize = parseFloat(computedStyle.getPropertyValue('--piece-cell-size')) || 70;
+                            this.clickOffsetX = cellSize / 2;
+                            this.clickOffsetY = cellSize / 2;
+                            
+                            this.grabbedCellIndex = this.calculateGrabbedCell({ clientX: touch.clientX, clientY: touch.clientY }, puzzleEl);
+                            
+                            // 드래그 프리뷰 생성
+                            const puzzle = this.puzzlePieces[this.currentDragging];
+                            const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
+                            const pieceColor = colors[this.currentDragging % colors.length];
+                            this.createDragPreview(puzzle, this.currentDragging, pieceColor, { clientX: touch.clientX, clientY: touch.clientY });
+                            
+                            this.updateStatus('퍼즐 조각을 새로운 위치에 놓으세요!');
+                            break;
+                        }
+                    }
+                }
+        }
+    }
+
+    onTouchMove(e) {
+        if (this.currentDragging !== null && this.currentDragging !== undefined && e.touches.length === 1 && this.gameActive) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            
+            // 드래그 프리뷰 위치 업데이트 (터치용 함수 사용)
+            if (this.updateTouchDragPreviewPosition) {
+                this.updateTouchDragPreviewPosition(touch.clientX, touch.clientY);
+            }
+            
+            // 드롭 존 하이라이트 업데이트 (PC와 동일)
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('grid-cell')) {
+                const gridIndex = parseInt(element.dataset.index);
+                const puzzle = this.puzzlePieces[this.currentDragging];
+                
+                // canPlacePuzzle 호출 제거 - 성능 문제 해결
+                // 단순히 드롭 존만 하이라이트
+                this.highlightDropZone(gridIndex, puzzle, 'drop-zone');
+            } else {
+                this.clearHighlights();
+            }
+        }
+    }
+
+    onTouchEnd(e) {
+        if (this.currentDragging !== null && this.currentDragging !== undefined && this.gameActive) {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            
+            // 커서 복원 (PC와 동일)
+            document.body.style.cursor = '';
+            
+            if (!this.gameActive) {
+                this.finishDrag();
+                return; // 게임이 비활성화되면 처리 중단
+            }
+            
+            // 드롭할 위치 찾기 (PC와 동일)
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            let targetCell = null;
+            if (elementBelow && elementBelow.classList.contains('grid-cell')) {
+                targetCell = elementBelow;
+            } else if (elementBelow && elementBelow.closest('.grid-cell')) {
+                targetCell = elementBelow.closest('.grid-cell');
+            }
+            
+            if (targetCell) {
+                const cellIndex = parseInt(targetCell.dataset.index);
+                const puzzle = this.puzzlePieces[this.currentDragging];
+                
+                if (this.canPlacePuzzle(puzzle, cellIndex)) {
+                    this.placePuzzle(puzzle, cellIndex);
+                    this.dropSuccessful = true;
+                    this.updateStatus('퍼즐 조각이 배치되었습니다!');
+                    this.checkGameComplete();
+                } else {
+                    this.restoreOriginalPosition();
+                    this.updateStatus('그 위치에는 놓을 수 없습니다. 원래 위치로 되돌렸습니다.');
+                }
+            } else {
+                // 그리드 밖으로 드래그한 경우 - 배치 취소
+                if (this.dragFromGrid) {
+                    this.removePieceFromGrid(this.currentDragging);
+                    this.updateStatus('퍼즐 조각을 그리드에서 제거했습니다.');
+                } else {
+                    // 퍼즐 영역에서 드래그했는데 그리드 밖으로 놓은 경우, 퍼즐 조각을 원래 상태로 복원
+                    this.showPuzzlePieceAsAvailable(this.currentDragging);
+                    this.updateStatus('퍼즐 조각이 원래 위치로 되돌아갔습니다.');
+                }
+            }
+            
+            // dragging 클래스 제거 (터치 이벤트에서 누락된 부분)
+            const puzzleElement = document.querySelector(`[data-puzzle-id="${this.currentDragging}"]`);
+            if (puzzleElement) {
+                puzzleElement.classList.remove('dragging');
+            }
+            
+            // 정리 (PC와 동일)
+            this.finishDrag();
+        }
+    }
+
+    onTouchCancel(e) {
+        if (this.currentDragging) {
+            e.preventDefault();
+            this.updateStatus('드래그가 취소되었습니다.');
+            
+            // 퍼즐 영역에서 드래그했는데 취소된 경우, 퍼즐 조각을 원래 상태로 복원
+            if (!this.dragFromGrid) {
+                this.showPuzzlePieceAsAvailable(this.currentDragging);
+            }
+            
+            // dragging 클래스 제거
+            const puzzleElement = document.querySelector(`[data-puzzle-id="${this.currentDragging}"]`);
+            if (puzzleElement) {
+                puzzleElement.classList.remove('dragging');
+            }
+            
+            this.finishDrag();
+        }
+    }
+
+} 
