@@ -165,6 +165,9 @@ class PuzzleGame {
         this.updateStageInfo();
         this.startTimer();
         this.setupPopupEventListeners();
+        
+        // 모바일에서 자동 전체화면 시도
+        this.tryAutoFullscreen();
     }
 
     setupGrid() {
@@ -199,6 +202,28 @@ class PuzzleGame {
                 this.goToMainPage();
             });
         }
+
+        // 전체화면 버튼
+        const fullscreenBtn = this.getElement('fullscreen-btn');
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+
+        // 전체화면 상태 변경 감지
+        document.addEventListener('fullscreenchange', () => {
+            this.updateFullscreenButton();
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            this.updateFullscreenButton();
+        });
+        document.addEventListener('mozfullscreenchange', () => {
+            this.updateFullscreenButton();
+        });
+        document.addEventListener('MSFullscreenChange', () => {
+            this.updateFullscreenButton();
+        });
 
         // 전역 드래그 이벤트들
         document.addEventListener('dragstart', (e) => this.onDragStart(e));
@@ -814,6 +839,13 @@ class PuzzleGame {
         
         // 게임오버 팝업 표시
         this.showGameOverPopup();
+        
+        // 모바일에서 전체화면 해제 (게임 종료 시)
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                this.exitFullscreen();
+            }, 1000);
+        }
     }
 
     // 게임오버 팝업 표시
@@ -851,6 +883,86 @@ class PuzzleGame {
     goToMainPage() {
         // 상위 디렉토리의 index.html로 이동
         window.location.href = '../../index.html';
+    }
+
+    // 전체화면 토글
+    toggleFullscreen() {
+        if (!document.fullscreenElement && 
+            !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement && 
+            !document.msFullscreenElement) {
+            // 전체화면으로 전환
+            this.enterFullscreen();
+        } else {
+            // 전체화면 해제
+            this.exitFullscreen();
+        }
+    }
+
+    // 전체화면 진입
+    enterFullscreen() {
+        const element = document.documentElement;
+        
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+    }
+
+    // 전체화면 해제
+    exitFullscreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+
+    // 전체화면 버튼 상태 업데이트
+    updateFullscreenButton() {
+        const fullscreenBtn = this.getElement('fullscreen-btn');
+        if (!fullscreenBtn) return;
+
+        const isFullscreen = !!(document.fullscreenElement || 
+                               document.webkitFullscreenElement || 
+                               document.mozFullScreenElement || 
+                               document.msFullscreenElement);
+
+        if (isFullscreen) {
+            fullscreenBtn.classList.add('fullscreen-active');
+            fullscreenBtn.querySelector('.fullscreen-icon').textContent = '⛶';
+            fullscreenBtn.querySelector('.fullscreen-text').textContent = '전체화면 해제';
+        } else {
+            fullscreenBtn.classList.remove('fullscreen-active');
+            fullscreenBtn.querySelector('.fullscreen-icon').textContent = '⛶';
+            fullscreenBtn.querySelector('.fullscreen-text').textContent = '전체화면';
+        }
+    }
+
+    // 모바일에서 자동 전체화면 시도
+    tryAutoFullscreen() {
+        // 모바일에서만 자동 전체화면 시도
+        if (window.innerWidth <= 768) {
+            // 사용자 상호작용 후에 전체화면 시도
+            const tryFullscreen = () => {
+                this.enterFullscreen();
+                // 한 번만 시도하도록 이벤트 리스너 제거
+                document.removeEventListener('click', tryFullscreen);
+                document.removeEventListener('touchstart', tryFullscreen);
+            };
+            
+            document.addEventListener('click', tryFullscreen);
+            document.addEventListener('touchstart', tryFullscreen);
+        }
     }
 
     // 4x4 그리드에 실제로 배치 가능한 검증된 조합들만

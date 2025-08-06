@@ -255,11 +255,64 @@ body::before {
 .top-buttons {
     position: relative;
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .left-buttons {
     display: flex;
     gap: var(--btn-gap, 20px);
+}
+
+.right-buttons {
+    display: flex;
+    gap: var(--btn-gap, 20px);
+}
+
+.fullscreen-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.fullscreen-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.fullscreen-btn:active {
+    transform: translateY(0);
+}
+
+.fullscreen-icon {
+    font-size: 1.2em;
+}
+
+.fullscreen-text {
+    font-size: 0.9em;
+}
+
+/* 전체화면 모드일 때 버튼 스타일 변경 */
+.fullscreen-btn.fullscreen-active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.fullscreen-btn.fullscreen-active .fullscreen-icon {
+    transform: rotate(180deg);
+}
+
+/* 모바일에서 전체화면 버튼 숨기기 (모바일에서는 자동 전체화면) */
+@media (max-width: 768px) {
+    .fullscreen-btn {
+        display: none;
+    }
 }
 
 h1 {
