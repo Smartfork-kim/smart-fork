@@ -29,17 +29,8 @@
         
 
         
-        /* 스크롤바 숨기기 */
-        ::-webkit-scrollbar { display: none; }
         html { 
-            -ms-overflow-style: none; 
-            scrollbar-width: none;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
+            overflow: auto;
             font-size: calc((100vh - 40px) / 90.5); /* 게임 컨테이너 높이의 1% = 1rem */
         }
         
@@ -214,14 +205,7 @@
             position: relative;
         }
         
-        /* 카드 영역 스크롤바 숨기기 */
-        .cards-hand::-webkit-scrollbar {
-            display: none;
-        }
-        .cards-hand {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+
         
         /* 플레이어 카드 (실제 카드용으로 조정) */
         .player-south {
