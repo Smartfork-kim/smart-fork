@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 디바이스 타입 감지 및 광고 최적화 로딩
     function optimizeAdLoading() {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 900;
         const isLandscape = window.innerWidth > window.innerHeight;
         
         // 모든 광고 슬라이드 숨기기
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 나머지 광고들은 지연 로딩 (모바일 최적화)
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 900;
         const delayTime = isMobile ? 2000 : 1000; // 모바일에서는 더 늦게 로딩
         
         setTimeout(() => {
