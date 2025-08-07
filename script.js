@@ -38,6 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const visibleAds = document.querySelectorAll('.ad-slide[style*="display: block"]');
         if (visibleAds.length > 0) {
             visibleAds[0].classList.add('active');
+            
+            // 모바일에서 첫 번째 광고 이미지 즉시 로드 (LCP 최적화)
+            if (isMobile) {
+                const firstSlide = visibleAds[0];
+                const firstImage = firstSlide.querySelector('.ad-image');
+                if (firstImage && firstImage.src) {
+                    // 첫 번째 이미지에 높은 우선순위 부여
+                    firstImage.fetchPriority = 'high';
+                }
+            }
         }
     }
     
@@ -405,15 +415,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // 현재 표시되는 광고 슬라이드만 선택
         const visibleAdSlides = getVisibleAdSlides();
         
-        // 표시되는 광고의 WebP 이미지만 우선 로딩
-        visibleAdSlides.forEach(slide => {
-            const webpSources = slide.querySelectorAll('picture source[type="image/webp"]');
-            webpSources.forEach((source) => {
+        // 첫 번째 광고는 즉시 로드 (LCP 최적화)
+        if (visibleAdSlides.length > 0) {
+            const firstSlide = visibleAdSlides[0];
+            const firstWebpSource = firstSlide.querySelector('picture source[type="image/webp"]');
+            if (firstWebpSource) {
                 const img = new Image();
-                img.src = source.srcset;
+                img.src = firstWebpSource.srcset;
                 img.onload = function() {
-                    // WebP 이미지 로드 완료 시 해당 picture 태그의 img에 loaded 클래스 추가
-                    const picture = source.closest('picture');
+                    const picture = firstWebpSource.closest('picture');
                     if (picture) {
                         const imgElement = picture.querySelector('img');
                         if (imgElement) {
@@ -421,34 +431,56 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 };
-            });
+            }
             
-            // 표시되는 광고의 GIF 이미지들도 처리
-            const gifImages = slide.querySelectorAll('.ad-image[src*=".gif"]');
-            gifImages.forEach((img) => {
-                if (!img.complete) {
-                    const newImg = new Image();
-                    newImg.src = img.src;
-                    newImg.onload = function() {
-                        img.classList.add('loaded');
-                    };
-                } else {
-                    img.classList.add('loaded');
-                }
-            });
-        });
-        
-        // PC 환경에서 즉시 표시
-        if (window.innerWidth > 768 && window.innerHeight > 500) {
-            setTimeout(() => {
-                visibleAdSlides.forEach(slide => {
-                    const gifImages = slide.querySelectorAll('.ad-image[src*=".gif"]');
-                    gifImages.forEach((img) => {
-                        img.classList.add('loaded');
-                    });
-                });
-            }, 100);
+            // 첫 번째 광고의 GIF 처리
+            const firstGifImage = firstSlide.querySelector('.ad-image[src*=".gif"]');
+            if (firstGifImage && !firstGifImage.complete) {
+                const newImg = new Image();
+                newImg.src = firstGifImage.src;
+                newImg.onload = function() {
+                    firstGifImage.classList.add('loaded');
+                };
+            }
         }
+        
+        // 나머지 광고들은 지연 로딩 (모바일 최적화)
+        const isMobile = window.innerWidth <= 768;
+        const delayTime = isMobile ? 2000 : 1000; // 모바일에서는 더 늦게 로딩
+        
+        setTimeout(() => {
+            visibleAdSlides.forEach((slide, index) => {
+                if (index === 0) return; // 첫 번째는 이미 처리됨
+                
+                const webpSources = slide.querySelectorAll('picture source[type="image/webp"]');
+                webpSources.forEach((source) => {
+                    const img = new Image();
+                    img.src = source.srcset;
+                    img.onload = function() {
+                        const picture = source.closest('picture');
+                        if (picture) {
+                            const imgElement = picture.querySelector('img');
+                            if (imgElement) {
+                                imgElement.classList.add('loaded');
+                            }
+                        }
+                    };
+                });
+                
+                const gifImages = slide.querySelectorAll('.ad-image[src*=".gif"]');
+                gifImages.forEach((img) => {
+                    if (!img.complete) {
+                        const newImg = new Image();
+                        newImg.src = img.src;
+                        newImg.onload = function() {
+                            img.classList.add('loaded');
+                        };
+                    } else {
+                        img.classList.add('loaded');
+                    }
+                });
+            });
+        }, delayTime);
     }
 
     // 페이지 로드 시 광고 슬라이더 시작
