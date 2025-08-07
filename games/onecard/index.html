@@ -11,6 +11,56 @@
             padding: 0;
         }
         
+        /* 모바일 가로 방향 제한 */
+        .mobile-landscape-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .notice-content {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            max-width: 80%;
+        }
+
+        .rotate-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            animation: rotate 2s ease-in-out infinite;
+        }
+
+        .notice-content p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            75% { transform: rotate(90deg); }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            .mobile-landscape-notice {
+                display: flex;
+            }
+            
+            .game-container {
+                display: none !important;
+            }
+        }
+        
                 body {
             font-family: 'Noto Sans KR', sans-serif;
             background: #1a1a1a; /* 검정계열 배경 */
@@ -597,6 +647,13 @@
     </style>
 </head>
 <body>
+        <div class="mobile-landscape-notice">
+            <div class="notice-content">
+                <div class="rotate-icon">📱</div>
+                <p>모바일에서는 가로로 플레이해주세요!</p>
+            </div>
+        </div>
+
         <div class="game-container">
         <a href="../../index.html" class="back-btn">← 메인으로 돌아가기</a>
         
