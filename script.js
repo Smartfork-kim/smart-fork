@@ -1,5 +1,52 @@
 // DOM이 로드된 후 실행
 document.addEventListener('DOMContentLoaded', function() {
+    // 디바이스 타입 감지 및 광고 최적화 로딩
+    function optimizeAdLoading() {
+        const isMobile = window.innerWidth <= 768;
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        // 모든 광고 슬라이드 숨기기
+        const allAdSlides = document.querySelectorAll('.ad-slide');
+        allAdSlides.forEach(slide => {
+            slide.style.display = 'none';
+        });
+        
+        // 디바이스 타입에 따라 필요한 광고만 표시
+        if (isMobile) {
+            if (isLandscape) {
+                // 모바일 가로 모드
+                const landscapeAds = document.querySelectorAll('.mobile-landscape-ad');
+                landscapeAds.forEach(slide => {
+                    slide.style.display = 'block';
+                });
+            } else {
+                // 모바일 세로 모드
+                const portraitAds = document.querySelectorAll('.mobile-portrait-ad');
+                portraitAds.forEach(slide => {
+                    slide.style.display = 'block';
+                });
+            }
+        } else {
+            // PC/데스크톱
+            const desktopAds = document.querySelectorAll('.desktop-ad');
+            desktopAds.forEach(slide => {
+                slide.style.display = 'block';
+            });
+        }
+        
+        // 첫 번째 표시된 광고를 활성화
+        const visibleAds = document.querySelectorAll('.ad-slide[style*="display: block"]');
+        if (visibleAds.length > 0) {
+            visibleAds[0].classList.add('active');
+        }
+    }
+    
+    // 초기 광고 최적화 실행
+    optimizeAdLoading();
+    
+    // 화면 크기 변경 시 광고 재최적화
+    window.addEventListener('resize', debounce(optimizeAdLoading, 250));
+
     // debounce 함수 정의 (누락된 함수 추가)
     function debounce(func, wait) {
         let timeout;
@@ -241,8 +288,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const touchX = e.touches[0].clientX;
             const diffX = Math.abs(touchX - touchStartX);
             
-            // 수평 스와이프 감지 (최소 30px 이동)
-            if (diffX > 30) {
+            // 수평 스와이프 감지 (최소 50px 이동으로 증가)
+            if (diffX > 50) {
                 isSwiping = true;
                 e.preventDefault(); // 수직 스크롤 방지
             }
@@ -255,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         touchEndX = e.changedTouches[0].clientX;
         const diffX = touchStartX - touchEndX;
-        const minSwipeDistance = 50; // 최소 스와이프 거리
+        const minSwipeDistance = 80; // 최소 스와이프 거리를 80px로 증가
         
         if (Math.abs(diffX) > minSwipeDistance) {
             if (diffX > 0) {
@@ -301,17 +348,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 광고 슬라이더 기능
     function getVisibleAdSlides() {
-        // 현재 화면 크기에 따라 보이는 광고 슬라이드만 선택
-        if (window.innerWidth <= 768 && window.innerHeight > 500) {
-            // 모바일 세로 모드
-            return document.querySelectorAll('.mobile-portrait-ad');
-        } else if (window.innerWidth <= 900 && window.innerHeight <= 500) {
-            // 모바일 가로 모드
-            return document.querySelectorAll('.mobile-landscape-ad');
-        } else {
-            // 데스크톱/태블릿 모드
-            return document.querySelectorAll('.desktop-ad');
-        }
+        // 현재 표시되고 있는 광고 슬라이드만 선택 (최적화된 로딩과 호환)
+        return document.querySelectorAll('.ad-slide[style*="display: block"]');
     }
 
     let currentAdSlide = 0;
@@ -339,6 +377,9 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(adSlideInterval);
         }
         
+        // 광고 최적화 로딩 실행
+        optimizeAdLoading();
+        
         // 첫 번째 보이는 광고를 활성화
         const visibleAdSlides = getVisibleAdSlides();
         if (visibleAdSlides.length > 0) {
@@ -351,40 +392,60 @@ document.addEventListener('DOMContentLoaded', function() {
             visibleAdSlides[0].classList.add('active');
             currentAdSlide = 0;
             
-            // 모바일에서 GIF 이미지 사전 로딩
-            preloadMobileGifImages();
+            // 이미지 사전 로딩 (WebP 최적화)
+            preloadImages();
             
             // 5초마다 광고 슬라이드 자동 변경
             adSlideInterval = setInterval(changeAdSlide, 5000);
         }
     }
     
-    // 모바일 GIF 이미지 사전 로딩 함수
-    function preloadMobileGifImages() {
-        // 모든 화면 크기에서 GIF 로딩 처리 (PC에서도 GIF가 보이도록)
-        const gifImages = document.querySelectorAll('.ad-image[src*=".gif"]');
+    // 이미지 사전 로딩 함수 (WebP 최적화) - 현재 표시되는 광고만 로딩
+    function preloadImages() {
+        // 현재 표시되는 광고 슬라이드만 선택
+        const visibleAdSlides = getVisibleAdSlides();
         
-        gifImages.forEach((img) => {
-            // 이미지가 로드되지 않은 경우에만 사전 로딩
-            if (!img.complete) {
-                const newImg = new Image();
-                newImg.src = img.src;
-                newImg.onload = function() {
-                    // GIF 로드 완료 후 원본 이미지에 적용
-                    img.classList.add('loaded');
+        // 표시되는 광고의 WebP 이미지만 우선 로딩
+        visibleAdSlides.forEach(slide => {
+            const webpSources = slide.querySelectorAll('picture source[type="image/webp"]');
+            webpSources.forEach((source) => {
+                const img = new Image();
+                img.src = source.srcset;
+                img.onload = function() {
+                    // WebP 이미지 로드 완료 시 해당 picture 태그의 img에 loaded 클래스 추가
+                    const picture = source.closest('picture');
+                    if (picture) {
+                        const imgElement = picture.querySelector('img');
+                        if (imgElement) {
+                            imgElement.classList.add('loaded');
+                        }
+                    }
                 };
-            } else {
-                // 이미 로드된 경우 바로 표시
-                img.classList.add('loaded');
-            }
+            });
+            
+            // 표시되는 광고의 GIF 이미지들도 처리
+            const gifImages = slide.querySelectorAll('.ad-image[src*=".gif"]');
+            gifImages.forEach((img) => {
+                if (!img.complete) {
+                    const newImg = new Image();
+                    newImg.src = img.src;
+                    newImg.onload = function() {
+                        img.classList.add('loaded');
+                    };
+                } else {
+                    img.classList.add('loaded');
+                }
+            });
         });
         
-        // PC에서 GIF가 보이지 않는 경우를 위한 추가 처리
+        // PC 환경에서 즉시 표시
         if (window.innerWidth > 768 && window.innerHeight > 500) {
-            // PC 환경에서는 즉시 모든 GIF를 표시
             setTimeout(() => {
-                gifImages.forEach((img) => {
-                    img.classList.add('loaded');
+                visibleAdSlides.forEach(slide => {
+                    const gifImages = slide.querySelectorAll('.ad-image[src*=".gif"]');
+                    gifImages.forEach((img) => {
+                        img.classList.add('loaded');
+                    });
                 });
             }, 100);
         }
@@ -815,8 +876,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 게임 경로 매핑
     const gameRoutes = {
         '넘버패드 메모리': 'games/numberpad-memory/index.html',
-        '스페이스 슈터': 'games/space-shooter/index.html',
-        '미스터리 퀘스트': 'games/mystery-quest/index.html',
         '솔리테어': 'games/solitaire/index.html',
         '프리셀': 'games/freecell/index.html',
         '원카드': 'games/onecard/index.html'
@@ -987,3 +1046,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 }); 
+
+ 

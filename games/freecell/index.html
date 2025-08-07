@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>프리셀 - 웹게임 모음</title>
     <style>
+        :root {
+            --card-width: 140px;
+            --card-height: 195px;
+            --cell-width: 140px;
+            --cell-height: 195px;
+            --column-gap: 18px;
+        }
+        
         body {
             margin: 0;
             padding: 20px;
@@ -13,6 +21,37 @@
             min-height: 100vh;
             color: white;
             user-select: none;
+            overflow-x: auto;
+        }
+        
+        .mobile-landscape-notice {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notice-content {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .rotate-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(90deg); }
         }
         
         .header {
@@ -20,6 +59,9 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            width: calc(8 * var(--card-width) + 7 * var(--column-gap) + 40px);
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .back-btn {
@@ -64,16 +106,18 @@
         }
         
         .game-board {
-            max-width: 1246px;
+            max-width: calc(8 * var(--card-width) + 7 * var(--column-gap) + 40px);
             margin: 50px auto 0 auto;
             box-sizing: border-box;
         }
         
         .top-area {
             display: flex;
+            justify-content: center;
+            gap: var(--column-gap);
             margin-bottom: 45px;
-            width: 1246px;
-            height: 195px;
+            width: calc(8 * var(--card-width) + 7 * var(--column-gap) + 40px);
+            height: var(--cell-height);
             margin-left: auto;
             margin-right: auto;
             position: relative;
@@ -82,24 +126,12 @@
         
         .free-cells, .home-cells {
             display: flex;
-            gap: 12px;
-        }
-        
-        .free-cells {
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-        
-        .home-cells {
-            position: absolute;
-            right: 0;
-            top: 0;
+            gap: var(--column-gap);
         }
         
         .cell {
-            width: 140px;
-            height: 195px;
+            width: var(--cell-width);
+            height: var(--cell-height);
             border: 2px dashed rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             display: flex;
@@ -108,9 +140,7 @@
             background: rgba(255, 255, 255, 0.1);
             position: relative;
             font-size: 18px;
-            color: rgba(255, 255, 255, 0.5);
-            padding: 2px; /* 카드와 셀 경계 사이 최소 여백 */
-            box-sizing: border-box;
+            color: rgba(255, 255, 255, 0.5);   
         }
         
         .cell.drop-target {
@@ -120,42 +150,35 @@
         
         .play-area {
             display: flex;
-            gap: 18px;
-            width: 1246px;
-            margin: 0 auto;
-            box-sizing: border-box;
+            justify-content: center;  
+            width: calc(8 * var(--card-width) + 7 * var(--column-gap)+ 40px);
+            gap : calc(var(--column-gap) + 4px);
+            
         }
         
         .column {
             min-height: 600px;
-            width: 140px;
+            width: var(--card-width);
             position: relative;
-            padding: 3px 0 8px 0; /* 좌우 패딩 제거로 정확한 정렬 */
-            box-sizing: border-box;
+            padding: 3px 0 8px 0;
+            
         }
         
 
         
         .card {
-            width: 131px;
-            height: 182px;
+            width: calc(var(--card-width));
+            height: calc(var(--card-height));
             border-radius: 12px;
             cursor: grab;
             box-shadow: 0 3px 12px rgba(0,0,0,0.3);
             transition: transform 0.2s ease;
         }
         
-        .column .card {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
         
         .cell .card {
             position: relative;
             margin: 0;
-            width: 131px; /* 셀 크기(140px)에서 여백 9px 제외, 실제 카드 비율 358:500 적용 */
-            height: 187px; /* 셀 크기(195px)에서 여백 8px 제외 */
         }
         
         .card:active {
@@ -196,15 +219,87 @@
         
 
         
+        /* 반응형 디자인 */
+        @media (max-width: 1200px) {
+            :root {
+                --card-width: 120px;
+                --card-height: 167px;
+                --cell-width: 120px;
+                --cell-height: 167px;
+                --column-gap: 15px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            :root {
+                --card-width: 100px;
+                --card-height: 139px;
+                --cell-width: 100px;
+                --cell-height: 139px;
+                --column-gap: 12px;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .game-board {
-                transform: scale(0.8);
-                transform-origin: top center;
+            :root {
+                --card-width: 80px;
+                --card-height: 111px;
+                --cell-width: 80px;
+                --cell-height: 111px;
+                --column-gap: 8px;
+            }
+            
+            .mobile-landscape-notice {
+                display: flex;
+            }
+            
+            .game-title {
+                font-size: 1.5rem;
+            }
+            
+            .cell {
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            :root {
+                --card-width: 70px;
+                --card-height: 97px;
+                --cell-width: 70px;
+                --cell-height: 97px;
+                --column-gap: 6px;
+            }
+            
+            .game-title {
+                font-size: 1.3rem;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (orientation: landscape) and (max-width: 768px) {
+            .mobile-landscape-notice {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+    <div class="mobile-landscape-notice">
+        <div class="notice-content">
+            <div class="rotate-icon">📱</div>
+            <p>모바일에서는 가로로 플레이해주세요!</p>
+        </div>
+    </div>
+
     <div class="header">
         <a href="../index.html" class="back-btn">← 메인으로 돌아가기</a>
         <h1 class="game-title">
@@ -255,8 +350,8 @@
     </div>
 
     <script>
-        class FreeCell {
-                        constructor() {
+                class FreeCell {
+            constructor() {
                 this.freeCells = [null, null, null, null];
                 this.homeCells = {hearts: [], diamonds: [], clubs: [], spades: []};
                 this.columns = [[], [], [], [], [], [], [], []];
@@ -273,6 +368,18 @@
                     'ace': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
                     'jack': 11, 'queen': 12, 'king': 13
                 };
+                
+                            // 터치 이벤트 변수들
+            this.touchStartTime = 0;
+            this.touchStartX = 0;
+            this.touchStartY = 0;
+            this.isTouchDragging = false;
+            this.dragPreview = null;
+            this.lastTapTime = 0;
+            this.lastTapCard = null;
+            this.lastTapPosition = null;
+            this.tapCount = 0;
+                
                 this.init();
             }
             
@@ -317,11 +424,17 @@
             }
             
             setupEventListeners() {
-                // 기본 마우스 이벤트로 단순화
+                // 기본 마우스 이벤트
                 document.addEventListener('mousedown', this.handleMouseDown.bind(this));
                 document.addEventListener('mousemove', this.handleMouseMove.bind(this));
                 document.addEventListener('mouseup', this.handleMouseUp.bind(this));
                 document.addEventListener('dblclick', this.handleDoubleClickEvent.bind(this));
+                
+                // 터치 이벤트 추가
+                document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+                document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+                document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+                
             }
             
 
@@ -348,9 +461,63 @@
                 this.draggedFrom = position;
                 this.draggedCardsData = this.getCardFromPosition(position);
                 
-
-                
                 e.preventDefault();
+            }
+            
+            // 터치 시작
+            handleTouchStart(e) {
+                e.preventDefault();
+                const card = e.target.closest('.card');
+                if (!card) return;
+                
+                const touch = e.touches[0];
+                this.touchStartTime = Date.now();
+                this.touchStartX = touch.clientX;
+                this.touchStartY = touch.clientY;
+                
+                const position = this.findCardPosition(card);
+                if (!position) return;
+                
+                if (!this.canPickUpCard(position)) return;
+                
+                // PC처럼 터치 오프셋 계산
+                const cardRect = card.getBoundingClientRect();
+                this.dragOffsetX = touch.clientX - cardRect.left;
+                this.dragOffsetY = touch.clientY - cardRect.top;
+                
+                // 드래그 준비
+                this.dragPrepared = true;
+                this.draggedCard = card;
+                this.draggedFrom = position;
+                this.draggedCardsData = this.getCardFromPosition(position);
+                
+                // 드래그 프리뷰 생성
+                this.createDragPreview(card, this.draggedCardsData[0]);
+            }
+            
+            // 드래그 프리뷰 생성
+            createDragPreview(originalCard, cardData) {
+                // 기존 프리뷰 제거
+                if (this.dragPreview) {
+                    document.body.removeChild(this.dragPreview);
+                }
+                
+                // 새로운 프리뷰 생성
+                this.dragPreview = originalCard.cloneNode(true);
+                this.dragPreview.style.position = 'fixed';
+                this.dragPreview.style.pointerEvents = 'none';
+                this.dragPreview.style.zIndex = '10000';
+                this.dragPreview.style.opacity = '0.8';
+                this.dragPreview.style.transform = 'scale(1.05)';
+                this.dragPreview.style.transition = 'none';
+                this.dragPreview.classList.add('drag-preview');
+                
+                // 원본 카드의 위치를 기준으로 초기 위치 설정
+                const rect = originalCard.getBoundingClientRect();
+                this.dragPreview.style.left = rect.left + 'px';
+                this.dragPreview.style.top = rect.top + 'px';
+                
+                document.body.appendChild(this.dragPreview);
             }
             
             startDragging() {
@@ -434,6 +601,44 @@
                 e.preventDefault();
             }
             
+            // 터치 이동
+            handleTouchMove(e) {
+                e.preventDefault();
+                
+                if (!this.draggedCard || !this.dragPreview) return;
+                
+                const touch = e.touches[0];
+                const touchDistance = Math.sqrt(
+                    Math.pow(touch.clientX - this.touchStartX, 2) + 
+                    Math.pow(touch.clientY - this.touchStartY, 2)
+                );
+                
+                // 최소 드래그 거리 확인
+                if (touchDistance > 10) {
+                    this.isTouchDragging = true;
+                    
+                    // PC처럼 오프셋을 고려한 드래그 프리뷰 위치 업데이트
+                    const baseX = touch.clientX - this.dragOffsetX;
+                    const baseY = touch.clientY - this.dragOffsetY;
+                    this.dragPreview.style.left = baseX + 'px';
+                    this.dragPreview.style.top = baseY + 'px';
+                    
+                    // 터치 위치의 요소 찾기
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const dropTarget = elementBelow ? elementBelow.closest('.cell, .column') : null;
+                    
+                    // 모든 하이라이트 제거
+                    document.querySelectorAll('.cell, .column').forEach(el => {
+                        el.classList.remove('drop-target');
+                    });
+                    
+                    // 유효한 드롭 위치인지 확인하고 하이라이트
+                    if (dropTarget && this.canDropCard(this.draggedFrom, this.getDropTarget(dropTarget))) {
+                        dropTarget.classList.add('drop-target');
+                    }
+                }
+            }
+            
             handleMouseUp(e) {
                 // 드래그 준비만 하고 실제 드래그하지 않은 경우 (클릭 또는 더블클릭)
                 if (this.dragPrepared && !this.isDragging) {
@@ -480,16 +685,70 @@
                 
                 e.preventDefault();
             }
-
-            handleDoubleClickEvent(e) {
-                const card = e.target.closest('.card');
-                if (!card) return;
+            
+            // 터치 종료
+            handleTouchEnd(e) {
+                e.preventDefault();
                 
-                // 클릭한 정확한 위치에서 카드 찾기
-                const clickX = e.clientX;
-                const clickY = e.clientY;
+                if (!this.draggedCard) return;
                 
-                // 컬럼에서 클릭한 카드 찾기 (우선순위)
+                const touch = e.changedTouches[0];
+                const touchEndTime = Date.now();
+                const touchDuration = touchEndTime - this.touchStartTime;
+                const touchDistance = Math.sqrt(
+                    Math.pow(touch.clientX - this.touchStartX, 2) + 
+                    Math.pow(touch.clientY - this.touchStartY, 2)
+                );
+                
+                // 드래그 프리뷰 제거
+                if (this.dragPreview) {
+                    document.body.removeChild(this.dragPreview);
+                    this.dragPreview = null;
+                }
+                
+                // 드래그 중이었다면 드롭 처리
+                if (this.isTouchDragging && touchDistance > 10) {
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const dropTarget = elementBelow ? elementBelow.closest('.cell, .column') : null;
+                    
+                    if (dropTarget) {
+                        const target = this.getDropTarget(dropTarget);
+                        if (target && this.canDropCard(this.draggedFrom, target)) {
+                            this.moveCard(this.draggedFrom, target);
+                        }
+                    }
+                } else if (touchDuration < 300 && touchDistance < 10) {
+                    // 짧은 터치 (더블탭 확인)
+                    this.handleSingleTap(e);
+                }
+                // 더블탭은 dblclick 이벤트로 처리
+                
+                // 드래그 상태 초기화
+                this.isTouchDragging = false;
+                this.dragPrepared = false;
+                this.draggedCard = null;
+                this.draggedFrom = null;
+                this.draggedCardsData = [];
+                
+                // 모든 하이라이트 제거
+                document.querySelectorAll('.cell, .column').forEach(el => {
+                    el.classList.remove('drop-target');
+                });
+                
+                // 화면 다시 그리기
+                this.render();
+                this.checkAutoComplete();
+                this.checkWin();
+            }
+            
+            // 단일 탭 처리 (모바일 더블탭 감지용)
+            handleSingleTap(e) {
+                console.log('Single tap detected');
+                const touch = e.changedTouches[0];
+                const clickX = touch.clientX;
+                const clickY = touch.clientY;
+                
+                // 컬럼에서 클릭한 카드 찾기 (PC와 동일한 방식)
                 const columns = document.querySelectorAll('.column');
                 let clickedCard = null;
                 let clickedPosition = null;
@@ -529,7 +788,114 @@
                 }
                 
                 if (clickedCard && clickedPosition) {
+                    const currentTime = Date.now();
+                    const timeDiff = currentTime - this.lastTapTime;
+                    
+                    console.log('Tap info:', {
+                        lastTapTime: this.lastTapTime,
+                        currentTime: currentTime,
+                        timeDiff: timeDiff,
+                        lastTapCard: this.lastTapCard,
+                        clickedCard: clickedCard,
+                        isSameCard: this.lastTapCard === clickedCard,
+                        isWithinTime: timeDiff < 300
+                    });
+                    
+                    // 같은 카드에 대한 두 번째 탭인지 확인 (300ms 이내)
+                    // 카드 위치 정보로 비교
+                    const isSameCard = this.lastTapCard && clickedCard && 
+                                     JSON.stringify(clickedPosition) === JSON.stringify(this.lastTapPosition);
+                    if (isSameCard && timeDiff < 300) {
+                        console.log('Double tap detected!');
+                        // 더블탭 발생! PC와 동일한 함수 호출
+                        this.lastTapTime = 0;
+                        this.lastTapCard = null;
+                        this.lastTapPosition = null;
+                        
+                        // 모바일에서는 이미 찾은 카드와 위치를 직접 사용
+                        this.handleDoubleClick(e, clickedCard, clickedPosition);
+                    } else {
+                        console.log('First tap recorded');
+                        // 첫 번째 탭 기록
+                        this.lastTapTime = currentTime;
+                        this.lastTapCard = clickedCard;
+                        this.lastTapPosition = clickedPosition;
+                    }
+                }
+            }
+            
+            // 드롭 타겟 정보 가져오기
+            getDropTarget(element) {
+                if (element.classList.contains('cell')) {
+                    const type = element.dataset.type;
+                    const index = element.dataset.index ? parseInt(element.dataset.index) : element.dataset.suit;
+                    return { type, index };
+                } else if (element.classList.contains('column')) {
+                    return { type: 'column', index: parseInt(element.dataset.column) };
+                }
+                return null;
+            }
+
+            handleDoubleClickEvent(e) {
+                console.log('=== PC 더블클릭 이벤트 시작 ===');
+                console.log('Double click/tap detected!', e.type);
+                const card = e.target.closest('.card');
+                if (!card) {
+                    console.log('❌ 카드를 찾을 수 없음');
+                    return;
+                }
+                console.log('✅ 카드 요소 찾음:', card);
+                
+                // 클릭한 정확한 위치에서 카드 찾기
+                const clickX = e.clientX;
+                const clickY = e.clientY;
+                console.log('클릭 위치:', { x: clickX, y: clickY });
+                
+                // 컬럼에서 클릭한 카드 찾기 (우선순위)
+                const columns = document.querySelectorAll('.column');
+                console.log('컬럼 개수:', columns.length);
+                let clickedCard = null;
+                let clickedPosition = null;
+                
+                for (let column of columns) {
+                    const cards = Array.from(column.querySelectorAll('.card'));
+                    for (let i = cards.length - 1; i >= 0; i--) {
+                        const cardElement = cards[i];
+                        const rect = cardElement.getBoundingClientRect();
+                        if (clickX >= rect.left && clickX <= rect.right && 
+                            clickY >= rect.top && clickY <= rect.bottom) {
+                            clickedCard = cardElement;
+                            const columnIndex = parseInt(column.dataset.column);
+                            clickedPosition = {type: 'column', column: columnIndex, row: i};
+                            break;
+                        }
+                    }
+                    if (clickedCard) break;
+                }
+                
+                // 컬럼에서 못 찾았으면 프리셀에서 찾기
+                if (!clickedCard) {
+                    const freecells = document.querySelectorAll('.cell[data-type="freecell"]');
+                    for (let cell of freecells) {
+                        const cardElement = cell.querySelector('.card');
+                        if (cardElement) {
+                            const rect = cardElement.getBoundingClientRect();
+                            if (clickX >= rect.left && clickX <= rect.right && 
+                                clickY >= rect.top && clickY <= rect.bottom) {
+                                clickedCard = cardElement;
+                                const index = parseInt(cell.dataset.index);
+                                clickedPosition = {type: 'freecell', index: index};
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (clickedCard && clickedPosition) {
+                    console.log('✅ handleDoubleClick 호출:', { card: clickedCard, position: clickedPosition });
                     this.handleDoubleClick(e, clickedCard, clickedPosition);
+                } else {
+                    console.log('❌ 클릭한 카드나 위치를 찾을 수 없음');
                 }
                 
                 e.preventDefault();
@@ -537,9 +903,19 @@
             }
             
             handleDoubleClick(e, card, position) {
+                console.log('=== handleDoubleClick 함수 시작 ===');
+                console.log('입력 파라미터:', { card, position });
+                
                 // 드래그 준비/진행 상태 완전 초기화 (더블클릭과 드래그 충돌 방지)
                 this.dragPrepared = false;
                 this.isDragging = false;
+                this.isTouchDragging = false;
+                
+                // 드래그 프리뷰 제거
+                if (this.dragPreview) {
+                    document.body.removeChild(this.dragPreview);
+                    this.dragPreview = null;
+                }
                 
                 if (this.draggedCard) {
                     if (this.draggedCardElements.length > 0) {
@@ -566,52 +942,93 @@
                     this.draggedCardElements = [];
                     this.draggedCardsData = [];
                     this.draggedFrom = null;
+                    this.dragOffsetX = 0;
+                    this.dragOffsetY = 0;
                 }
                 
-                if (!position) return;
+                if (!position) {
+                    console.log('❌ position이 없음');
+                    return;
+                }
                 
                 // 여러 카드 선택은 더블클릭으로 이동 불가
                 const cards = this.getCardFromPosition(position);
-                if (cards.length > 1) return;
+                console.log('카드 배열:', cards);
+                if (cards.length > 1) {
+                    console.log('❌ 여러 카드 선택은 더블클릭 불가');
+                    return;
+                }
                 
-                if (!this.canPickUpCard(position)) return;
+                if (!this.canPickUpCard(position)) {
+                    console.log('❌ 카드를 집을 수 없음');
+                    return;
+                }
+                console.log('✅ 카드를 집을 수 있음');
                 
                 // 실제 카드 데이터 가져오기 (DOM 요소 대신)
                 const cardArray = this.getCardFromPosition(position);
-                if (!cardArray || cardArray.length === 0 || !cardArray[0]) return;
+                console.log('카드 배열 (재확인):', cardArray);
+                if (!cardArray || cardArray.length === 0 || !cardArray[0]) {
+                    console.log('❌ 카드 데이터를 가져올 수 없음');
+                    return;
+                }
                 
                 const cardData = cardArray[0];
+                console.log('카드 데이터:', cardData);
+                
+                // 현재 카드 요소를 정확히 찾기 (더블탭된 카드)
+                const currentCardElement = this.findFreshCardElement(position);
+                console.log('Double click animation - position:', position, 'card element:', currentCardElement);
+                if (!currentCardElement) {
+                    console.log('Card element not found for animation');
+                    return;
+                }
                 
                 // 홈셀에 놓을 수 있는지 먼저 확인 (모든 카드에 대해)
                 const homeCellTarget = this.findHomeCellTarget(cardData);
+                console.log('홈셀 타겟:', homeCellTarget);
                 if (homeCellTarget) {
                     const canDropToHomeCell = this.canDropCard(position, homeCellTarget);
+                    console.log('홈셀에 놓을 수 있음:', canDropToHomeCell);
                     if (canDropToHomeCell) {
-                        this.animateCardMove(card, position, homeCellTarget);
+                        console.log('✅ 홈셀로 애니메이션 시작');
+                        this.animateCardMove(currentCardElement, position, homeCellTarget);
                         return;
                     }
                 }
                 
                 // 홈셀에 놓을 수 없으면 프리셀로 이동
                 const freeCellTarget = this.findEmptyFreeCell();
+                console.log('프리셀 타겟:', freeCellTarget);
                 if (freeCellTarget) {
-                    this.animateCardMove(card, position, freeCellTarget);
+                    console.log('✅ 프리셀로 애니메이션 시작');
+                    this.animateCardMove(currentCardElement, position, freeCellTarget);
                     return;
                 }
+                
+                console.log('❌ 유효한 목표 위치가 없음');
                 
                 e.preventDefault();
             }
             
             animateOriginalCard(cardElement, fromPosition, toPosition, callback) {
+                console.log('=== animateOriginalCard 시작 ===');
+                console.log('카드 요소:', cardElement);
+                console.log('시작 위치:', fromPosition);
+                console.log('목표 위치:', toPosition);
+                
                 // 솔리테어처럼 단순하게 - 목표 셀 찾기
                 let targetCell;
                 if (toPosition.type === 'freecell') {
                     targetCell = document.querySelector(`.cell[data-type="freecell"][data-index="${toPosition.index}"]`);
+                    console.log('프리셀 타겟 셀:', targetCell);
                 } else if (toPosition.type === 'home') {
                     targetCell = document.querySelector(`.cell[data-type="home"][data-suit="${toPosition.index}"]`);
+                    console.log('홈셀 타겟 셀:', targetCell);
                 }
                 
                 if (!targetCell) {
+                    console.log('❌ 타겟 셀을 찾을 수 없음, 즉시 이동');
                     this.moveCard(fromPosition, toPosition);
                     this.render();
                     this.checkAutoComplete();
@@ -619,6 +1036,7 @@
                     if (callback) callback();
                     return;
                 }
+                console.log('✅ 타겟 셀 찾음');
                 
                 // 원본 카드 위치 및 목표 위치 계산 (솔리테어처럼)
                 // 애니메이션 시작 전에 카드 위치 재확인
@@ -636,16 +1054,32 @@
                     return;
                 }
                 
-                // 원본 카드를 fixed로 전환하여 애니메이션
-                cardElement.style.position = 'fixed';
-                cardElement.style.left = cardRect.left + 'px';
-                cardElement.style.top = cardRect.top + 'px';
-                cardElement.style.zIndex = '10000';
-                cardElement.style.pointerEvents = 'none';
-                
-                // 강제로 위치 재설정 (휘는 현상 방지)
-                cardElement.style.transform = 'none';
-                cardElement.style.transition = 'none';
+                // 카드가 이미 fixed 상태라면 현재 위치를 그대로 사용
+                if (cardElement.style.position === 'fixed') {
+                    // 현재 fixed 위치를 그대로 사용 (이미 left, top이 설정되어 있음)
+                    cardElement.style.zIndex = '10000';
+                    cardElement.style.pointerEvents = 'none';
+                    // 현재 위치에서 바로 애니메이션 시작
+                    cardElement.style.transform = 'none';
+                    cardElement.style.transition = 'none';
+                } else {
+                    // 원본 카드를 fixed로 전환하여 애니메이션
+                    // 기존 스타일 완전 제거 후 새로 설정
+                    cardElement.style.removeProperty('position');
+                    cardElement.style.removeProperty('left');
+                    cardElement.style.removeProperty('top');
+                    cardElement.style.removeProperty('transform');
+                    cardElement.style.removeProperty('transition');
+                    
+                    cardElement.style.position = 'fixed';
+                    cardElement.style.left = cardRect.left + 'px';
+                    cardElement.style.top = cardRect.top + 'px';
+                    cardElement.style.zIndex = '10000';
+                    cardElement.style.pointerEvents = 'none';
+                    // 강제로 위치 재설정 (휘는 현상 방지)
+                    cardElement.style.transform = 'none';
+                    cardElement.style.transition = 'none';
+                }
                 
                 // 목표 위치까지의 이동 거리 계산 (솔리테어처럼 정확하게)
                 const targetCenterX = targetRect.left + (targetRect.width / 2);
@@ -660,17 +1094,25 @@
                 // 애니메이션 시작 (자동완성 시에만 더 빠르게)
                 const isAutoComplete = callback && callback.toString().includes('animateCardsSequentially');
                 const animationDuration = isAutoComplete ? '1s' : '0.3s';
-                const waitTime = isAutoComplete ? 10 : 50;
+                const waitTime = isAutoComplete ? 10 : 100; // 모바일에서 더 긴 대기 시간
                 
                 // 위치 안정화를 위한 대기
+                console.log('애니메이션 시작 대기 중...', { waitTime, animationDuration, deltaX, deltaY });
                 setTimeout(() => {
+                    console.log('🎬 애니메이션 시작!');
                     cardElement.style.transition = `transform ${animationDuration} cubic-bezier(0.165, 0.84, 0.44, 1)`;
                     cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.9)`;
                     cardElement.style.opacity = '0.85';
+                    console.log('애니메이션 CSS 적용됨:', {
+                        transition: cardElement.style.transition,
+                        transform: cardElement.style.transform,
+                        opacity: cardElement.style.opacity
+                    });
                 }, waitTime);
                 
                 // 애니메이션 완료 후 정리
                 const handleAnimationEnd = () => {
+                    console.log('🎬 애니메이션 완료!');
                     try {
                         // 이벤트 리스너 제거
                         cardElement.removeEventListener('transitionend', handleAnimationEnd);
@@ -722,6 +1164,11 @@
             }
             
             animateCardMove(cardElement, fromPosition, toPosition, callback) {
+                console.log('=== animateCardMove 호출 ===');
+                console.log('카드 요소:', cardElement);
+                console.log('시작 위치:', fromPosition);
+                console.log('목표 위치:', toPosition);
+                
                 // 솔리테어처럼 단순하게 - 원본 카드를 바로 이동
                 this.animateOriginalCard(cardElement, fromPosition, toPosition, callback);
             }
@@ -1693,6 +2140,29 @@
         function autoMove() {
             game.autoMove();
         }
+        
+        // 리사이즈 이벤트 리스너
+        let resizeTimeout;
+        let currentBreakpoint = getCurrentBreakpoint();
+        
+        function getCurrentBreakpoint() {
+            if (window.innerWidth > 1200) return 'large';
+            if (window.innerWidth > 900) return 'medium';
+            if (window.innerWidth > 768) return 'small';
+            if (window.innerWidth > 600) return 'xsmall';
+            return 'xxsmall';
+        }
+        
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const newBreakpoint = getCurrentBreakpoint();
+                if (newBreakpoint !== currentBreakpoint) {
+                    currentBreakpoint = newBreakpoint;
+                    game.render();
+                }
+            }, 100);
+        });
     </script>
 </body>
 </html>

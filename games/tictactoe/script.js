@@ -315,18 +315,4 @@ class TicTacToe {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.tictactoeGame = new TicTacToe();
-    console.log('틱택토 게임이 성공적으로 시작되었습니다!');
-});
-
-// 디버깅용 전역 함수
-window.getGameStats = function() {
-    if (window.tictactoeGame) {
-        return {
-            currentPlayer: window.tictactoeGame.currentPlayer,
-            gameActive: window.tictactoeGame.gameActive,
-            scores: window.tictactoeGame.scores,
-            board: window.tictactoeGame.board
-        };
-    }
-    return null;
-}; 
+}); 
